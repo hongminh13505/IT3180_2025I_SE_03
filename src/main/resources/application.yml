@@ -3,9 +3,9 @@ spring:
     name: apartment-management
     
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/apartment_db}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/apartment_db12}
     username: postgres
-    password: 123456
+    password: gygygyg67
     
   jpa:
     hibernate:

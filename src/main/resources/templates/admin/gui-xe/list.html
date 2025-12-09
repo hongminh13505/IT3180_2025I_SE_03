@@ -52,16 +52,19 @@
                             <img src="/images/thong-bao.png" alt="Thông báo" style="width: 18px; height: 18px; margin-right: 12px;"> Thông báo
                         </a>
                     </li>
-                    <li>
-                        <a th:href="@{/admin/phan-anh}">
-                            <img src="/images/phan-anh.png" alt="Phản ánh" style="width: 18px; height: 18px; margin-right: 12px;"> Phản ánh
-                        </a>
-                    </li>
+                    
                     <li>
                         <a th:href="@{/admin/gui-xe}" class="active">
                             <img src="/images/tai-san-chung-cu.png" alt="Gửi xe" style="width: 18px; height: 18px; margin-right: 12px;"> Gửi xe
                         </a>
                     </li>
+                    
+                    <li>
+                        <a th:href="@{/admin/phan-anh}">
+                            <img src="/images/phan-anh.png" alt="Phản ánh" style="width: 18px; height: 18px; margin-right: 12px;"> Phản ánh
+                        </a>
+                    </li>
+                    
                     <li>
                         <a th:href="@{/admin/lich-su-chinh-sua}">
                             <img src="/images/lichsu.png" alt="Lịch sử chỉnh sửa" style="width: 18px; height: 18px; margin-right: 12px; filter: brightness(0) invert(1);"> Lịch sử chỉnh sửa
@@ -91,18 +94,18 @@
                 <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
                 <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
                 
-                <div class="content-header">
-                    <div class="filter-group">
+                <div class="content-header" style="display: flex; flex-wrap: wrap; gap: 15px; align-items: center; justify-content: space-between;">
+                    <div class="filter-group" style="display: flex; gap: 8px; flex-wrap: wrap;">
                         <a th:href="@{/admin/gui-xe}" th:classappend="${trangThai == null || trangThai.isEmpty()} ? 'btn-primary' : 'btn-secondary'" class="btn btn-sm">Tất cả</a>
                         <a th:href="@{/admin/gui-xe(trangThai='cho_duyet')}" th:classappend="${trangThai == 'cho_duyet'} ? 'btn-primary' : 'btn-secondary'" class="btn btn-sm">Chờ duyệt</a>
                         <a th:href="@{/admin/gui-xe(trangThai='da_duyet')}" th:classappend="${trangThai == 'da_duyet'} ? 'btn-primary' : 'btn-secondary'" class="btn btn-sm">Đã duyệt</a>
                         <a th:href="@{/admin/gui-xe(trangThai='tu_choi')}" th:classappend="${trangThai == 'tu_choi'} ? 'btn-primary' : 'btn-secondary'" class="btn btn-sm">Từ chối</a>
                     </div>
-                    <div class="search-bar" style="flex-grow: 1; max-width: 320px;">
-                        <form th:action="@{/admin/gui-xe}" method="get" style="display: flex; gap: 5px;">
+                    <div class="search-bar" style="flex: 0 1 auto; min-width: 280px; max-width: 400px; width: 100%;">
+                        <form th:action="@{/admin/gui-xe}" method="get" style="display: flex; gap: 8px; width: 100%;">
                             <input type="hidden" name="trangThai" th:value="${trangThai}">
-                            <input type="text" name="search" th:value="${search}" placeholder="Biển số, CCCD, loại xe..." class="form-control">
-                            <button type="submit" class="btn btn-primary">Tìm kiếm</button>
+                            <input type="text" name="search" th:value="${search}" placeholder="Biển số, CCCD, loại xe..." class="form-control" style="flex: 1; min-width: 0;">
+                            <button type="submit" class="btn btn-primary" style="flex-shrink: 0; white-space: nowrap;">Tìm kiếm</button>
                         </form>
                     </div>
                 </div>
