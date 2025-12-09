@@ -14,7 +14,7 @@
         <div class="spinner"></div>
     </div>
     <div class="wrapper">
-        <!-- Sidebar -->
+
         <aside class="sidebar" th:fragment="sidebar">
     <div class="sidebar-header">
         <h3>BLUE MOON</h3>
@@ -57,13 +57,19 @@
                             <img src="/images/thong-bao.png" alt="Thông báo" style="width: 18px; height: 18px; margin-right: 12px;"> Thông báo
                         </a>
                     </li>
+                    
+                    <li sec:authorize="hasRole('BAN_QUAN_TRI')">
+                        <a th:href="@{/admin/lich-su-chinh-sua}" th:classappend="${#strings.contains(#httpServletRequest.requestURI, 'lich-su-chinh-sua')} ? 'active' : ''">
+                            Lịch sử chỉnh sửa
+                        </a>
+                    </li>
                 </ul>
             </nav>
         </aside>
         
-        <!-- Main Content -->
+
         <div class="main-content">
-            <!-- Header -->
+ 
             <header class="header" th:fragment="header">
                 <div class="header-left">
                     <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
@@ -79,8 +85,8 @@
                     </div>
                 </div>
             </header>
-            
-            <!-- Page Content -->
+    
+       
             <main class="page-content">
                 <div th:replace="${content}"></div>
             </main>
@@ -89,22 +95,22 @@
     
     <script th:src="@{/js/script.js}"></script>
     <script>
-        // Simple page loading overlay: show on nav click, hide after load
+    
         (function() {
             const loader = document.getElementById('appLoader');
             function hideLoader() { if (loader) loader.style.display = 'none'; }
             function showLoader() { if (loader) loader.style.display = 'flex'; }
-            // Hide once content ready
+           
             if (document.readyState === 'loading') {
                 document.addEventListener('DOMContentLoaded', hideLoader);
             } else { hideLoader(); }
-            // Intercept sidebar/menu clicks
+  
             document.addEventListener('click', function(e) {
                 const a = e.target.closest('a');
                 if (!a) return;
                 const href = a.getAttribute('href');
                 if (!href || href.startsWith('#') || href.startsWith('javascript:')) return;
-                // Only show for internal navigations
+     
                 const isSameOrigin = href.startsWith('/') || href.startsWith(window.location.origin);
                 if (isSameOrigin) {
                     showLoader();

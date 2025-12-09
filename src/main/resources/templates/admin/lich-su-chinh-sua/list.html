@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" 
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lịch sử chỉnh sửa - Quản lý chung cư</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+    <div class="wrapper">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h3>BLUE MOON</h3>
+            </div>
+            
+            <nav class="sidebar-menu">
+                <ul>
+                    <li>
+                        <a th:href="@{/admin/dashboard}">
+                            <img src="/images/img4.png" alt="Dashboard" style="width: 18px; height: 18px; margin-right: 12px;"> Dashboard
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a th:href="@{/admin/doi-tuong}">
+                            <img src="/images/quan-ly-cu-dan.png" alt="Quản lý cư dân" style="width: 18px; height: 18px; margin-right: 12px;"> Quản lý cư dân
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a th:href="@{/admin/ho-gia-dinh}">
+                            <img src="/images/ho-gia-dinh.png" alt="Hộ gia đình" style="width: 18px; height: 18px; margin-right: 12px;"> Hộ gia đình
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a th:href="@{/admin/tai-san}">
+                            <img src="/images/tai-san-chung-cu.png" alt="Tài sản chung cư" style="width: 18px; height: 18px; margin-right: 12px;"> Tài sản chung cư
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a th:href="@{/admin/hoa-don-2}">
+                            <img src="/images/hoa-don.png" alt="Hóa đơn" style="width: 18px; height: 18px; margin-right: 12px;"> Hóa đơn
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a th:href="@{/admin/bao-cao-su-co}">
+                            <img src="/images/bao-cao-su-co.png" alt="Báo cáo sự cố" style="width: 18px; height: 18px; margin-right: 12px;"> Báo cáo sự cố
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a th:href="@{/admin/thong-bao-2}">
+                            <img src="/images/thong-bao.png" alt="Thông báo" style="width: 18px; height: 18px; margin-right: 12px;"> Thông báo
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a th:href="@{/admin/phan-anh}">
+                            <img src="/images/phan-anh.png" alt="Phản ánh" style="width: 18px; height: 18px; margin-right: 12px;"> Phản ánh
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a th:href="@{/admin/lich-su-chinh-sua}" class="active">
+                            <img src="/images/lichsu.png" alt="Lịch sử chỉnh sửa" style="width: 18px; height: 18px; margin-right: 12px; filter: brightness(0) invert(1);"> Lịch sử chỉnh sửa
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+        
+        <div class="main-content">
+            <header class="header">
+                <div class="header-left">
+                    <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+                    <h2>Lịch sử chỉnh sửa</h2>
+                </div>
+                <div class="header-right">
+                    <div class="user-info">
+                        <span>Xin chào, <strong th:text="${username}">Admin</strong></span>
+                        <form th:action="@{/logout}" method="post" style="display: inline;">
+                            <button type="submit" class="btn btn-sm btn-danger">Đăng xuất</button>
+                        </form>
+                    </div>
+                </div>
+            </header>
+            
+            <main class="page-content">
+                <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+                <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+                
+                <!-- Bộ lọc -->
+                <div class="content-header">
+                    <div class="filter-bar" style="display: flex; gap: 15px; flex-wrap: wrap; align-items: center;">
+                        <form th:action="@{/admin/lich-su-chinh-sua}" method="get" style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <select name="loaiDoiTuong" class="form-control" style="width: 180px;">
+                                <option value="">Tất cả loại</option>
+                                <option value="doi_tuong" th:selected="${loaiDoiTuong == 'doi_tuong'}">Người dùng</option>
+                                <option value="ho_gia_dinh" th:selected="${loaiDoiTuong == 'ho_gia_dinh'}">Hộ gia đình</option>
+                            </select>
+                            
+                            <select name="nguon" class="form-control" style="width: 180px;">
+                                <option value="">Tất cả nguồn</option>
+                                <option value="admin" th:selected="${nguon == 'admin'}">Từ Admin</option>
+                                <option value="nguoi_dung" th:selected="${nguon == 'nguoi_dung'}">Từ người dùng</option>
+                            </select>
+                            
+                            <input type="text" name="maDoiTuong" th:value="${maDoiTuong}" 
+                                   placeholder="Mã đối tượng (CCCD/Mã hộ)" class="form-control" style="width: 200px;">
+                            
+                            <button type="submit" class="btn btn-primary">Lọc</button>
+                            <a th:href="@{/admin/lich-su-chinh-sua}" class="btn btn-secondary">Xóa bộ lọc</a>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Bảng lịch sử -->
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>THỜI GIAN</th>
+                                <th>LOẠI ĐỐI TƯỢNG</th>
+                                <th>ĐỐI TƯỢNG</th>
+                                <th>NGƯỜI CHỈNH SỬA</th>
+                                <th>NGUỒN</th>
+                                <th>THAO TÁC</th>
+                                <th>TRƯỜNG THAY ĐỔI</th>
+                                <th>CHI TIẾT</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:if="${lichSuList.isEmpty()}">
+                                <td colspan="8" style="text-align: center; color: #94a3b8; padding: 30px;">
+                                    Không có lịch sử chỉnh sửa nào
+                                </td>
+                            </tr>
+                            <tr th:each="lichSu : ${lichSuList}">
+                                <td th:text="${lichSu.thoiGian != null ? #temporals.format(lichSu.thoiGian, 'dd/MM/yyyy HH:mm:ss') : 'N/A'}">
+                                    01/01/2024 10:00:00
+                                </td>
+                                <td>
+                                    <span th:switch="${lichSu.loaiDoiTuong}">
+                                        <span th:case="'doi_tuong'" style="color: #3b82f6;">Người dùng</span>
+                                        <span th:case="'ho_gia_dinh'" style="color: #10b981;">Hộ gia đình</span>
+                                        <span th:case="*" th:text="${lichSu.loaiDoiTuong}"></span>
+                                    </span>
+                                </td>
+                                <td>
+                                    <div>
+                                        <strong th:text="${lichSu.tenDoiTuong}">Tên đối tượng</strong>
+                                        <br>
+                                        <small style="color: #64748b;" th:text="'(' + ${lichSu.maDoiTuong} + ')'">(Mã)</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div>
+                                        <strong th:text="${lichSu.tenNguoiChinhSua}">Tên người chỉnh sửa</strong>
+                                        <br>
+                                        <small style="color: #64748b;" th:text="${lichSu.cccdNguoiChinhSua}">CCCD</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span th:switch="${lichSu.nguonChinhSua}">
+                                        <span th:case="'admin'" class="badge badge-info">Admin</span>
+                                        <span th:case="'nguoi_dung'" class="badge badge-success">Người dùng</span>
+                                        <span th:case="*" class="badge" th:text="${lichSu.nguonChinhSua}"></span>
+                                    </span>
+                                </td>
+                                <td>
+                                    <span th:switch="${lichSu.thaoTac}">
+                                        <span th:case="'create'" class="badge badge-success">Tạo mới</span>
+                                        <span th:case="'update'" class="badge badge-warning">Chỉnh sửa</span>
+                                        <span th:case="'delete'" class="badge badge-danger">Xóa</span>
+                                        <span th:case="*" class="badge" th:text="${lichSu.thaoTac}"></span>
+                                    </span>
+                                </td>
+                                <td>
+                                    <span th:if="${lichSu.truongThayDoi != null && !lichSu.truongThayDoi.isEmpty()}" 
+                                          th:text="${lichSu.truongThayDoi}" 
+                                          style="font-size: 0.9em; color: #475569;">
+                                        Trường thay đổi
+                                    </span>
+                                    <span th:if="${lichSu.truongThayDoi == null || lichSu.truongThayDoi.isEmpty()}" 
+                                          style="color: #94a3b8; font-style: italic;">
+                                        -
+                                    </span>
+                                </td>
+                                <td>
+                                    <a th:href="@{/admin/lich-su-chinh-sua/chi-tiet/{id}(id=${lichSu.id})}" 
+                                       class="btn btn-sm btn-info">Xem</a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </main>
+        </div>
+    </div>
+    
+    <script th:src="@{/js/script.js}"></script>
+</body>
+</html>
+

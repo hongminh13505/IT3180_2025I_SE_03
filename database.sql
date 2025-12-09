@@ -287,14 +287,14 @@ CREATE TABLE thong_bao (
     loai_thong_bao VARCHAR(30) DEFAULT 'binh_thuong' 
         CHECK (loai_thong_bao IN ('quan_trong', 'binh_thuong', 'khan_cap')),
     doi_tuong_nhan VARCHAR(20) DEFAULT 'tat_ca' 
-        CHECK (doi_tuong_nhan IN ('tat_ca', 'chu_ho', 'theo_ho')), -- Gửi cho ai
+        CHECK (doi_tuong_nhan IN ('tat_ca', 'chu_ho', 'ho_gia_dinh')), -- Gửi cho ai: tất cả, chủ hộ, hoặc hộ gia đình cụ thể
     CONSTRAINT fk_cccd_bqt_thongbao FOREIGN KEY (cccd_ban_quan_tri) 
         REFERENCES doi_tuong(cccd) 
         ON DELETE CASCADE 
         ON UPDATE CASCADE
 );
 
--- Bảng thông báo gửi đến hộ cụ thể (nếu doi_tuong_nhan = 'theo_ho')
+-- Bảng thông báo gửi đến hộ cụ thể (nếu doi_tuong_nhan = 'ho_gia_dinh')
 CREATE TABLE thong_bao_ho (
     id SERIAL PRIMARY KEY,
     ma_thong_bao INTEGER NOT NULL,
@@ -307,6 +307,30 @@ CREATE TABLE thong_bao_ho (
     CONSTRAINT fk_ma_ho_thongbao FOREIGN KEY (ma_ho) 
         REFERENCES ho_gia_dinh(ma_ho) 
         ON DELETE CASCADE 
+        ON UPDATE CASCADE
+);
+
+-- Bảng phản ánh của cư dân
+CREATE TABLE phan_anh (
+    ma_phan_anh SERIAL PRIMARY KEY,
+    cccd_nguoi_phan_anh VARCHAR(12) NOT NULL,
+    tieu_de VARCHAR(200) NOT NULL,
+    noi_dung TEXT NOT NULL,
+    loai_phan_anh VARCHAR(20) DEFAULT 'gop_y' 
+        CHECK (loai_phan_anh IN ('y_kien', 'gop_y', 'khiem_nai', 'khac')),
+    trang_thai VARCHAR(20) DEFAULT 'moi' 
+        CHECK (trang_thai IN ('moi', 'da_xem', 'da_phan_hoi')),
+    ngay_tao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    ngay_phan_hoi TIMESTAMP,
+    noi_dung_phan_hoi TEXT,
+    cccd_nguoi_phan_hoi VARCHAR(12),
+    CONSTRAINT fk_cccd_nguoi_phan_anh FOREIGN KEY (cccd_nguoi_phan_anh) 
+        REFERENCES doi_tuong(cccd) 
+        ON DELETE CASCADE 
+        ON UPDATE CASCADE,
+    CONSTRAINT fk_cccd_nguoi_phan_hoi FOREIGN KEY (cccd_nguoi_phan_hoi) 
+        REFERENCES doi_tuong(cccd) 
+        ON DELETE SET NULL 
         ON UPDATE CASCADE
 );
 
@@ -325,3 +349,40 @@ CREATE TABLE phan_hoi (
         REFERENCES thong_bao(ma_thong_bao) 
         ON DELETE CASCADE
 );
+
+-- =====================================================
+-- PHẦN 8: LỊCH SỬ CHỈNH SỬA
+-- =====================================================
+
+-- Bảng lịch sử chỉnh sửa
+CREATE TABLE IF NOT EXISTS lich_su_chinh_sua (
+    id SERIAL PRIMARY KEY,
+    loai_doi_tuong VARCHAR(50) NOT NULL,
+    ma_doi_tuong VARCHAR(50) NOT NULL,
+    ten_doi_tuong VARCHAR(200),
+    cccd_nguoi_chinh_sua VARCHAR(12) NOT NULL,
+    ten_nguoi_chinh_sua VARCHAR(100),
+    vai_tro_nguoi_chinh_sua VARCHAR(50),
+    nguon_chinh_sua VARCHAR(20),
+    thao_tac VARCHAR(50),
+    truong_thay_doi TEXT,
+    gia_tri_cu TEXT,
+    gia_tri_moi TEXT,
+    mo_ta TEXT,
+    thoi_gian TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_nguoi_chinh_sua FOREIGN KEY (cccd_nguoi_chinh_sua) 
+        REFERENCES doi_tuong(cccd) ON DELETE SET NULL
+);
+
+-- Tạo index để tăng tốc độ truy vấn
+CREATE INDEX IF NOT EXISTS idx_lich_su_loai_ma ON lich_su_chinh_sua(loai_doi_tuong, ma_doi_tuong);
+CREATE INDEX IF NOT EXISTS idx_lich_su_cccd ON lich_su_chinh_sua(cccd_nguoi_chinh_sua);
+CREATE INDEX IF NOT EXISTS idx_lich_su_thoi_gian ON lich_su_chinh_sua(thoi_gian DESC);
+CREATE INDEX IF NOT EXISTS idx_lich_su_nguon ON lich_su_chinh_sua(nguon_chinh_sua);
+
+-- Comment cho bảng
+COMMENT ON TABLE lich_su_chinh_sua IS 'Bảng lưu lịch sử chỉnh sửa thông tin của các đối tượng trong hệ thống';
+COMMENT ON COLUMN lich_su_chinh_sua.loai_doi_tuong IS 'Loại đối tượng: doi_tuong, ho_gia_dinh, thanh_vien_ho';
+COMMENT ON COLUMN lich_su_chinh_sua.ma_doi_tuong IS 'Mã đối tượng (CCCD hoặc mã hộ)';
+COMMENT ON COLUMN lich_su_chinh_sua.nguon_chinh_sua IS 'Nguồn chỉnh sửa: admin hoặc nguoi_dung';
+COMMENT ON COLUMN lich_su_chinh_sua.thao_tac IS 'Thao tác: create, update, delete';

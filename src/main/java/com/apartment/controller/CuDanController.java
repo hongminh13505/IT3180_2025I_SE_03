@@ -1,20 +1,34 @@
 package com.apartment.controller;
 
-import com.apartment.service.*;
-import com.apartment.entity.DoiTuong;
-import com.apartment.entity.BaoCaoSuCo;
-import com.apartment.entity.HoaDon;
-import com.apartment.entity.ThanhVienHo;
-import com.apartment.repository.ThanhVienHoRepository;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import com.apartment.entity.BaoCaoSuCo;
+import com.apartment.entity.DoiTuong;
+import com.apartment.entity.HoaDon;
+import com.apartment.entity.ThanhVienHo;
+import com.apartment.repository.ThanhVienHoRepository;
+import com.apartment.entity.PhanAnh;
+import com.apartment.service.BaoCaoSuCoService;
+import com.apartment.service.DoiTuongService;
+import com.apartment.service.HoaDonService;
+import com.apartment.service.LichSuChinhSuaService;
+import com.apartment.service.PhanAnhService;
+import com.apartment.service.ThongBaoService;
 
 @Controller
 @RequestMapping("/cu-dan")
@@ -35,6 +49,12 @@ public class CuDanController {
     
     @Autowired
     private ThanhVienHoRepository thanhVienHoRepository;
+    
+    @Autowired
+    private LichSuChinhSuaService lichSuChinhSuaService;
+    
+    @Autowired
+    private PhanAnhService phanAnhService;
     
    
     private String getMaHoByCccd(String cccd) {
@@ -102,6 +122,41 @@ public class CuDanController {
             DoiTuong existingDoiTuong = doiTuongService.findByCccd(cccd)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy thông tin cá nhân"));
             
+            // So sánh và ghi lại các thay đổi
+            Map<String, LichSuChinhSuaService.ChangeInfo> thayDoi = new HashMap<>();
+            
+            if (!equalsValue(existingDoiTuong.getHoVaTen(), doiTuong.getHoVaTen())) {
+                thayDoi.put("Họ và tên", new LichSuChinhSuaService.ChangeInfo(
+                    existingDoiTuong.getHoVaTen(), doiTuong.getHoVaTen()));
+            }
+            if (!equalsValue(existingDoiTuong.getNgaySinh(), doiTuong.getNgaySinh())) {
+                thayDoi.put("Ngày sinh", new LichSuChinhSuaService.ChangeInfo(
+                    String.valueOf(existingDoiTuong.getNgaySinh()), 
+                    String.valueOf(doiTuong.getNgaySinh())));
+            }
+            if (!equalsValue(existingDoiTuong.getGioiTinh(), doiTuong.getGioiTinh())) {
+                thayDoi.put("Giới tính", new LichSuChinhSuaService.ChangeInfo(
+                    existingDoiTuong.getGioiTinh(), doiTuong.getGioiTinh()));
+            }
+            if (!equalsValue(existingDoiTuong.getSoDienThoai(), doiTuong.getSoDienThoai())) {
+                thayDoi.put("Số điện thoại", new LichSuChinhSuaService.ChangeInfo(
+                    existingDoiTuong.getSoDienThoai(), doiTuong.getSoDienThoai()));
+            }
+            if (!equalsValue(existingDoiTuong.getEmail(), doiTuong.getEmail())) {
+                thayDoi.put("Email", new LichSuChinhSuaService.ChangeInfo(
+                    existingDoiTuong.getEmail(), doiTuong.getEmail()));
+            }
+            if (!equalsValue(existingDoiTuong.getQueQuan(), doiTuong.getQueQuan())) {
+                thayDoi.put("Quê quán", new LichSuChinhSuaService.ChangeInfo(
+                    existingDoiTuong.getQueQuan(), doiTuong.getQueQuan()));
+            }
+            if (!equalsValue(existingDoiTuong.getNgheNghiep(), doiTuong.getNgheNghiep())) {
+                thayDoi.put("Nghề nghiệp", new LichSuChinhSuaService.ChangeInfo(
+                    existingDoiTuong.getNgheNghiep(), doiTuong.getNgheNghiep()));
+            }
+            if (matKhau != null && !matKhau.trim().isEmpty()) {
+                thayDoi.put("Mật khẩu", new LichSuChinhSuaService.ChangeInfo("***", "***"));
+            }
         
             existingDoiTuong.setHoVaTen(doiTuong.getHoVaTen());
             existingDoiTuong.setNgaySinh(doiTuong.getNgaySinh());
@@ -116,11 +171,33 @@ public class CuDanController {
             }
             
             doiTuongService.save(existingDoiTuong);
+            
+            // Ghi lại lịch sử chỉnh sửa
+            if (!thayDoi.isEmpty()) {
+                String moTa = "Người dùng tự chỉnh sửa thông tin cá nhân";
+                
+                lichSuChinhSuaService.ghiLichSuChinhSua(
+                    "doi_tuong",
+                    cccd,
+                    existingDoiTuong.getHoVaTen(),
+                    cccd,
+                    "update",
+                    thayDoi,
+                    moTa
+                );
+            }
+            
             redirectAttributes.addFlashAttribute("success", "Cập nhật thông tin thành công!");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Có lỗi khi cập nhật thông tin: " + e.getMessage());
         }
         return "redirect:/cu-dan/thong-tin-ca-nhan";
+    }
+    
+    private boolean equalsValue(Object oldValue, Object newValue) {
+        if (oldValue == null && newValue == null) return true;
+        if (oldValue == null || newValue == null) return false;
+        return oldValue.equals(newValue);
     }
     
     @GetMapping("/thong-bao")
@@ -285,6 +362,88 @@ public class CuDanController {
         }
         
         return "redirect:/cu-dan/hoa-don";
+    }
+    
+    @GetMapping("/phan-anh")
+    public String phanAnh(@org.springframework.web.bind.annotation.RequestParam(required = false) String search,
+                          Model model,
+                          Authentication authentication) {
+        try {
+            String cccd = authentication.getName();
+            java.util.List<PhanAnh> phanAnhList = phanAnhService.findByCccdNguoiPhanAnh(cccd);
+            
+            if (search != null && !search.trim().isEmpty()) {
+                String searchLower = search.trim().toLowerCase();
+                phanAnhList = phanAnhList.stream()
+                    .filter(pa -> 
+                        (pa.getTieuDe() != null && pa.getTieuDe().toLowerCase().contains(searchLower)) ||
+                        (pa.getNoiDung() != null && pa.getNoiDung().toLowerCase().contains(searchLower))
+                    )
+                    .collect(java.util.stream.Collectors.toList());
+            }
+            
+            model.addAttribute("phanAnhList", phanAnhList);
+            model.addAttribute("search", search);
+            model.addAttribute("username", authentication.getName());
+            return "cu-dan/phan-anh";
+        } catch (Exception e) {
+            model.addAttribute("error", "Có lỗi khi tải danh sách phản ánh");
+            model.addAttribute("phanAnhList", new java.util.ArrayList<>());
+            return "cu-dan/phan-anh";
+        }
+    }
+    
+    @GetMapping("/phan-anh/tao-moi")
+    public String taoPhanAnh(Model model, Authentication authentication) {
+        try {
+            PhanAnh phanAnh = new PhanAnh();
+            model.addAttribute("phanAnh", phanAnh);
+            model.addAttribute("username", authentication.getName());
+            return "cu-dan/tao-phan-anh";
+        } catch (Exception e) {
+            model.addAttribute("error", "Có lỗi khi tải form tạo phản ánh");
+            return "redirect:/cu-dan/phan-anh";
+        }
+    }
+    
+    @PostMapping("/phan-anh/luu")
+    public String luuPhanAnh(@ModelAttribute PhanAnh phanAnh,
+                             RedirectAttributes redirectAttributes,
+                             Authentication authentication) {
+        try {
+            String cccd = authentication.getName();
+            phanAnh.setCccdNguoiPhanAnh(cccd);
+            phanAnh.setTrangThai("moi");
+            
+            phanAnhService.save(phanAnh);
+            redirectAttributes.addFlashAttribute("success", "Gửi phản ánh thành công!");
+            
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Có lỗi khi gửi phản ánh: " + e.getMessage());
+        }
+        
+        return "redirect:/cu-dan/phan-anh";
+    }
+    
+    @GetMapping("/phan-anh/{id}")
+    public String chiTietPhanAnh(@PathVariable Integer id, Model model, Authentication authentication) {
+        try {
+            String cccd = authentication.getName();
+            PhanAnh phanAnh = phanAnhService.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy phản ánh"));
+            
+            // Kiểm tra xem phản ánh có thuộc về cư dân này không
+            if (!phanAnh.getCccdNguoiPhanAnh().equals(cccd)) {
+                model.addAttribute("error", "Bạn không có quyền xem phản ánh này");
+                return "redirect:/cu-dan/phan-anh";
+            }
+            
+            model.addAttribute("phanAnh", phanAnh);
+            model.addAttribute("username", authentication.getName());
+            return "cu-dan/phan-anh/detail";
+        } catch (Exception e) {
+            return "redirect:/cu-dan/phan-anh?error=" + e.getMessage();
+        }
     }
 }
 

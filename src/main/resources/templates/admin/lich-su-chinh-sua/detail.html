@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" 
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi tiết lịch sử chỉnh sửa - Quản lý chung cư</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+    <div class="wrapper">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h3>BLUE MOON</h3>
+            </div>
+            
+            <nav class="sidebar-menu">
+                <ul>
+                    <li>
+                        <a th:href="@{/admin/dashboard}">
+                            <img src="/images/img4.png" alt="Dashboard" style="width: 18px; height: 18px; margin-right: 12px;"> Dashboard
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a th:href="@{/admin/phan-anh}">
+                            <img src="/images/phan-anh.png" alt="Phản ánh" style="width: 18px; height: 18px; margin-right: 12px;"> Phản ánh
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a th:href="@{/admin/lich-su-chinh-sua}" class="active">
+                            <img src="/images/lichsu.png" alt="Lịch sử chỉnh sửa" style="width: 18px; height: 18px; margin-right: 12px; filter: brightness(0) invert(1);"> Lịch sử chỉnh sửa
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+        
+        <div class="main-content">
+            <header class="header">
+                <div class="header-left">
+                    <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+                    <h2>Chi tiết lịch sử chỉnh sửa</h2>
+                </div>
+                <div class="header-right">
+                    <div class="user-info">
+                        <span>Xin chào, <strong th:text="${username}">Admin</strong></span>
+                        <form th:action="@{/logout}" method="post" style="display: inline;">
+                            <button type="submit" class="btn btn-sm btn-danger">Đăng xuất</button>
+                        </form>
+                    </div>
+                </div>
+            </header>
+            
+            <main class="page-content">
+                <div class="card" style="max-width: 1000px; margin: 0 auto;">
+                    <div class="card-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px;">
+                        <h3 style="margin: 0;">Chi tiết lịch sử chỉnh sửa</h3>
+                    </div>
+                    
+                    <div class="card-body" style="padding: 30px;">
+                        <div class="info-section" style="margin-bottom: 25px;">
+                            <h4 style="color: #475569; margin-bottom: 15px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">
+                                Thông tin đối tượng
+                            </h4>
+                            <div class="info-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+                                <div>
+                                    <label style="font-weight: 600; color: #64748b;">Loại đối tượng:</label>
+                                    <p style="margin: 5px 0;">
+                                        <span th:switch="${lichSu.loaiDoiTuong}">
+                                            <span th:case="'doi_tuong'" class="badge badge-info">Người dùng</span>
+                                            <span th:case="'ho_gia_dinh'" class="badge badge-success">Hộ gia đình</span>
+                                            <span th:case="*" th:text="${lichSu.loaiDoiTuong}"></span>
+                                        </span>
+                                    </p>
+                                </div>
+                                <div>
+                                    <label style="font-weight: 600; color: #64748b;">Mã đối tượng:</label>
+                                    <p style="margin: 5px 0; font-weight: 500;" th:text="${lichSu.maDoiTuong}">Mã</p>
+                                </div>
+                                <div style="grid-column: 1 / -1;">
+                                    <label style="font-weight: 600; color: #64748b;">Tên đối tượng:</label>
+                                    <p style="margin: 5px 0; font-weight: 500; font-size: 1.1em;" th:text="${lichSu.tenDoiTuong}">Tên</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="info-section" style="margin-bottom: 25px;">
+                            <h4 style="color: #475569; margin-bottom: 15px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">
+                                Thông tin người chỉnh sửa
+                            </h4>
+                            <div class="info-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+                                <div>
+                                    <label style="font-weight: 600; color: #64748b;">Tên người chỉnh sửa:</label>
+                                    <p style="margin: 5px 0; font-weight: 500;" th:text="${lichSu.tenNguoiChinhSua}">Tên</p>
+                                </div>
+                                <div>
+                                    <label style="font-weight: 600; color: #64748b;">CCCD:</label>
+                                    <p style="margin: 5px 0;" th:text="${lichSu.cccdNguoiChinhSua}">CCCD</p>
+                                </div>
+                                <div>
+                                    <label style="font-weight: 600; color: #64748b;">Vai trò:</label>
+                                    <p style="margin: 5px 0;">
+                                        <span th:switch="${lichSu.vaiTroNguoiChinhSua}">
+                                            <span th:case="'ban_quan_tri'" class="badge badge-danger">Ban quản trị</span>
+                                            <span th:case="'co_quan_chuc_nang'" class="badge badge-warning">Cơ quan chức năng</span>
+                                            <span th:case="'ke_toan'" class="badge badge-info">Kế toán</span>
+                                            <span th:case="'nguoi_dung_thuong'" class="badge badge-success">Người dùng</span>
+                                            <span th:case="*" th:text="${lichSu.vaiTroNguoiChinhSua}"></span>
+                                        </span>
+                                    </p>
+                                </div>
+                                <div>
+                                    <label style="font-weight: 600; color: #64748b;">Nguồn chỉnh sửa:</label>
+                                    <p style="margin: 5px 0;">
+                                        <span th:switch="${lichSu.nguonChinhSua}">
+                                            <span th:case="'admin'" class="badge badge-info">Từ Admin</span>
+                                            <span th:case="'nguoi_dung'" class="badge badge-success">Từ người dùng</span>
+                                            <span th:case="*" th:text="${lichSu.nguonChinhSua}"></span>
+                                        </span>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="info-section" style="margin-bottom: 25px;">
+                            <h4 style="color: #475569; margin-bottom: 15px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">
+                                Thông tin thao tác
+                            </h4>
+                            <div class="info-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+                                <div>
+                                    <label style="font-weight: 600; color: #64748b;">Thao tác:</label>
+                                    <p style="margin: 5px 0;">
+                                        <span th:switch="${lichSu.thaoTac}">
+                                            <span th:case="'create'" class="badge badge-success">Tạo mới</span>
+                                            <span th:case="'update'" class="badge badge-warning">Chỉnh sửa</span>
+                                            <span th:case="'delete'" class="badge badge-danger">Xóa</span>
+                                            <span th:case="*" th:text="${lichSu.thaoTac}"></span>
+                                        </span>
+                                    </p>
+                                </div>
+                                <div>
+                                    <label style="font-weight: 600; color: #64748b;">Thời gian:</label>
+                                    <p style="margin: 5px 0; font-weight: 500;" 
+                                       th:text="${lichSu.thoiGian != null ? #temporals.format(lichSu.thoiGian, 'dd/MM/yyyy HH:mm:ss') : 'N/A'}">
+                                        01/01/2024 10:00:00
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="info-section" th:if="${lichSu.truongThayDoi != null && !lichSu.truongThayDoi.isEmpty()}">
+                            <h4 style="color: #475569; margin-bottom: 15px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">
+                                Chi tiết thay đổi
+                            </h4>
+                            <div style="background: #f8fafc; padding: 20px; border-radius: 8px; border-left: 4px solid #3b82f6;">
+                                <div style="margin-bottom: 15px;">
+                                    <label style="font-weight: 600; color: #64748b; display: block; margin-bottom: 5px;">Các trường đã thay đổi:</label>
+                                    <p style="margin: 0; font-weight: 500; color: #1e293b;" th:text="${lichSu.truongThayDoi}">Trường</p>
+                                </div>
+                                
+                                <div th:if="${lichSu.giaTriCu != null && !lichSu.giaTriCu.isEmpty()}" style="margin-bottom: 15px;">
+                                    <label style="font-weight: 600; color: #64748b; display: block; margin-bottom: 5px;">Giá trị cũ:</label>
+                                    <p style="margin: 0; padding: 10px; background: #fee2e2; border-radius: 4px; color: #991b1b;" 
+                                       th:text="${lichSu.giaTriCu}">Giá trị cũ</p>
+                                </div>
+                                
+                                <div th:if="${lichSu.giaTriMoi != null && !lichSu.giaTriMoi.isEmpty()}">
+                                    <label style="font-weight: 600; color: #64748b; display: block; margin-bottom: 5px;">Giá trị mới:</label>
+                                    <p style="margin: 0; padding: 10px; background: #dcfce7; border-radius: 4px; color: #166534;" 
+                                       th:text="${lichSu.giaTriMoi}">Giá trị mới</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="info-section" th:if="${lichSu.moTa != null && !lichSu.moTa.isEmpty()}">
+                            <h4 style="color: #475569; margin-bottom: 15px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">
+                                Mô tả
+                            </h4>
+                            <p style="margin: 0; padding: 15px; background: #f1f5f9; border-radius: 8px; color: #475569;" 
+                               th:text="${lichSu.moTa}">Mô tả</p>
+                        </div>
+                        
+                        <div style="margin-top: 30px; text-align: center;">
+                            <a th:href="@{/admin/lich-su-chinh-sua}" class="btn btn-secondary">← Quay lại</a>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    
+    <script th:src="@{/js/script.js}"></script>
+</body>
+</html>
+

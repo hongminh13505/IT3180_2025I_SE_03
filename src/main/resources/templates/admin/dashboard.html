@@ -59,8 +59,20 @@
                     </li>
                     
                     <li>
-                        <a th:href="@{/admin/thong-bao}">
+                        <a th:href="@{/admin/thong-bao-2}">
                             <img src="/images/thong-bao.png" alt="Thông báo" style="width: 18px; height: 18px; margin-right: 12px;"> Thông báo
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a th:href="@{/admin/phan-anh}">
+                            <img src="/images/phan-anh.png" alt="Phản ánh" style="width: 18px; height: 18px; margin-right: 12px;"> Phản ánh
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a th:href="@{/admin/lich-su-chinh-sua}">
+                            <img src="/images/lichsu.png" alt="Lịch sử chỉnh sửa" style="width: 18px; height: 18px; margin-right: 12px; filter: brightness(0) invert(1);"> Lịch sử chỉnh sửa
                         </a>
                     </li>
                 </ul>
@@ -121,6 +133,16 @@
                     
                     <div class="stat-card">
                         <div class="stat-icon">
+                            <img src="/images/phan-anh.png" alt="Phản ánh mới" style="width: 24px; height: 24px;">
+                        </div>
+                        <div class="stat-details">
+                            <h3 th:text="${phanAnhMoi}">0</h3>
+                            <p>Phản ánh mới</p>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon">
                             <img src="/images/hoa-don.png" alt="Tổng thu" style="width: 24px; height: 24px;">
                         </div>
                         <div class="stat-details">
@@ -142,41 +164,123 @@
 
                 <div class="dashboard-two-column">
                     <div class="content-section column-left">
-                    <div class="section-header">
-                        <h3>Báo cáo sự cố mới nhất</h3>
-                        <a th:href="@{/admin/bao-cao-su-co}" class="btn btn-sm btn-primary">Xem tất cả</a>
+                        <div class="section-header">
+                            <h3>Báo cáo sự cố mới nhất</h3>
+                            <a th:href="@{/admin/bao-cao-su-co}" class="btn btn-sm btn-primary">Xem tất cả</a>
+                        </div>
+                        
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 60px; text-align: center;">Mã</th>
+                                        <th style="width: calc(25%); text-align: center;">Tiêu đề</th>
+                                        <th style="width: 140px; text-align: center;">Người báo cáo</th>
+                                        <th class="text-center-badge" style="width: 150px;">Mức độ ưu tiên</th>
+                                        <th style="width: 120px; text-align: center;">Ngày báo cáo</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="bc : ${baoCaoSuCoList}" th:if="${baoCaoSuCoList != null and !baoCaoSuCoList.isEmpty()}">
+                                        <td style="text-align: center;" th:text="${bc.maBaoCao}">1</td>
+                                        <td style="text-align: center;" th:text="${bc.tieuDe}">Báo cáo</td>
+                                        <td style="text-align: center;" th:text="${bc.cccdNguoiBaoCao}">CCCD</td>
+                                        <td>
+                                            <span class="badge" 
+                                                  th:classappend="${bc.mucDoUuTien == 'khan_cap'} ? 'badge-danger' : (${bc.mucDoUuTien == 'cao'} ? 'badge-warning' : 'badge-info')"
+                                                  th:text="${bc.mucDoUuTien == 'khan_cap'} ? 'Khẩn cấp' : (${bc.mucDoUuTien == 'cao'} ? 'Cao' : 'Bình thường')">Bình thường</span>
+                                        </td>
+                                        <td style="text-align: center;" th:text="${#temporals.format(bc.ngayBaoCao, 'dd/MM/yyyy')}">01/01/2025</td>
+                                    </tr>
+                                    <tr th:if="${baoCaoSuCoList == null or baoCaoSuCoList.isEmpty()}">
+                                        <td colspan="5" class="text-center">Không có báo cáo sự cố mới</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                     
-                    <div class="table-responsive">
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <th style="width: 60px; text-align: center;">Mã</th>
-                                    <th style="width: calc(25%); text-align: center;">Tiêu đề</th>
-                                    <th style="width: 140px; text-align: center;">Người báo cáo</th>
-                                    <th class="text-center-badge" style="width: 150px;">Mức độ ưu tiên</th>
-                                    <th style="width: 120px; text-align: center;">Ngày báo cáo</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr th:each="bc : ${baoCaoSuCoList}" th:if="${baoCaoSuCoList != null and !baoCaoSuCoList.isEmpty()}">
-                                    <td style="text-align: center;" th:text="${bc.maBaoCao}">1</td>
-                                    <td style="text-align: center;" th:text="${bc.tieuDe}">Báo cáo</td>
-                                    <td style="text-align: center;" th:text="${bc.cccdNguoiBaoCao}">CCCD</td>
-                                    <td>
-                                        <span class="badge" 
-                                              th:classappend="${bc.mucDoUuTien == 'khan_cap'} ? 'badge-danger' : (${bc.mucDoUuTien == 'cao'} ? 'badge-warning' : 'badge-info')"
-                                              th:text="${bc.mucDoUuTien == 'khan_cap'} ? 'Khẩn cấp' : (${bc.mucDoUuTien == 'cao'} ? 'Cao' : 'Bình thường')">Bình thường</span>
-                                    </td>
-                                    <td style="text-align: center;" th:text="${#temporals.format(bc.ngayBaoCao, 'dd/MM/yyyy')}">01/01/2025</td>
-                                </tr>
-                                <tr th:if="${baoCaoSuCoList == null or baoCaoSuCoList.isEmpty()}">
-                                    <td colspan="5" class="text-center">Không có báo cáo sự cố mới</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                    <div class="content-section column-right">
+                        <div class="section-header">
+                            <h3>Phản ánh mới nhất</h3>
+                            <a th:href="@{/admin/phan-anh}" class="btn btn-sm btn-primary">Xem tất cả</a>
+                        </div>
+                        
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 60px; text-align: center;">Mã</th>
+                                        <th style="width: calc(30%); text-align: center;">Tiêu đề</th>
+                                        <th style="width: 120px; text-align: center;">Loại</th>
+                                        <th style="width: 120px; text-align: center;">Ngày gửi</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="pa : ${phanAnhList}" th:if="${phanAnhList != null and !phanAnhList.isEmpty()}">
+                                        <td style="text-align: center;" th:text="${pa.maPhanAnh}">1</td>
+                                        <td style="text-align: center;" th:text="${pa.tieuDe}">Phản ánh</td>
+                                        <td style="text-align: center;">
+                                            <span class="badge badge-info" 
+                                                  th:text="${pa.loaiPhanAnh == 'gop_y'} ? 'Góp ý' : 
+                                                            (${pa.loaiPhanAnh == 'y_kien'} ? 'Ý kiến' : 
+                                                            (${pa.loaiPhanAnh == 'khiem_nai'} ? 'Khiếu nại' : 'Khác'))">Góp ý</span>
+                                        </td>
+                                        <td style="text-align: center;" th:text="${#temporals.format(pa.ngayTao, 'dd/MM/yyyy')}">01/01/2025</td>
+                                    </tr>
+                                    <tr th:if="${phanAnhList == null or phanAnhList.isEmpty()}">
+                                        <td colspan="4" class="text-center">Không có phản ánh mới</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
+                
+                <div class="dashboard-two-column">
+                    <div class="content-section column-left">
+                        <div class="section-header">
+                            <h3>Thông báo gần đây</h3>
+                            <a th:href="@{/admin/thong-bao-2}" class="btn btn-sm btn-primary">Xem tất cả</a>
+                        </div>
+                        
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 60px; text-align: center;">Mã</th>
+                                        <th style="width: calc(30%); text-align: center;">Tiêu đề</th>
+                                        <th style="width: 120px; text-align: center;">Loại</th>
+                                        <th style="width: 140px; text-align: center;">Ngày tạo</th>
+                                        <th style="width: 100px; text-align: center;">Trạng thái</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="tb : ${thongBaoList}" th:if="${thongBaoList != null and !thongBaoList.isEmpty()}">
+                                        <td style="text-align: center;" th:text="${tb.maThongBao}">1</td>
+                                        <td style="text-align: center; font-size: 13px;" th:text="${tb.tieuDe}">Tiêu đề thông báo</td>
+                                        <td style="text-align: center;">
+                                            <span class="badge" 
+                                                  th:classappend="${tb.loaiThongBao == 'quan_trong'} ? 'badge-danger' : 
+                                                                (${tb.loaiThongBao == 'khan_cap'} ? 'badge-warning' : 'badge-info')"
+                                                  th:text="${tb.loaiThongBao == 'quan_trong'} ? 'Quan trọng' : 
+                                                            (${tb.loaiThongBao == 'khan_cap'} ? 'Khẩn cấp' : 'Bình thường')">Bình thường</span>
+                                        </td>
+                                        <td style="text-align: center; font-size: 13px;" th:text="${#temporals.format(tb.ngayTaoThongBao, 'dd/MM/yyyy')}">01/01/2025</td>
+                                        <td style="text-align: center;">
+                                            <span class="badge" 
+                                                  th:classappend="${tb.trangThai == 'hien'} ? 'badge-success' : 'badge-secondary'"
+                                                  th:text="${tb.trangThai == 'hien'} ? 'Hiện' : 'Ẩn'">Hiện</span>
+                                        </td>
+                                    </tr>
+                                    <tr th:if="${thongBaoList == null or thongBaoList.isEmpty()}">
+                                        <td colspan="5" class="text-center">Không có thông báo mới</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
                     <div class="content-section column-right">
                         <div class="section-header">
                             <h3>Tỷ lệ thanh toán hóa đơn</h3>
@@ -196,28 +300,6 @@
                                 <span style="width: 16px; height: 16px; border-radius: 50%; background: linear-gradient(135deg, #ef4444, #dc2626);"></span>
                                 <span style="font-size: 14px; font-weight: 600;">Chưa thanh toán: <span th:text="${hoaDonChuaThanhToan}">0</span></span>
                             </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="content-section">
-                    <div class="section-header">
-                        <h3>Thông báo gần đây</h3>
-                        <a th:href="@{/admin/thong-bao}" class="btn btn-sm btn-primary">Xem tất cả</a>
-                    </div>
-                    
-                    <div class="timeline">
-                        <div class="timeline-item" th:each="tb : ${thongBaoList}" th:if="${thongBaoList != null and !thongBaoList.isEmpty()}">
-                            <div class="timeline-marker"></div>
-                            <div class="timeline-content">
-                                <div class="timeline-header">
-                                    <h4 th:text="${tb.tieuDe}">Tiêu đề thông báo</h4>
-                                    <span class="timeline-time" th:text="${#temporals.format(tb.ngayTaoThongBao, 'dd/MM/yyyy HH:mm')}">01/01/2025</span>
-                                </div>
-                                <p th:text="${tb.noiDungThongBao}">Nội dung thông báo...</p>
-                            </div>
-                        </div>
-                        <div th:if="${thongBaoList == null or thongBaoList.isEmpty()}" class="text-center" style="padding: 40px;">
-                            <p>Không có thông báo mới</p>
                         </div>
                     </div>
                 </div>
