@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thông báo - Cư dân</title>
+    <title>Tạo phản ánh - Cư dân</title>
     <link rel="stylesheet" th:href="@{/css/style.css}">
     <link rel="stylesheet" th:href="@{/css/admin.css}">
 </head>
@@ -31,7 +31,7 @@
                         </a>
                     </li>
                     <li>
-                        <a th:href="@{/cu-dan/thong-bao}" class="active">
+                        <a th:href="@{/cu-dan/thong-bao}">
                             <img src="/images/thong-bao.png" alt="Thông báo" style="width: 18px; height: 18px; margin-right: 12px;"> Thông báo
                         </a>
                     </li>
@@ -46,7 +46,7 @@
                         </a>
                     </li>
                     <li>
-                        <a th:href="@{/cu-dan/phan-anh}">
+                        <a th:href="@{/cu-dan/phan-anh}" class="active">
                             <img src="/images/phan-anh.png" alt="Phản ánh" style="width: 18px; height: 18px; margin-right: 12px;"> Phản ánh
                         </a>
                     </li>
@@ -60,7 +60,7 @@
             <header class="header">
                 <div class="header-left">
                     <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
-                    <h2>Thông báo</h2>
+                    <h2>Tạo phản ánh</h2>
                 </div>
                 
                 <div class="header-right">
@@ -79,41 +79,44 @@
                 <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
                 <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
                 
-                <!-- Search Bar -->
-                <div class="content-header">
-                    <div class="search-bar">
-                        <form th:action="@{/cu-dan/thong-bao}" method="get">
-                            <input type="text" name="search" th:value="${search}" placeholder="Tìm kiếm..." class="form-control">
-                            <button type="submit" class="btn btn-primary">Tìm kiếm</button>
-                        </form>
-                    </div>
-                </div>
-                
-                <!-- Table -->
-                <div class="table-responsive">
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>TIÊU ĐỀ</th>
-                                <th>NỘI DUNG</th>
-                                <th>NGÀY ĐĂNG</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr th:if="${thongBaoList.isEmpty()}">
-                                <td colspan="3" style="text-align: center; color: #94a3b8;">Không có thông báo nào</td>
-                            </tr>
-                            <tr th:each="tb : ${thongBaoList}">
-                                <td th:text="${tb.tieuDe}">Thông báo quan trọng</td>
-                                <td>
-                                    <span th:text="${#strings.length(tb.noiDungThongBao) > 80 ? #strings.substring(tb.noiDungThongBao, 0, 80) + '...' : tb.noiDungThongBao}">
-                                        Nội dung thông báo...
-                                    </span>
-                                </td>
-                                <td th:text="${tb.ngayTaoThongBao != null ? #temporals.format(tb.ngayTaoThongBao, 'dd/MM/yyyy') : 'N/A'}">01/01/2024</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                <!-- Form -->
+                <div class="form-container">
+                    <form th:action="@{/cu-dan/phan-anh/luu}" th:object="${phanAnh}" method="post">
+                        <div class="form-group">
+                            <label for="loaiPhanAnh">Loại phản ánh <span class="required">*</span></label>
+                            <select id="loaiPhanAnh" th:field="*{loaiPhanAnh}" class="form-control" required>
+                                <option value="gop_y">Góp ý</option>
+                                <option value="y_kien">Ý kiến</option>
+                                <option value="khiem_nai">Khiếu nại</option>
+                                <option value="khac">Khác</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="tieuDe">Tiêu đề phản ánh <span class="required">*</span></label>
+                            <input type="text" id="tieuDe" th:field="*{tieuDe}" class="form-control" 
+                                   placeholder="Nhập tiêu đề phản ánh" required>
+                            <div class="form-error" th:if="${#fields.hasErrors('tieuDe')}" 
+                                 th:errors="*{tieuDe}"></div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="noiDung">Nội dung phản ánh <span class="required">*</span></label>
+                            <textarea id="noiDung" th:field="*{noiDung}" class="form-control" 
+                                      rows="8" placeholder="Mô tả chi tiết nội dung phản ánh của bạn..." required></textarea>
+                            <div class="form-error" th:if="${#fields.hasErrors('noiDung')}" 
+                                 th:errors="*{noiDung}"></div>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">
+                                <img src="/images/add.png" alt="Gửi phản ánh" style="filter: brightness(0) invert(1); width: 18px; height: 18px; margin-right: 0px;"> Gửi phản ánh
+                            </button>
+                            <a th:href="@{/cu-dan/phan-anh}" class="btn btn-secondary">
+                                <span>↩</span> Quay lại
+                            </a>
+                        </div>
+                    </form>
                 </div>
             </main>
         </div>

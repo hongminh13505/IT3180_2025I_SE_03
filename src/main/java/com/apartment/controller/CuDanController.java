@@ -22,10 +22,12 @@ import com.apartment.entity.DoiTuong;
 import com.apartment.entity.HoaDon;
 import com.apartment.entity.ThanhVienHo;
 import com.apartment.repository.ThanhVienHoRepository;
+import com.apartment.entity.PhanAnh;
 import com.apartment.service.BaoCaoSuCoService;
 import com.apartment.service.DoiTuongService;
 import com.apartment.service.HoaDonService;
 import com.apartment.service.LichSuChinhSuaService;
+import com.apartment.service.PhanAnhService;
 import com.apartment.service.ThongBaoService;
 
 @Controller
@@ -50,6 +52,9 @@ public class CuDanController {
     
     @Autowired
     private LichSuChinhSuaService lichSuChinhSuaService;
+    
+    @Autowired
+    private PhanAnhService phanAnhService;
     
    
     private String getMaHoByCccd(String cccd) {
@@ -357,6 +362,88 @@ public class CuDanController {
         }
         
         return "redirect:/cu-dan/hoa-don";
+    }
+    
+    @GetMapping("/phan-anh")
+    public String phanAnh(@org.springframework.web.bind.annotation.RequestParam(required = false) String search,
+                          Model model,
+                          Authentication authentication) {
+        try {
+            String cccd = authentication.getName();
+            java.util.List<PhanAnh> phanAnhList = phanAnhService.findByCccdNguoiPhanAnh(cccd);
+            
+            if (search != null && !search.trim().isEmpty()) {
+                String searchLower = search.trim().toLowerCase();
+                phanAnhList = phanAnhList.stream()
+                    .filter(pa -> 
+                        (pa.getTieuDe() != null && pa.getTieuDe().toLowerCase().contains(searchLower)) ||
+                        (pa.getNoiDung() != null && pa.getNoiDung().toLowerCase().contains(searchLower))
+                    )
+                    .collect(java.util.stream.Collectors.toList());
+            }
+            
+            model.addAttribute("phanAnhList", phanAnhList);
+            model.addAttribute("search", search);
+            model.addAttribute("username", authentication.getName());
+            return "cu-dan/phan-anh";
+        } catch (Exception e) {
+            model.addAttribute("error", "Có lỗi khi tải danh sách phản ánh");
+            model.addAttribute("phanAnhList", new java.util.ArrayList<>());
+            return "cu-dan/phan-anh";
+        }
+    }
+    
+    @GetMapping("/phan-anh/tao-moi")
+    public String taoPhanAnh(Model model, Authentication authentication) {
+        try {
+            PhanAnh phanAnh = new PhanAnh();
+            model.addAttribute("phanAnh", phanAnh);
+            model.addAttribute("username", authentication.getName());
+            return "cu-dan/tao-phan-anh";
+        } catch (Exception e) {
+            model.addAttribute("error", "Có lỗi khi tải form tạo phản ánh");
+            return "redirect:/cu-dan/phan-anh";
+        }
+    }
+    
+    @PostMapping("/phan-anh/luu")
+    public String luuPhanAnh(@ModelAttribute PhanAnh phanAnh,
+                             RedirectAttributes redirectAttributes,
+                             Authentication authentication) {
+        try {
+            String cccd = authentication.getName();
+            phanAnh.setCccdNguoiPhanAnh(cccd);
+            phanAnh.setTrangThai("moi");
+            
+            phanAnhService.save(phanAnh);
+            redirectAttributes.addFlashAttribute("success", "Gửi phản ánh thành công!");
+            
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Có lỗi khi gửi phản ánh: " + e.getMessage());
+        }
+        
+        return "redirect:/cu-dan/phan-anh";
+    }
+    
+    @GetMapping("/phan-anh/{id}")
+    public String chiTietPhanAnh(@PathVariable Integer id, Model model, Authentication authentication) {
+        try {
+            String cccd = authentication.getName();
+            PhanAnh phanAnh = phanAnhService.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy phản ánh"));
+            
+            // Kiểm tra xem phản ánh có thuộc về cư dân này không
+            if (!phanAnh.getCccdNguoiPhanAnh().equals(cccd)) {
+                model.addAttribute("error", "Bạn không có quyền xem phản ánh này");
+                return "redirect:/cu-dan/phan-anh";
+            }
+            
+            model.addAttribute("phanAnh", phanAnh);
+            model.addAttribute("username", authentication.getName());
+            return "cu-dan/phan-anh/detail";
+        } catch (Exception e) {
+            return "redirect:/cu-dan/phan-anh?error=" + e.getMessage();
+        }
     }
 }
 

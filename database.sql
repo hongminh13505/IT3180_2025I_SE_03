@@ -310,6 +310,30 @@ CREATE TABLE thong_bao_ho (
         ON UPDATE CASCADE
 );
 
+-- Bảng phản ánh của cư dân
+CREATE TABLE phan_anh (
+    ma_phan_anh SERIAL PRIMARY KEY,
+    cccd_nguoi_phan_anh VARCHAR(12) NOT NULL,
+    tieu_de VARCHAR(200) NOT NULL,
+    noi_dung TEXT NOT NULL,
+    loai_phan_anh VARCHAR(20) DEFAULT 'gop_y' 
+        CHECK (loai_phan_anh IN ('y_kien', 'gop_y', 'khiem_nai', 'khac')),
+    trang_thai VARCHAR(20) DEFAULT 'moi' 
+        CHECK (trang_thai IN ('moi', 'da_xem', 'da_phan_hoi')),
+    ngay_tao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    ngay_phan_hoi TIMESTAMP,
+    noi_dung_phan_hoi TEXT,
+    cccd_nguoi_phan_hoi VARCHAR(12),
+    CONSTRAINT fk_cccd_nguoi_phan_anh FOREIGN KEY (cccd_nguoi_phan_anh) 
+        REFERENCES doi_tuong(cccd) 
+        ON DELETE CASCADE 
+        ON UPDATE CASCADE,
+    CONSTRAINT fk_cccd_nguoi_phan_hoi FOREIGN KEY (cccd_nguoi_phan_hoi) 
+        REFERENCES doi_tuong(cccd) 
+        ON DELETE SET NULL 
+        ON UPDATE CASCADE
+);
+
 -- Bảng phản hồi
 CREATE TABLE phan_hoi (
     ma_phan_hoi SERIAL PRIMARY KEY,
