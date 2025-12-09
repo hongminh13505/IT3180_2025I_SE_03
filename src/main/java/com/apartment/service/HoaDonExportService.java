@@ -30,6 +30,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.apartment.entity.HoaDon;
 import com.apartment.repository.HoaDonRepository;
+import com.apartment.repository.HoGiaDinhRepository;
 import com.lowagie.text.Chunk;
 import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
@@ -48,6 +49,9 @@ public class HoaDonExportService {
 
     @Autowired
     private HoaDonRepository hoaDonRepository;
+    
+    @Autowired
+    private HoGiaDinhRepository hoGiaDinhRepository;
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     private static final DateTimeFormatter DATETIME_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
@@ -278,16 +282,34 @@ public class HoaDonExportService {
                 Row row = rowIterator.next();
                 rowNum++;
                 
+                HoaDon hoaDon = null;
                 try {
-                    HoaDon hoaDon = parseRowToHoaDon(row, rowNum);
+                    hoaDon = parseRowToHoaDon(row, rowNum);
                     if (hoaDon != null) {
+                        // Kiểm tra mã hộ có tồn tại không
+                        if (!hoGiaDinhRepository.existsById(hoaDon.getMaHo())) {
+                            errorCount++;
+                            errors.add("Dòng " + rowNum + ": Không tồn tại mã hộ '" + hoaDon.getMaHo() + "'");
+                            continue;
+                        }
+                        
                         hoaDonRepository.save(hoaDon);
                         importedList.add(hoaDon);
                         successCount++;
                     }
-                } catch (Exception e) {
+                } catch (IllegalArgumentException e) {
                     errorCount++;
                     errors.add("Dòng " + rowNum + ": " + e.getMessage());
+                } catch (Exception e) {
+                    errorCount++;
+                    // Kiểm tra nếu là lỗi foreign key constraint về mã hộ
+                    String errorMsg = e.getMessage();
+                    if (errorMsg != null && (errorMsg.contains("foreign key") || errorMsg.contains("ma_ho") || errorMsg.contains("constraint"))) {
+                        String maHo = (hoaDon != null && hoaDon.getMaHo() != null) ? hoaDon.getMaHo() : "";
+                        errors.add("Dòng " + rowNum + ": Không tồn tại mã hộ '" + maHo + "'");
+                    } else {
+                        errors.add("Dòng " + rowNum + ": " + e.getMessage());
+                    }
                 }
             }
         }

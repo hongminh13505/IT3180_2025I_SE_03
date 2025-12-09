@@ -1,9 +1,11 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<html xmlns:th="http://www.thymeleaf.org" 
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hóa đơn - Quản lý chung cư</title>
+    <title>Thông báo - Quản lý chung cư</title>
     <link rel="stylesheet" th:href="@{/css/style.css}">
     <link rel="stylesheet" th:href="@{/css/admin.css}">
 </head>
@@ -40,7 +42,7 @@
                 </li>
                 
                 <li>
-                    <a th:href="@{/admin/hoa-don-2}" class="active">
+                    <a th:href="@{/admin/hoa-don-2}">
                         <img src="/images/hoa-don.png" alt="Hóa đơn" style="width: 18px; height: 18px; margin-right: 12px;"> Hóa đơn
                     </a>
                 </li>
@@ -52,7 +54,7 @@
                 </li>
                 
                 <li>
-                    <a th:href="@{/admin/thong-bao-2}">
+                    <a th:href="@{/admin/thong-bao-2}" class="active">
                         <img src="/images/thong-bao.png" alt="Thông báo" style="width: 18px; height: 18px; margin-right: 12px;"> Thông báo
                     </a>
                 </li>
@@ -70,11 +72,11 @@
         <header class="header">
             <div class="header-left">
                 <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
-                <h2>Hóa đơn</h2>
+                <h2>Quản lý thông báo</h2>
             </div>
             <div class="header-right">
                 <div class="user-info">
-                    <span>Xin chào, <strong sec:authentication="name">User</strong></span>
+                    <span>Xin chào, <strong sec:authentication="name">Admin</strong></span>
                     <form th:action="@{/logout}" method="post" style="display: inline; margin-left: 8px;">
                         <button type="submit" class="btn btn-sm btn-danger">Đăng xuất</button>
                     </form>
@@ -88,60 +90,63 @@
 
             <div class="content-header">
                 <div class="search-bar">
-                    <form th:action="@{/admin/hoa-don-2}" method="get">
-                        <input type="text" name="search" th:value="${search}" placeholder="Tìm kiếm..." class="form-control">
+                    <form th:action="@{/admin/thong-bao-2}" method="get" style="display: flex; gap: 10px;">
+                        <input type="text" name="search" th:value="${search}" placeholder="Tìm kiếm thông báo..." class="form-control">
                         <button type="submit" class="btn btn-primary">Tìm kiếm</button>
                     </form>
                 </div>
+                <a th:href="@{/admin/thong-bao-2/create}" class="btn btn-success">+ Tạo thông báo</a>
             </div>
 
             <div class="table-responsive">
                 <table class="table">
                     <thead>
                         <tr>
-                            <th>MÃ HÓA ĐƠN</th>
-                            <th>MÃ HỘ</th>
-                            <th>LOẠI HÓA ĐƠN</th>
-                            <th>SỐ TIỀN</th>
-                            <th>HẠN THANH TOÁN</th>
+                            <th>MÃ TB</th>
+                            <th>TIÊU ĐỀ</th>
+                            <th>LOẠI THÔNG BÁO</th>
+                            <th>ĐỐI TƯỢNG NHẬN</th>
+                            <th>NGÀY TẠO</th>
                             <th style="text-align: center;">TRẠNG THÁI</th>
-                            
+                            <th style="text-align: center;">THAO TÁC</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr th:if="${hoaDonList.isEmpty()}">
-                            <td colspan="7" style="text-align: center; color: #94a3b8;">Không có hóa đơn nào</td>
+                        <tr th:if="${thongBaoList.isEmpty()}">
+                            <td colspan="7" style="text-align: center; color: #94a3b8;">Không có thông báo nào</td>
                         </tr>
-                        <tr th:each="hoaDon : ${hoaDonList}">
-                            <td th:text="${hoaDon.maHoaDon}">HD001</td>
-                            <td th:text="${hoaDon.maHo}">H001</td>
-                            <td>
-                                <span th:switch="${hoaDon.loaiHoaDon}">
-                                    <span th:case="'dien_nuoc'" style="color: #4894ec;">Điện nước</span>
-                                    <span th:case="'dich_vu'" style="color: #ec4899;">Dịch vụ</span>
-                                    <span th:case="'sua_chua'" style="color: #8b5cf6;">Sửa chữa</span>
-                                    <span th:case="'phat'" style="color: #ef4444;">Phạt</span>
-                                    <span th:case="'khac'" style="color: #6b7280;">Khác</span>
-                                    <span th:case="null" style="color: #6b7280;">Khác</span>
-                                    <span th:case="''" style="color: #6b7280;">Khác</span>
-                                    <span th:case="*" style="color: #6b7280;">Khác</span>
-                                </span>
-                            </td>
-                            <td>
-                                <span th:text="${#numbers.formatDecimal(hoaDon.soTien != null ? hoaDon.soTien : 0, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">0 VNĐ</span>
-                            </td>
-                            <td th:text="${hoaDon.hanThanhToan != null ? #temporals.format(hoaDon.hanThanhToan, 'dd/MM/yyyy') : 'N/A'}">01/01/2024</td>
+                        <tr th:each="tb : ${thongBaoList}">
+                            <td th:text="${tb.maThongBao}">1</td>
+                            <td th:text="${tb.tieuDe}">Thông báo quan trọng</td>
                             <td style="text-align: center;">
-                                <span class="badge" th:classappend="${hoaDon.trangThai == 'da_thanh_toan'} ? 'badge-success' : (${hoaDon.trangThai == 'qua_han'} ? 'badge-danger' : 'badge-warning')">
-                                    <span th:switch="${hoaDon.trangThai}">
-                                        <span th:case="'da_thanh_toan'">✓ Đã thanh toán</span>
-                                        <span th:case="'chua_thanh_toan'">⏳ Chưa thanh toán</span>
-                                        <span th:case="'qua_han'">⚠️ Quá hạn</span>
-                                        <span th:case="*">Chưa thanh toán</span>
-                                    </span>
+                                <span th:switch="${tb.loaiThongBao}">
+                                    <span th:case="'quan_trong'" class="badge badge-danger">Quan trọng</span>
+                                    <span th:case="'khan_cap'" class="badge badge-warning">Khẩn cấp</span>
+                                    <span th:case="'binh_thuong'" class="badge badge-info">Bình thường</span>
+                                    <span th:case="*" class="badge badge-info">Bình thường</span>
                                 </span>
                             </td>
-                            
+                            <td style="text-align: center;">
+                                <span th:switch="${tb.doiTuongNhan}">
+                                    <span th:case="'tat_ca'" class="badge badge-success">Tất cả</span>
+                                    <span th:case="'chu_ho'" class="badge badge-info">Chủ hộ</span>
+                                    <span th:case="'ho_gia_dinh'" class="badge badge-warning">Hộ gia đình</span>
+                                    <span th:case="*" class="badge badge-info" th:text="${tb.doiTuongNhan}">Tất cả</span>
+                                </span>
+                            </td>
+                            <td th:text="${tb.ngayTaoThongBao != null ? #temporals.format(tb.ngayTaoThongBao, 'dd/MM/yyyy HH:mm') : 'N/A'}">01/01/2025</td>
+                            <td style="text-align: center;">
+                                <span class="badge" th:classappend="${tb.trangThai == 'hien'} ? 'badge-success' : 'badge-secondary'">
+                                    <span th:if="${tb.trangThai == 'hien'}">✓ Hiện</span>
+                                    <span th:if="${tb.trangThai != 'hien'}">○ Ẩn</span>
+                                </span>
+                            </td>
+                            <td style="text-align: center;">
+                                <a th:href="@{/admin/thong-bao-2/edit/{id}(id=${tb.maThongBao})}" class="btn btn-sm btn-warning">Sửa</a>
+                                <form th:action="@{/admin/thong-bao-2/delete/{id}(id=${tb.maThongBao})}" method="post" style="display: inline;">
+                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Bạn có chắc chắn muốn xóa thông báo này?')">Xóa</button>
+                                </form>
+                            </td>
                         </tr>
                     </tbody>
                 </table>
@@ -153,5 +158,4 @@
 <script th:src="@{/js/script.js}"></script>
 </body>
 </html>
-
 

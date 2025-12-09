@@ -39,7 +39,7 @@ public class ThongBao {
     @Column(name = "doi_tuong_nhan", length = 20)
     private String doiTuongNhan = "tat_ca";
     
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cccd_ban_quan_tri", referencedColumnName = "cccd", insertable = false, updatable = false)
     private DoiTuong banQuanTri;
     

@@ -287,14 +287,14 @@ CREATE TABLE thong_bao (
     loai_thong_bao VARCHAR(30) DEFAULT 'binh_thuong' 
         CHECK (loai_thong_bao IN ('quan_trong', 'binh_thuong', 'khan_cap')),
     doi_tuong_nhan VARCHAR(20) DEFAULT 'tat_ca' 
-        CHECK (doi_tuong_nhan IN ('tat_ca', 'chu_ho', 'theo_ho')), -- Gửi cho ai
+        CHECK (doi_tuong_nhan IN ('tat_ca', 'chu_ho', 'ho_gia_dinh')), -- Gửi cho ai: tất cả, chủ hộ, hoặc hộ gia đình cụ thể
     CONSTRAINT fk_cccd_bqt_thongbao FOREIGN KEY (cccd_ban_quan_tri) 
         REFERENCES doi_tuong(cccd) 
         ON DELETE CASCADE 
         ON UPDATE CASCADE
 );
 
--- Bảng thông báo gửi đến hộ cụ thể (nếu doi_tuong_nhan = 'theo_ho')
+-- Bảng thông báo gửi đến hộ cụ thể (nếu doi_tuong_nhan = 'ho_gia_dinh')
 CREATE TABLE thong_bao_ho (
     id SERIAL PRIMARY KEY,
     ma_thong_bao INTEGER NOT NULL,

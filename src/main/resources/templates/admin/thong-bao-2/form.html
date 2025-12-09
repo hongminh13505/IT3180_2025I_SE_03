@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" 
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${isEdit ? 'Sửa thông báo' : 'Tạo thông báo'} + ' - Quản lý chung cư'">Tạo thông báo - Quản lý chung cư</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+    <style>
+        .ho-gia-dinh-select {
+            display: none;
+            margin-top: 15px;
+            padding: 15px;
+            background: #f8fafc;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+        .ho-gia-dinh-select.show {
+            display: block;
+        }
+        .checkbox-list {
+            max-height: 300px;
+            overflow-y: auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 10px;
+            padding: 10px 0;
+        }
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .checkbox-item:hover {
+            border-color: #3b82f6;
+            background: #eff6ff;
+        }
+        .checkbox-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            margin-right: 12px;
+            cursor: pointer;
+        }
+        .checkbox-item.selected {
+            background: #dbeafe;
+            border-color: #3b82f6;
+        }
+        .checkbox-item label {
+            cursor: pointer;
+            flex: 1;
+        }
+        .ho-info {
+            display: flex;
+            flex-direction: column;
+        }
+        .ho-name {
+            font-weight: 600;
+            color: #1e293b;
+        }
+        .ho-code {
+            font-size: 12px;
+            color: #64748b;
+        }
+        .select-all-container {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .btn-select-action {
+            padding: 6px 12px;
+            font-size: 13px;
+            border-radius: 4px;
+            cursor: pointer;
+            border: 1px solid #e2e8f0;
+            background: white;
+            color: #475569;
+            transition: all 0.2s;
+        }
+        .btn-select-action:hover {
+            background: #f1f5f9;
+        }
+        .selected-count {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 12px;
+            background: #3b82f6;
+            color: white;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+<div class="wrapper">
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <h3>BLUE MOON</h3>
+        </div>
+        <nav class="sidebar-menu">
+            <ul>
+                <li>
+                    <a th:href="@{/admin/dashboard}">
+                        <img src="/images/img4.png" alt="Dashboard" style="width: 18px; height: 18px; margin-right: 12px;"> Dashboard
+                    </a>
+                </li>
+                
+                <li>
+                    <a th:href="@{/admin/doi-tuong}">
+                        <img src="/images/quan-ly-cu-dan.png" alt="Quản lý cư dân" style="width: 18px; height: 18px; margin-right: 12px;"> Quản lý cư dân
+                    </a>
+                </li>
+                
+                <li>
+                    <a th:href="@{/admin/ho-gia-dinh}">
+                        <img src="/images/ho-gia-dinh.png" alt="Hộ gia đình" style="width: 18px; height: 18px; margin-right: 12px;"> Hộ gia đình
+                    </a>
+                </li>
+                
+                <li>
+                    <a th:href="@{/admin/tai-san}">
+                        <img src="/images/tai-san-chung-cu.png" alt="Tài sản chung cư" style="width: 18px; height: 18px; margin-right: 12px;"> Tài sản chung cư
+                    </a>
+                </li>
+                
+                <li>
+                    <a th:href="@{/admin/hoa-don-2}">
+                        <img src="/images/hoa-don.png" alt="Hóa đơn" style="width: 18px; height: 18px; margin-right: 12px;"> Hóa đơn
+                    </a>
+                </li>
+                
+                <li>
+                    <a th:href="@{/admin/bao-cao-su-co}">
+                        <img src="/images/bao-cao-su-co.png" alt="Báo cáo sự cố" style="width: 18px; height: 18px; margin-right: 12px;"> Báo cáo sự cố
+                    </a>
+                </li>
+                
+                <li>
+                    <a th:href="@{/admin/thong-bao-2}" class="active">
+                        <img src="/images/thong-bao.png" alt="Thông báo" style="width: 18px; height: 18px; margin-right: 12px;"> Thông báo
+                    </a>
+                </li>
+                
+                <li>
+                    <a th:href="@{/admin/lich-su-chinh-sua}">
+                        <img src="/images/lichsu.png" alt="Lịch sử chỉnh sửa" style="width: 18px; height: 18px; margin-right: 12px; filter: brightness(0) invert(1);"> Lịch sử chỉnh sửa
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+
+    <div class="main-content">
+        <header class="header">
+            <div class="header-left">
+                <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+                <h2 th:text="${isEdit ? 'Sửa thông báo' : 'Tạo thông báo mới'}">Tạo thông báo mới</h2>
+            </div>
+            <div class="header-right">
+                <div class="user-info">
+                    <span>Xin chào, <strong sec:authentication="name">Admin</strong></span>
+                    <form th:action="@{/logout}" method="post" style="display: inline; margin-left: 8px;">
+                        <button type="submit" class="btn btn-sm btn-danger">Đăng xuất</button>
+                    </form>
+                </div>
+            </div>
+        </header>
+
+        <main class="page-content">
+            <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+            <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+            <form th:action="@{/admin/thong-bao-2/save}" th:object="${thongBao}" method="post" class="form-container" style="max-width: 900px;">
+                <input type="hidden" th:field="*{maThongBao}">
+                <input type="hidden" th:field="*{cccdBanQuanTri}">
+                
+                <div class="form-group">
+                    <label for="tieuDe">Tiêu đề <span style="color: #ef4444;">*</span></label>
+                    <input type="text" id="tieuDe" th:field="*{tieuDe}" class="form-control" 
+                           placeholder="Nhập tiêu đề thông báo..." required maxlength="200">
+                </div>
+                
+                <div class="form-group">
+                    <label for="noiDungThongBao">Nội dung <span style="color: #ef4444;">*</span></label>
+                    <textarea id="noiDungThongBao" th:field="*{noiDungThongBao}" class="form-control" 
+                              rows="6" placeholder="Nhập nội dung thông báo..." required></textarea>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px;">
+                    <div class="form-group">
+                        <label for="loaiThongBao">Loại thông báo <span style="color: #ef4444;">*</span></label>
+                        <select id="loaiThongBao" th:field="*{loaiThongBao}" class="form-control" required>
+                            <option value="">-- Chọn loại --</option>
+                            <option value="binh_thuong">Bình thường</option>
+                            <option value="quan_trong">Quan trọng</option>
+                            <option value="khan_cap">Khẩn cấp</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="doiTuongNhan">Đối tượng nhận <span style="color: #ef4444;">*</span></label>
+                        <select id="doiTuongNhan" th:field="*{doiTuongNhan}" class="form-control" required onchange="toggleHoGiaDinhSelect()">
+                            <option value="">-- Chọn đối tượng --</option>
+                            <option value="tat_ca">Tất cả</option>
+                            <option value="chu_ho">Chủ hộ</option>
+                            <option value="ho_gia_dinh">Hộ gia đình</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="trangThai">Trạng thái <span style="color: #ef4444;">*</span></label>
+                        <select id="trangThai" th:field="*{trangThai}" class="form-control" required>
+                            <option value="">-- Chọn trạng thái --</option>
+                            <option value="hien">✓ Hiện</option>
+                            <option value="an">○ Ẩn</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Phần chọn hộ gia đình -->
+                <div id="hoGiaDinhSelectContainer" class="ho-gia-dinh-select">
+                    <label style="font-weight: 600; margin-bottom: 10px; display: block;">
+                        Chọn hộ gia đình nhận thông báo <span style="color: #ef4444;">*</span>
+                    </label>
+                    <p style="color: #64748b; font-size: 14px; margin-bottom: 15px;">
+                        Tất cả thành viên trong các hộ được chọn sẽ nhận được thông báo này.
+                    </p>
+                    
+                    <div class="select-all-container">
+                        <button type="button" class="btn-select-action" onclick="selectAllHo()">✓ Chọn tất cả</button>
+                        <button type="button" class="btn-select-action" onclick="deselectAllHo()">✗ Bỏ chọn tất cả</button>
+                        <span class="selected-count" id="selectedCount">Đã chọn: 0</span>
+                    </div>
+                    
+                    <div class="checkbox-list" th:if="${hoGiaDinhList != null and !hoGiaDinhList.isEmpty()}">
+                        <div th:each="ho : ${hoGiaDinhList}" class="checkbox-item" th:classappend="${selectedHoList != null and selectedHoList.contains(ho.maHo)} ? 'selected' : ''">
+                            <input type="checkbox" 
+                                   name="selectedHoGiaDinh" 
+                                   th:id="'ho_' + ${ho.maHo}" 
+                                   th:value="${ho.maHo}"
+                                   th:checked="${selectedHoList != null and selectedHoList.contains(ho.maHo)}"
+                                   onchange="updateSelectedCount(); this.parentElement.classList.toggle('selected', this.checked);">
+                            <label th:for="'ho_' + ${ho.maHo}" class="ho-info">
+                                <span class="ho-name" th:text="${ho.tenHo}">Tên hộ</span>
+                                <span class="ho-code">
+                                    Mã: <span th:text="${ho.maHo}">H001</span> | 
+                                    Căn hộ: <span th:text="${ho.maCanHo != null ? ho.maCanHo : 'N/A'}">101</span>
+                                </span>
+                            </label>
+                        </div>
+                    </div>
+                    <div th:if="${hoGiaDinhList == null or hoGiaDinhList.isEmpty()}" style="text-align: center; padding: 30px; color: #64748b;">
+                        Không có hộ gia đình nào trong hệ thống.
+                    </div>
+                </div>
+                
+                <div class="form-actions" style="margin-top: 30px; display: flex; gap: 15px;">
+                    <button type="submit" class="btn btn-primary" th:text="${isEdit ? '💾 Cập nhật' : '✓ Tạo thông báo'}">Tạo thông báo</button>
+                    <a th:href="@{/admin/thong-bao-2}" class="btn btn-secondary">← Quay lại</a>
+                </div>
+            </form>
+        </main>
+    </div>
+</div>
+
+<script th:src="@{/js/script.js}"></script>
+<script>
+    function toggleHoGiaDinhSelect() {
+        const doiTuongNhan = document.getElementById('doiTuongNhan').value;
+        const container = document.getElementById('hoGiaDinhSelectContainer');
+        
+        if (doiTuongNhan === 'ho_gia_dinh') {
+            container.classList.add('show');
+        } else {
+            container.classList.remove('show');
+        }
+    }
+    
+    function selectAllHo() {
+        const checkboxes = document.querySelectorAll('input[name="selectedHoGiaDinh"]');
+        checkboxes.forEach(cb => {
+            cb.checked = true;
+            cb.parentElement.classList.add('selected');
+        });
+        updateSelectedCount();
+    }
+    
+    function deselectAllHo() {
+        const checkboxes = document.querySelectorAll('input[name="selectedHoGiaDinh"]');
+        checkboxes.forEach(cb => {
+            cb.checked = false;
+            cb.parentElement.classList.remove('selected');
+        });
+        updateSelectedCount();
+    }
+    
+    function updateSelectedCount() {
+        const checked = document.querySelectorAll('input[name="selectedHoGiaDinh"]:checked').length;
+        document.getElementById('selectedCount').textContent = 'Đã chọn: ' + checked;
+    }
+    
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        toggleHoGiaDinhSelect();
+        updateSelectedCount();
+    });
+</script>
+</body>
+</html>
