@@ -118,10 +118,8 @@
                                 <td th:text="${tb.tieuDe}">Thông báo quan trọng</td>
                                 <td>
                                     <span class="badge" 
-                                          th:classappend="${tb.loaiThongBao == 'quan_trong'} ? 'badge-danger' : 
-                                                         ${tb.loaiThongBao == 'khan_cap'} ? 'badge-warning' : 'badge-info'"
-                                          th:text="${tb.loaiThongBao == 'quan_trong'} ? 'Quan trọng' : 
-                                                      ${tb.loaiThongBao == 'khan_cap'} ? 'Khẩn cấp' : 'Bình thường'">Bình thường</span>
+                                          th:classappend="${tb.loaiThongBao == 'quan_trong' ? 'badge-danger' : (tb.loaiThongBao == 'khan_cap' ? 'badge-warning' : 'badge-info')}"
+                                          th:text="${tb.loaiThongBao == 'quan_trong' ? 'Quan trọng' : (tb.loaiThongBao == 'khan_cap' ? 'Khẩn cấp' : 'Bình thường')}">Bình thường</span>
                                 </td>
                                 <td th:text="${tb.doiTuongNhan}">Tất cả</td>
                                 <td th:text="${#temporals.format(tb.ngayTaoThongBao, 'dd/MM/yyyy HH:mm')}">01/01/2025</td>
