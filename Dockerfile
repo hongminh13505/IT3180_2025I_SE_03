@@ -13,7 +13,7 @@ RUN mvn clean package -DskipTests
 # ========================
 # GIAI ĐOẠN RUN (sử dụng JDK nhẹ)
 # ========================
-FROM openjdk:17-jdk-slim
+FROM eclipse-temurin:17-jre-jammy
 WORKDIR /app
 
 # Copy file jar từ container build
