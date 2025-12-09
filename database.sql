@@ -325,3 +325,40 @@ CREATE TABLE phan_hoi (
         REFERENCES thong_bao(ma_thong_bao) 
         ON DELETE CASCADE
 );
+
+-- =====================================================
+-- PHẦN 8: LỊCH SỬ CHỈNH SỬA
+-- =====================================================
+
+-- Bảng lịch sử chỉnh sửa
+CREATE TABLE IF NOT EXISTS lich_su_chinh_sua (
+    id SERIAL PRIMARY KEY,
+    loai_doi_tuong VARCHAR(50) NOT NULL,
+    ma_doi_tuong VARCHAR(50) NOT NULL,
+    ten_doi_tuong VARCHAR(200),
+    cccd_nguoi_chinh_sua VARCHAR(12) NOT NULL,
+    ten_nguoi_chinh_sua VARCHAR(100),
+    vai_tro_nguoi_chinh_sua VARCHAR(50),
+    nguon_chinh_sua VARCHAR(20),
+    thao_tac VARCHAR(50),
+    truong_thay_doi TEXT,
+    gia_tri_cu TEXT,
+    gia_tri_moi TEXT,
+    mo_ta TEXT,
+    thoi_gian TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_nguoi_chinh_sua FOREIGN KEY (cccd_nguoi_chinh_sua) 
+        REFERENCES doi_tuong(cccd) ON DELETE SET NULL
+);
+
+-- Tạo index để tăng tốc độ truy vấn
+CREATE INDEX IF NOT EXISTS idx_lich_su_loai_ma ON lich_su_chinh_sua(loai_doi_tuong, ma_doi_tuong);
+CREATE INDEX IF NOT EXISTS idx_lich_su_cccd ON lich_su_chinh_sua(cccd_nguoi_chinh_sua);
+CREATE INDEX IF NOT EXISTS idx_lich_su_thoi_gian ON lich_su_chinh_sua(thoi_gian DESC);
+CREATE INDEX IF NOT EXISTS idx_lich_su_nguon ON lich_su_chinh_sua(nguon_chinh_sua);
+
+-- Comment cho bảng
+COMMENT ON TABLE lich_su_chinh_sua IS 'Bảng lưu lịch sử chỉnh sửa thông tin của các đối tượng trong hệ thống';
+COMMENT ON COLUMN lich_su_chinh_sua.loai_doi_tuong IS 'Loại đối tượng: doi_tuong, ho_gia_dinh, thanh_vien_ho';
+COMMENT ON COLUMN lich_su_chinh_sua.ma_doi_tuong IS 'Mã đối tượng (CCCD hoặc mã hộ)';
+COMMENT ON COLUMN lich_su_chinh_sua.nguon_chinh_sua IS 'Nguồn chỉnh sửa: admin hoặc nguoi_dung';
+COMMENT ON COLUMN lich_su_chinh_sua.thao_tac IS 'Thao tác: create, update, delete';

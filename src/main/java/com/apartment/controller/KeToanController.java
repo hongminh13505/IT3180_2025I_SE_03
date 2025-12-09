@@ -1,17 +1,33 @@
 package com.apartment.controller;
 
-import com.apartment.service.*;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import com.apartment.entity.HoaDon;
+
 import com.apartment.entity.ChiSoDienNuoc;
-import java.math.BigDecimal;
-import java.time.LocalDate;
+import com.apartment.entity.HoaDon;
+import com.apartment.service.ChiSoDienNuocService;
+import com.apartment.service.HoGiaDinhService;
+import com.apartment.service.HoaDonExportService;
+import com.apartment.service.HoaDonExportService.ImportResult;
+import com.apartment.service.HoaDonService;
 
 @Controller
 @RequestMapping("/ke-toan")
@@ -27,13 +43,15 @@ public class KeToanController {
     @Autowired
     private ChiSoDienNuocService chiSoService;
     
+    @Autowired
+    private HoaDonExportService hoaDonExportService;
+    
     @GetMapping("/dashboard")
     public String dashboard(Model model, Authentication authentication) {
         model.addAttribute("tongThuNhap", hoaDonService.sumPaidAmount());
         model.addAttribute("congNoConLai", hoaDonService.sumUnpaidAmount());
         model.addAttribute("tongHoGiaDinh", hoGiaDinhService.countActiveHo());
 
-        // Bổ sung dữ liệu cho bảng và biểu đồ
         java.util.List<com.apartment.entity.HoaDon> recent = hoaDonService.findRecentInvoices();
         if (recent.size() > 6) {
             recent = recent.subList(0, 6);
@@ -91,10 +109,7 @@ public class KeToanController {
         try {
             System.out.println("=== Truy cập /ke-toan/quan-ly-hoa-don ===");
             
-            // Lấy danh sách hóa đơn
             java.util.List<HoaDon> hoaDonList = hoaDonService.findAll();
-            
-            // Cập nhật các hóa đơn cũ có loaiHoaDon null thành "khac"
             boolean hasUpdates = false;
             for (HoaDon hoaDon : hoaDonList) {
                 System.out.println("=== DEBUG: Hóa đơn " + hoaDon.getMaHoaDon() + " - loaiHoaDon: '" + hoaDon.getLoaiHoaDon() + "'");
@@ -106,11 +121,8 @@ public class KeToanController {
                 }
             }
             if (hasUpdates) {
-                // Reload danh sách sau khi cập nhật
                 hoaDonList = hoaDonService.findAll();
             }
-            
-            // Lọc theo từ khóa tìm kiếm nếu có
             if (search != null && !search.trim().isEmpty()) {
                 String searchLower = search.trim().toLowerCase();
                 hoaDonList = hoaDonList.stream()
@@ -191,13 +203,11 @@ public class KeToanController {
             System.out.println("moTa: " + moTa);
             System.out.println("kyThanhToan: " + kyThanhToan);
             
-            // Validate maHo
             if (maHo == null || maHo.trim().isEmpty()) {
                 ra.addFlashAttribute("error", "Vui lòng chọn mã hộ gia đình!");
                 return "redirect:/ke-toan/quan-ly-hoa-don";
             }
-            
-            // Xác định số tiền dựa trên loại hóa đơn
+        
             BigDecimal finalSoTien;
             if ("dien_nuoc".equals(loaiHoaDon)) {
                 finalSoTien = soTienDienNuoc != null ? soTienDienNuoc : BigDecimal.ZERO;
@@ -207,24 +217,22 @@ public class KeToanController {
             
             System.out.println("=== DEBUG: Số tiền cuối cùng: " + finalSoTien);
             
-            // Tạo hóa đơn
             HoaDon hoaDon = new HoaDon();
             hoaDon.setMaHo(maHo);
             hoaDon.setSoTien(finalSoTien);
             hoaDon.setHanThanhToan(hanThanhToan);
             hoaDon.setTrangThai("chua_thanh_toan");
             
-            // Xử lý ghi chú dựa trên loại hóa đơn
             String finalGhiChu = ghiChu;
             if ("dien_nuoc".equals(loaiHoaDon)) {
-                // Điện nước - lưu đúng loại và có ghi chú đặc biệt
+             
                 hoaDon.setLoaiHoaDon("dien_nuoc");
                 finalGhiChu = "Hóa đơn điện nước - Kỳ: " + kyThanhToan;
                 if (ghiChu != null && !ghiChu.trim().isEmpty()) {
                     finalGhiChu += " - " + ghiChu;
                 }
             } else {
-                // Các loại hóa đơn khác
+       
                 hoaDon.setLoaiHoaDon(loaiHoaDon != null ? loaiHoaDon : "khac");
                 if (moTa != null && !moTa.trim().isEmpty()) {
                     finalGhiChu = moTa;
@@ -234,8 +242,7 @@ public class KeToanController {
                 }
             }
             hoaDon.setGhiChu(finalGhiChu);
-            
-            // Lưu hóa đơn
+     
             System.out.println("=== DEBUG: Lưu hóa đơn ===");
             System.out.println("loaiHoaDon: " + loaiHoaDon);
             System.out.println("hoaDon.loaiHoaDon: " + hoaDon.getLoaiHoaDon());
@@ -243,14 +250,14 @@ public class KeToanController {
             hoaDonService.save(hoaDon);
             System.out.println("=== DEBUG: Đã lưu hóa đơn thành công, maHoaDon: " + hoaDon.getMaHoaDon() + " ===");
            
-            // Lưu chỉ số điện nước nếu là hóa đơn điện nước
+     
             if ("dien_nuoc".equals(loaiHoaDon) && kyThanhToan != null && 
                 dienCu != null && dienMoi != null && nuocCu != null && nuocMoi != null) {
                 
                 System.out.println("=== DEBUG: Lưu chỉ số điện nước ===");
                 ChiSoDienNuoc chiSo = new ChiSoDienNuoc();
                 chiSo.setMaHo(maHo);
-                chiSo.setMaHoaDon(hoaDon.getMaHoaDon()); // Liên kết với hóa đơn
+                chiSo.setMaHoaDon(hoaDon.getMaHoaDon());
                 chiSo.setKyThanhToan(kyThanhToan);
                 chiSo.setDienCu(dienCu);
                 chiSo.setDienMoi(dienMoi);
@@ -311,6 +318,144 @@ public class KeToanController {
         }
     }
     
+    /**
+     * Export danh sách hóa đơn ra file Excel
+     */
+    @GetMapping("/quan-ly-hoa-don/export/excel")
+    public ResponseEntity<byte[]> exportToExcel(@RequestParam(required = false) String search) {
+        try {
+            java.util.List<HoaDon> hoaDonList = hoaDonService.findAll();
+            
+            // Apply search filter if provided
+            if (search != null && !search.trim().isEmpty()) {
+                String searchLower = search.trim().toLowerCase();
+                hoaDonList = hoaDonList.stream()
+                    .filter(hd -> 
+                        (hd.getMaHo() != null && hd.getMaHo().toLowerCase().contains(searchLower)) ||
+                        (hd.getLoaiHoaDon() != null && hd.getLoaiHoaDon().toLowerCase().contains(searchLower)) ||
+                        (hd.getMaHoaDon() != null && hd.getMaHoaDon().toString().contains(searchLower))
+                    )
+                    .collect(java.util.stream.Collectors.toList());
+            }
+            
+            byte[] excelBytes = hoaDonExportService.exportToExcel(hoaDonList);
+            
+            String filename = "hoa_don_" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss")) + ".xlsx";
+            
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
+            headers.setContentDispositionFormData("attachment", filename);
+            headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
+            
+            return ResponseEntity.ok()
+                    .headers(headers)
+                    .body(excelBytes);
+        } catch (Exception e) {
+            System.err.println("Lỗi khi export Excel: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+    
+    /**
+     * Export danh sách hóa đơn ra file PDF
+     */
+    @GetMapping("/quan-ly-hoa-don/export/pdf")
+    public ResponseEntity<byte[]> exportToPdf(@RequestParam(required = false) String search) {
+        try {
+            java.util.List<HoaDon> hoaDonList = hoaDonService.findAll();
+            
+            // Apply search filter if provided
+            if (search != null && !search.trim().isEmpty()) {
+                String searchLower = search.trim().toLowerCase();
+                hoaDonList = hoaDonList.stream()
+                    .filter(hd -> 
+                        (hd.getMaHo() != null && hd.getMaHo().toLowerCase().contains(searchLower)) ||
+                        (hd.getLoaiHoaDon() != null && hd.getLoaiHoaDon().toLowerCase().contains(searchLower)) ||
+                        (hd.getMaHoaDon() != null && hd.getMaHoaDon().toString().contains(searchLower))
+                    )
+                    .collect(java.util.stream.Collectors.toList());
+            }
+            
+            byte[] pdfBytes = hoaDonExportService.exportToPdf(hoaDonList);
+            
+            String filename = "hoa_don_" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss")) + ".pdf";
+            
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_PDF);
+            headers.setContentDispositionFormData("attachment", filename);
+            headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
+            
+            return ResponseEntity.ok()
+                    .headers(headers)
+                    .body(pdfBytes);
+        } catch (Exception e) {
+            System.err.println("Lỗi khi export PDF: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+    
+    /**
+     * Download template Excel để import
+     */
+    @GetMapping("/quan-ly-hoa-don/import/template")
+    public ResponseEntity<byte[]> downloadImportTemplate() {
+        try {
+            byte[] templateBytes = hoaDonExportService.createTemplateExcel();
+            
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
+            headers.setContentDispositionFormData("attachment", "template_import_hoa_don.xlsx");
+            headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
+            
+            return ResponseEntity.ok()
+                    .headers(headers)
+                    .body(templateBytes);
+        } catch (Exception e) {
+            System.err.println("Lỗi khi tạo template: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+    
+    /**
+     * Import hóa đơn từ file Excel
+     */
+    @PostMapping("/quan-ly-hoa-don/import")
+    public String importFromExcel(@RequestParam("file") MultipartFile file, RedirectAttributes ra) {
+        try {
+            if (file.isEmpty()) {
+                ra.addFlashAttribute("error", "Vui lòng chọn file để import!");
+                return "redirect:/ke-toan/quan-ly-hoa-don";
+            }
+            
+            String filename = file.getOriginalFilename();
+            if (filename == null || (!filename.endsWith(".xlsx") && !filename.endsWith(".xls"))) {
+                ra.addFlashAttribute("error", "Vui lòng chọn file Excel (.xlsx hoặc .xls)!");
+                return "redirect:/ke-toan/quan-ly-hoa-don";
+            }
+            
+            ImportResult result = hoaDonExportService.importFromExcel(file);
+            
+            StringBuilder message = new StringBuilder();
+            message.append("Import thành công ").append(result.getSuccessCount()).append(" hóa đơn.");
+            
+            if (result.getErrorCount() > 0) {
+                message.append(" Có ").append(result.getErrorCount()).append(" lỗi.");
+                ra.addFlashAttribute("importErrors", result.getErrors());
+            }
+            
+            ra.addFlashAttribute("success", message.toString());
+            
+        } catch (Exception e) {
+            System.err.println("Lỗi khi import: " + e.getMessage());
+            e.printStackTrace();
+            ra.addFlashAttribute("error", "Lỗi khi import file: " + e.getMessage());
+        }
+        
+        return "redirect:/ke-toan/quan-ly-hoa-don";
+    }
     
 }
 

@@ -59,6 +59,12 @@
                             <img src="/images/thong-bao.png" alt="Thông báo" style="width: 18px; height: 18px; margin-right: 12px;"> Thông báo
                         </a>
                     </li>
+                    
+                    <li>
+                        <a th:href="@{/admin/lich-su-chinh-sua}">
+                            Lịch sử chỉnh sửa
+                        </a>
+                    </li>
                 </ul>
             </nav>
         </aside>
@@ -83,6 +89,14 @@
                 <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
                 <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
                 
+                <!-- Import errors detail -->
+                <div th:if="${importErrors}" class="alert alert-warning">
+                    <strong>Chi tiết lỗi import:</strong>
+                    <ul style="margin: 10px 0 0 20px;">
+                        <li th:each="err : ${importErrors}" th:text="${err}"></li>
+                    </ul>
+                </div>
+                
                 <div class="content-header">
                     <div class="search-bar">
                         <form th:action="@{/admin/doi-tuong}" method="get">
@@ -90,7 +104,22 @@
                             <button type="submit" class="btn btn-primary">Tìm kiếm</button>
                         </form>
                     </div>
-                    <a th:href="@{/admin/doi-tuong/create}" class="btn btn-success">+ Thêm mới</a>
+                    <div class="action-buttons" style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <!-- Import/Export Dropdown -->
+                        <div class="dropdown">
+                            <button class="btn btn-info dropdown-toggle" type="button" onclick="toggleImportExportDropdown()">
+                                📥 Import / Export
+                            </button>
+                            <ul class="dropdown-menu" id="importExportDropdownMenu">
+                                <li><a class="dropdown-item" th:href="@{/admin/doi-tuong/export/excel(search=${search})}">📊 Xuất Excel</a></li>
+                                <li><a class="dropdown-item" th:href="@{/admin/doi-tuong/export/pdf(search=${search})}">📄 Xuất PDF</a></li>
+                                <li style="border-top: 1px solid #e2e8f0; margin: 5px 0;"></li>
+                                <li><a class="dropdown-item" th:href="@{/admin/doi-tuong/import/template}">📋 Tải mẫu Import</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="document.getElementById('importModal').style.display='flex'; return false;">📥 Import từ Excel</a></li>
+                            </ul>
+                        </div>
+                        <a th:href="@{/admin/doi-tuong/create}" class="btn btn-success">+ Thêm mới</a>
+                    </div>
                 </div>
                 
                 <div class="table-responsive">
@@ -141,7 +170,189 @@
         </div>
     </div>
     
+    <!-- Import Modal -->
+    <div id="importModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3>📥 Import cư dân từ Excel</h3>
+                <button type="button" class="modal-close" onclick="document.getElementById('importModal').style.display='none'">&times;</button>
+            </div>
+            <form th:action="@{/admin/doi-tuong/import}" method="post" enctype="multipart/form-data">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="importFile">Chọn file Excel (.xlsx):</label>
+                        <input type="file" id="importFile" name="file" accept=".xlsx,.xls" required 
+                               class="form-control" style="padding: 10px; margin-top: 8px;">
+                    </div>
+                    <div class="import-info" style="background: #f0f9ff; padding: 15px; border-radius: 8px; margin-top: 15px;">
+                        <h4 style="margin: 0 0 10px 0; color: #0369a1;">📋 Hướng dẫn:</h4>
+                        <ul style="margin: 0; padding-left: 20px; color: #0c4a6e;">
+                            <li>Tải file mẫu trước khi import</li>
+                            <li>Điền đầy đủ các trường bắt buộc (*)</li>
+                            <li>CCCD phải có đúng 12 ký tự và không trùng lặp</li>
+                            <li>Ngày sinh định dạng: dd/MM/yyyy</li>
+                            <li>Giới tính: nam, nu</li>
+                            <li>Vai trò: ban_quan_tri, co_quan_chuc_nang, ke_toan, nguoi_dung_thuong, khong_dung_he_thong</li>
+                            <li>Là cư dân: true, false</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="modal-footer" style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+                    <button type="button" class="btn btn-outline" onclick="document.getElementById('importModal').style.display='none'">
+                        Hủy
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        📥 Import
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <style>
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            max-width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .modal-header h3 {
+            margin: 0;
+            color: #1e293b;
+        }
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #64748b;
+            transition: color 0.2s;
+        }
+        .modal-close:hover {
+            color: #ef4444;
+        }
+        .btn-info {
+            background: linear-gradient(135deg, #0ea5e9, #0284c7);
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .btn-info:hover {
+            background: linear-gradient(135deg, #0284c7, #0369a1);
+            transform: translateY(-1px);
+        }
+        .btn-outline {
+            background: white;
+            color: #64748b;
+            border: 1px solid #e2e8f0;
+            padding: 10px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-outline:hover {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+        }
+        .alert-warning {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            border-left: 4px solid #f59e0b;
+            color: #92400e;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            background-color: white;
+            min-width: 200px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+            border-radius: 8px;
+            padding: 8px 0;
+            margin-top: 5px;
+            border: 1px solid #e2e8f0;
+        }
+        .dropdown-menu.show {
+            display: block;
+        }
+        .dropdown-item {
+            color: #334155;
+            padding: 10px 16px;
+            text-decoration: none;
+            display: block;
+            transition: background-color 0.2s;
+        }
+        .dropdown-item:hover {
+            background-color: #f1f5f9;
+        }
+        .dropdown-toggle::after {
+            content: ' ▼';
+            font-size: 10px;
+            margin-left: 5px;
+        }
+    </style>
+    
     <script th:src="@{/js/script.js}"></script>
+    <script>
+        function toggleImportExportDropdown() {
+            const importExportMenu = document.getElementById('importExportDropdownMenu');
+            importExportMenu.classList.toggle('show');
+        }
+        
+        document.addEventListener('click', function(event) {
+            const dropdowns = document.querySelectorAll('.dropdown');
+            let clickedInside = false;
+            
+            dropdowns.forEach(function(dropdown) {
+                if (dropdown.contains(event.target)) {
+                    clickedInside = true;
+                }
+            });
+            
+            if (!clickedInside) {
+                document.getElementById('importExportDropdownMenu').classList.remove('show');
+            }
+        });
+        
+        // Close modal when clicking outside
+        document.getElementById('importModal').addEventListener('click', function(event) {
+            if (event.target === this) {
+                this.style.display = 'none';
+            }
+        });
+    </script>
 </body>
 </html>
 
