@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" 
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi tiết phản ánh - Quản lý chung cư</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+    <div class="wrapper">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h3>BLUE MOON</h3>
+            </div>
+            
+            <nav class="sidebar-menu">
+                <ul>
+                    <li>
+                        <a th:href="@{/admin/dashboard}">
+                            <img src="/images/img4.png" alt="Dashboard" style="width: 18px; height: 18px; margin-right: 12px;"> Dashboard
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a th:href="@{/admin/doi-tuong}">
+                            <img src="/images/quan-ly-cu-dan.png" alt="Quản lý cư dân" style="width: 18px; height: 18px; margin-right: 12px;"> Quản lý cư dân
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a th:href="@{/admin/ho-gia-dinh}">
+                            <img src="/images/ho-gia-dinh.png" alt="Hộ gia đình" style="width: 18px; height: 18px; margin-right: 12px;"> Hộ gia đình
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a th:href="@{/admin/tai-san}">
+                            <img src="/images/tai-san-chung-cu.png" alt="Tài sản chung cư" style="width: 18px; height: 18px; margin-right: 12px;"> Tài sản chung cư
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a th:href="@{/admin/hoa-don-2}">
+                            <img src="/images/hoa-don.png" alt="Hóa đơn" style="width: 18px; height: 18px; margin-right: 12px;"> Hóa đơn
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a th:href="@{/admin/bao-cao-su-co}">
+                            <img src="/images/bao-cao-su-co.png" alt="Báo cáo sự cố" style="width: 18px; height: 18px; margin-right: 12px;"> Báo cáo sự cố
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a th:href="@{/admin/thong-bao-2}">
+                            <img src="/images/thong-bao.png" alt="Thông báo" style="width: 18px; height: 18px; margin-right: 12px;"> Thông báo
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a th:href="@{/admin/gui-xe}">
+                            <img src="/images/tai-san-chung-cu.png" alt="Gửi xe" style="width: 18px; height: 18px; margin-right: 12px;"> Gửi xe
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a th:href="@{/admin/phan-anh}" class="active">
+                            <img src="/images/phan-anh.png" alt="Phản ánh" style="width: 18px; height: 18px; margin-right: 12px;"> Phản ánh
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a th:href="@{/admin/lich-su-chinh-sua}">
+                            <img src="/images/lichsu.png" alt="Lịch sử chỉnh sửa" style="width: 18px; height: 18px; margin-right: 12px; filter: brightness(0) invert(1);"> Lịch sử chỉnh sửa
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+        
+        <div class="main-content">
+            <header class="header">
+                <div class="header-left">
+                    <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+                    <h2>Chi tiết phản ánh</h2>
+                </div>
+                <div class="header-right">
+                    <div class="user-info">
+                        <span>Xin chào, <strong sec:authentication="name">Admin</strong></span>
+                        <form th:action="@{/logout}" method="post" style="display: inline;">
+                            <button type="submit" class="btn btn-sm btn-danger">Đăng xuất</button>
+                        </form>
+                    </div>
+                </div>
+            </header>
+            
+            <main class="page-content">
+                <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+                <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+                
+                <div class="form-container">
+                    <!-- Thông tin phản ánh -->
+                    <div class="card" style="margin-bottom: 24px;">
+                        <div class="card-header" style="background: linear-gradient(135deg, #f0f9ff, #e0f2fe); padding: 20px; border-bottom: 2px solid #0ea5e9;">
+                            <h3 style="margin: 0; color: #0369a1;">Thông tin phản ánh</h3>
+                        </div>
+                        <div class="card-body" style="padding: 24px;">
+                            <div class="form-group">
+                                <label style="font-weight: 600; color: #64748b;">Mã phản ánh:</label>
+                                <p style="margin: 8px 0 0 0; font-size: 16px;" th:text="${phanAnh.maPhanAnh}">1</p>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label style="font-weight: 600; color: #64748b;">Loại phản ánh:</label>
+                                <p style="margin: 8px 0 0 0;">
+                                    <span class="badge badge-info" 
+                                          th:text="${phanAnh.loaiPhanAnh == 'gop_y'} ? 'Góp ý' : 
+                                                    (${phanAnh.loaiPhanAnh == 'y_kien'} ? 'Ý kiến' : 
+                                                    (${phanAnh.loaiPhanAnh == 'khiem_nai'} ? 'Khiếu nại' : 'Khác'))">Góp ý</span>
+                                </p>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label style="font-weight: 600; color: #64748b;">Tiêu đề:</label>
+                                <p style="margin: 8px 0 0 0; font-size: 16px; font-weight: 500;" th:text="${phanAnh.tieuDe}">Tiêu đề phản ánh</p>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label style="font-weight: 600; color: #64748b;">Nội dung:</label>
+                                <div style="margin: 8px 0 0 0; padding: 16px; background: #f8fafc; border-radius: 8px; border-left: 4px solid #0ea5e9; white-space: pre-wrap;" th:text="${phanAnh.noiDung}">Nội dung phản ánh...</div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label style="font-weight: 600; color: #64748b;">Người phản ánh:</label>
+                                <p style="margin: 8px 0 0 0;" th:text="${phanAnh.cccdNguoiPhanAnh} + (${phanAnh.nguoiPhanAnh != null} ? ' - ' + ${phanAnh.nguoiPhanAnh.hoVaTen} : '')">001234567890 - Nguyễn Văn A</p>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label style="font-weight: 600; color: #64748b;">Ngày gửi:</label>
+                                <p style="margin: 8px 0 0 0;" th:text="${#temporals.format(phanAnh.ngayTao, 'dd/MM/yyyy HH:mm')}">01/01/2025 10:00</p>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label style="font-weight: 600; color: #64748b;">Trạng thái:</label>
+                                <p style="margin: 8px 0 0 0;">
+                                    <span class="badge" 
+                                           th:classappend="${phanAnh.trangThai == 'da_phan_hoi'} ? 'badge-success' : 
+                                                          (${phanAnh.trangThai == 'da_xem'} ? 'badge-warning' : 'badge-info')"
+                                           th:text="${phanAnh.trangThai == 'da_phan_hoi'} ? 'Đã phản hồi' : 
+                                                     (${phanAnh.trangThai == 'da_xem'} ? 'Đã xem' : 'Mới')">Mới</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Phản hồi -->
+                    <div class="card" th:if="${phanAnh.noiDungPhanHoi != null and !phanAnh.noiDungPhanHoi.isEmpty()}">
+                        <div class="card-header" style="background: linear-gradient(135deg, #f0fdf4, #dcfce7); padding: 20px; border-bottom: 2px solid #10b981;">
+                            <h3 style="margin: 0; color: #059669;">Phản hồi từ ban quản trị</h3>
+                        </div>
+                        <div class="card-body" style="padding: 24px;">
+                            <div class="form-group">
+                                <label style="font-weight: 600; color: #64748b;">Nội dung phản hồi:</label>
+                                <div style="margin: 8px 0 0 0; padding: 16px; background: #f8fafc; border-radius: 8px; border-left: 4px solid #10b981; white-space: pre-wrap;" th:text="${phanAnh.noiDungPhanHoi}">Nội dung phản hồi...</div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label style="font-weight: 600; color: #64748b;">Người phản hồi:</label>
+                                <p style="margin: 8px 0 0 0;" th:text="${phanAnh.cccdNguoiPhanHoi} + (${phanAnh.nguoiPhanHoi != null} ? ' - ' + ${phanAnh.nguoiPhanHoi.hoVaTen} : '')">001234567890 - Admin</p>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label style="font-weight: 600; color: #64748b;">Ngày phản hồi:</label>
+                                <p style="margin: 8px 0 0 0;" th:text="${#temporals.format(phanAnh.ngayPhanHoi, 'dd/MM/yyyy HH:mm')}">01/01/2025 14:00</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Form phản hồi -->
+                    <div class="card" th:if="${phanAnh.noiDungPhanHoi == null or phanAnh.noiDungPhanHoi.isEmpty()}">
+                        <div class="card-header" style="background: linear-gradient(135deg, #fef3c7, #fde68a); padding: 20px; border-bottom: 2px solid #f59e0b;">
+                            <h3 style="margin: 0; color: #92400e;">Phản hồi phản ánh</h3>
+                        </div>
+                        <div class="card-body" style="padding: 24px;">
+                            <form th:action="@{/admin/phan-anh/{id}/phan-hoi(id=${phanAnh.maPhanAnh})}" method="post">
+                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                
+                                <div class="form-group">
+                                    <label for="noiDungPhanHoi">Nội dung phản hồi <span style="color: #ef4444;">*</span></label>
+                                    <textarea id="noiDungPhanHoi" name="noiDungPhanHoi" class="form-control" rows="6" 
+                                              placeholder="Nhập nội dung phản hồi cho cư dân..." required></textarea>
+                                </div>
+                                
+                                <div class="form-actions">
+                                    <button type="submit" class="btn btn-primary">Gửi phản hồi</button>
+                                    <a th:href="@{/admin/phan-anh}" class="btn btn-secondary">Quay lại</a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <!-- Nút quay lại nếu đã phản hồi -->
+                    <div th:if="${phanAnh.noiDungPhanHoi != null and !phanAnh.noiDungPhanHoi.isEmpty()}" style="margin-top: 24px;">
+                        <a th:href="@{/admin/phan-anh}" class="btn btn-secondary">Quay lại danh sách</a>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    
+    <script th:src="@{/js/script.js}"></script>
+</body>
+</html>
+

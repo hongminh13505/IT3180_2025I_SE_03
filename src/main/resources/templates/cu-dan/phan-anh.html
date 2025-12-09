@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thông báo - Cư dân</title>
+    <title>Phản ánh - Cư dân</title>
     <link rel="stylesheet" th:href="@{/css/style.css}">
     <link rel="stylesheet" th:href="@{/css/admin.css}">
 </head>
@@ -31,7 +31,7 @@
                         </a>
                     </li>
                     <li>
-                        <a th:href="@{/cu-dan/thong-bao}" class="active">
+                        <a th:href="@{/cu-dan/thong-bao}">
                             <img src="/images/thong-bao.png" alt="Thông báo" style="width: 18px; height: 18px; margin-right: 12px;"> Thông báo
                         </a>
                     </li>
@@ -46,7 +46,7 @@
                         </a>
                     </li>
                     <li>
-                        <a th:href="@{/cu-dan/phan-anh}">
+                        <a th:href="@{/cu-dan/phan-anh}" class="active">
                             <img src="/images/phan-anh.png" alt="Phản ánh" style="width: 18px; height: 18px; margin-right: 12px;"> Phản ánh
                         </a>
                     </li>
@@ -65,7 +65,7 @@
             <header class="header">
                 <div class="header-left">
                     <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
-                    <h2>Thông báo</h2>
+                    <h2>Phản ánh</h2>
                 </div>
                 
                 <div class="header-right">
@@ -84,38 +84,59 @@
                 <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
                 <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
                 
-                <!-- Search Bar -->
+                <!-- Search Bar and Actions -->
                 <div class="content-header">
                     <div class="search-bar">
-                        <form th:action="@{/cu-dan/thong-bao}" method="get">
+                        <form th:action="@{/cu-dan/phan-anh}" method="get">
                             <input type="text" name="search" th:value="${search}" placeholder="Tìm kiếm..." class="form-control">
                             <button type="submit" class="btn btn-primary">Tìm kiếm</button>
                         </form>
+                    </div>
+                    <div class="action-buttons">
+                        <a th:href="@{/cu-dan/phan-anh/tao-moi}" class="btn btn-success">
+                            + Tạo phản ánh mới
+                        </a>
                     </div>
                 </div>
                 
                 <!-- Table -->
                 <div class="table-responsive">
-                    <table class="table">
+                    <table class="table table-compact">
                         <thead>
                             <tr>
-                                <th>TIÊU ĐỀ</th>
-                                <th>NỘI DUNG</th>
-                                <th>NGÀY ĐĂNG</th>
+                                <th style="width: 150px; text-align: center;">LOẠI</th>
+                                <th style="width: 250px; text-align: center;">TIÊU ĐỀ</th>
+                                <th style="width: 140px; text-align: center;">NGÀY GỬI</th>
+                                <th style="width: 130px; text-align: center;">TRẠNG THÁI</th>
+                                <th style="width: 150px; text-align: center;">THAO TÁC</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr th:if="${thongBaoList.isEmpty()}">
-                                <td colspan="3" style="text-align: center; color: #94a3b8;">Không có thông báo nào</td>
+                            <tr th:if="${phanAnhList.isEmpty()}">
+                                <td colspan="5" style="text-align: center; color: #94a3b8;">Không có phản ánh nào</td>
                             </tr>
-                            <tr th:each="tb : ${thongBaoList}">
-                                <td th:text="${tb.tieuDe}">Thông báo quan trọng</td>
-                                <td>
-                                    <span th:text="${#strings.length(tb.noiDungThongBao) > 80 ? #strings.substring(tb.noiDungThongBao, 0, 80) + '...' : tb.noiDungThongBao}">
-                                        Nội dung thông báo...
-                                    </span>
+                            <tr th:each="pa : ${phanAnhList}">
+                                <td style="text-align: center; font-size: 13px;">
+                                    <span class="badge badge-info" 
+                                          th:text="${pa.loaiPhanAnh == 'gop_y'} ? 'Góp ý' : 
+                                                    (${pa.loaiPhanAnh == 'y_kien'} ? 'Ý kiến' : 
+                                                    (${pa.loaiPhanAnh == 'khiem_nai'} ? 'Khiếu nại' : 'Khác'))">Góp ý</span>
                                 </td>
-                                <td th:text="${tb.ngayTaoThongBao != null ? #temporals.format(tb.ngayTaoThongBao, 'dd/MM/yyyy') : 'N/A'}">01/01/2024</td>
+                                <td style="font-size: 13px;" th:text="${pa.tieuDe}">Tiêu đề phản ánh</td>
+                                <td style="text-align: center; font-size: 13px;" th:text="${pa.ngayTao != null ? #temporals.format(pa.ngayTao, 'dd/MM/yyyy') : 'N/A'}">01/01/2024</td>
+                                <td style="text-align: center;">
+                                    <span class="badge" 
+                                          th:classappend="${pa.trangThai == 'da_phan_hoi'} ? 'badge-success' : 
+                                                        (${pa.trangThai == 'da_xem'} ? 'badge-warning' : 'badge-info')"
+                                          th:text="${pa.trangThai == 'da_phan_hoi'} ? 'Đã phản hồi' : 
+                                                    (${pa.trangThai == 'da_xem'} ? 'Đã xem' : 'Mới')">Mới</span>
+                                </td>
+                                <td class="actions" style="justify-content: center;">
+                                    <a th:href="@{/cu-dan/phan-anh/{id}(id=${pa.maPhanAnh})}" class="btn btn-sm btn-info">
+                                        <span th:if="${pa.trangThai == 'da_phan_hoi'}">Xem phản hồi</span>
+                                        <span th:if="${pa.trangThai != 'da_phan_hoi'}">Chi tiết</span>
+                                    </a>
+                                </td>
                             </tr>
                         </tbody>
                     </table>

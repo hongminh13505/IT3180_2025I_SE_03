@@ -22,11 +22,15 @@ import com.apartment.entity.DoiTuong;
 import com.apartment.entity.HoaDon;
 import com.apartment.entity.ThanhVienHo;
 import com.apartment.repository.ThanhVienHoRepository;
+import com.apartment.entity.PhanAnh;
 import com.apartment.service.BaoCaoSuCoService;
 import com.apartment.service.DoiTuongService;
 import com.apartment.service.HoaDonService;
 import com.apartment.service.LichSuChinhSuaService;
+import com.apartment.service.PhanAnhService;
 import com.apartment.service.ThongBaoService;
+import com.apartment.service.YeuCauGuiXeService;
+import com.apartment.entity.YeuCauGuiXe;
 
 @Controller
 @RequestMapping("/cu-dan")
@@ -50,6 +54,12 @@ public class CuDanController {
     
     @Autowired
     private LichSuChinhSuaService lichSuChinhSuaService;
+    
+    @Autowired
+    private PhanAnhService phanAnhService;
+
+    @Autowired
+    private YeuCauGuiXeService yeuCauGuiXeService;
     
    
     private String getMaHoByCccd(String cccd) {
@@ -357,6 +367,186 @@ public class CuDanController {
         }
         
         return "redirect:/cu-dan/hoa-don";
+    }
+    
+    // ====== Gửi xe (đăng ký chỗ gửi xe) ======
+    @GetMapping("/gui-xe")
+    public String danhSachGuiXe(@RequestParam(required = false) String search,
+                                @RequestParam(required = false) String trangThai,
+                                Model model,
+                                Authentication authentication) {
+        try {
+            String cccd = authentication.getName();
+            java.util.List<YeuCauGuiXe> list = yeuCauGuiXeService.findByCccdNguoiGui(cccd);
+            
+            // filter by status
+            if (trangThai != null && !trangThai.isEmpty()) {
+                String tt = trangThai.trim();
+                list = list.stream()
+                        .filter(x -> x.getTrangThai() != null && x.getTrangThai().equals(tt))
+                        .collect(java.util.stream.Collectors.toList());
+            }
+            // search by plate or type
+            if (search != null && !search.trim().isEmpty()) {
+                String searchLower = search.trim().toLowerCase();
+                list = list.stream()
+                        .filter(x ->
+                                (x.getBienSo() != null && x.getBienSo().toLowerCase().contains(searchLower)) ||
+                                (x.getLoaiXe() != null && x.getLoaiXe().toLowerCase().contains(searchLower)) ||
+                                (x.getTrangThai() != null && x.getTrangThai().toLowerCase().contains(searchLower))
+                        )
+                        .collect(java.util.stream.Collectors.toList());
+            }
+            
+            model.addAttribute("yeuCauList", list);
+            model.addAttribute("search", search);
+            model.addAttribute("trangThai", trangThai);
+            model.addAttribute("username", authentication.getName());
+            return "cu-dan/gui-xe";
+        } catch (Exception e) {
+            model.addAttribute("error", "Có lỗi khi tải danh sách gửi xe");
+            model.addAttribute("yeuCauList", new java.util.ArrayList<>());
+            return "cu-dan/gui-xe";
+        }
+    }
+
+    @GetMapping("/gui-xe/tao-moi")
+    public String taoGuiXe(Model model, Authentication authentication) {
+        try {
+            YeuCauGuiXe yeuCau = new YeuCauGuiXe();
+            model.addAttribute("yeuCau", yeuCau);
+            model.addAttribute("username", authentication.getName());
+            return "cu-dan/tao-gui-xe";
+        } catch (Exception e) {
+            model.addAttribute("error", "Có lỗi khi tải form đăng ký gửi xe");
+            return "redirect:/cu-dan/gui-xe";
+        }
+    }
+
+    @PostMapping("/gui-xe/luu")
+    public String luuGuiXe(@ModelAttribute YeuCauGuiXe yeuCauGuiXe,
+                           RedirectAttributes redirectAttributes,
+                           Authentication authentication) {
+        try {
+            String cccd = authentication.getName();
+            String maHo = getMaHoByCccd(cccd);
+
+            yeuCauGuiXe.setCccdNguoiGui(cccd);
+            yeuCauGuiXe.setMaHo(maHo);
+            yeuCauGuiXe.setTrangThai("cho_duyet");
+            yeuCauGuiXe.setNgayTao(LocalDateTime.now());
+
+            yeuCauGuiXeService.save(yeuCauGuiXe);
+            redirectAttributes.addFlashAttribute("success", "Gửi yêu cầu đăng ký gửi xe thành công! Vui lòng chờ duyệt.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Có lỗi khi gửi yêu cầu: " + e.getMessage());
+        }
+        return "redirect:/cu-dan/gui-xe";
+    }
+
+    @GetMapping("/gui-xe/chi-tiet/{id}")
+    public String chiTietGuiXe(@PathVariable Integer id,
+                               Model model,
+                               Authentication authentication) {
+        try {
+            String cccd = authentication.getName();
+            YeuCauGuiXe yeuCau = yeuCauGuiXeService.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy yêu cầu gửi xe"));
+
+            if (!cccd.equals(yeuCau.getCccdNguoiGui())) {
+                model.addAttribute("error", "Bạn không có quyền xem yêu cầu này");
+                return "redirect:/cu-dan/gui-xe";
+            }
+
+            model.addAttribute("yeuCau", yeuCau);
+            model.addAttribute("username", authentication.getName());
+            return "cu-dan/gui-xe/detail";
+        } catch (Exception e) {
+            model.addAttribute("error", "Có lỗi khi tải chi tiết yêu cầu: " + e.getMessage());
+            return "redirect:/cu-dan/gui-xe";
+        }
+    }
+    
+    @GetMapping("/phan-anh")
+    public String phanAnh(@org.springframework.web.bind.annotation.RequestParam(required = false) String search,
+                          Model model,
+                          Authentication authentication) {
+        try {
+            String cccd = authentication.getName();
+            java.util.List<PhanAnh> phanAnhList = phanAnhService.findByCccdNguoiPhanAnh(cccd);
+            
+            if (search != null && !search.trim().isEmpty()) {
+                String searchLower = search.trim().toLowerCase();
+                phanAnhList = phanAnhList.stream()
+                    .filter(pa -> 
+                        (pa.getTieuDe() != null && pa.getTieuDe().toLowerCase().contains(searchLower)) ||
+                        (pa.getNoiDung() != null && pa.getNoiDung().toLowerCase().contains(searchLower))
+                    )
+                    .collect(java.util.stream.Collectors.toList());
+            }
+            
+            model.addAttribute("phanAnhList", phanAnhList);
+            model.addAttribute("search", search);
+            model.addAttribute("username", authentication.getName());
+            return "cu-dan/phan-anh";
+        } catch (Exception e) {
+            model.addAttribute("error", "Có lỗi khi tải danh sách phản ánh");
+            model.addAttribute("phanAnhList", new java.util.ArrayList<>());
+            return "cu-dan/phan-anh";
+        }
+    }
+    
+    @GetMapping("/phan-anh/tao-moi")
+    public String taoPhanAnh(Model model, Authentication authentication) {
+        try {
+            PhanAnh phanAnh = new PhanAnh();
+            model.addAttribute("phanAnh", phanAnh);
+            model.addAttribute("username", authentication.getName());
+            return "cu-dan/tao-phan-anh";
+        } catch (Exception e) {
+            model.addAttribute("error", "Có lỗi khi tải form tạo phản ánh");
+            return "redirect:/cu-dan/phan-anh";
+        }
+    }
+    
+    @PostMapping("/phan-anh/luu")
+    public String luuPhanAnh(@ModelAttribute PhanAnh phanAnh,
+                             RedirectAttributes redirectAttributes,
+                             Authentication authentication) {
+        try {
+            String cccd = authentication.getName();
+            phanAnh.setCccdNguoiPhanAnh(cccd);
+            phanAnh.setTrangThai("moi");
+            
+            phanAnhService.save(phanAnh);
+            redirectAttributes.addFlashAttribute("success", "Gửi phản ánh thành công!");
+            
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Có lỗi khi gửi phản ánh: " + e.getMessage());
+        }
+        
+        return "redirect:/cu-dan/phan-anh";
+    }
+    
+    @GetMapping("/phan-anh/{id}")
+    public String chiTietPhanAnh(@PathVariable Integer id, Model model, Authentication authentication) {
+        try {
+            String cccd = authentication.getName();
+            PhanAnh phanAnh = phanAnhService.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy phản ánh"));
+            
+            // Kiểm tra xem phản ánh có thuộc về cư dân này không
+            if (!phanAnh.getCccdNguoiPhanAnh().equals(cccd)) {
+                model.addAttribute("error", "Bạn không có quyền xem phản ánh này");
+                return "redirect:/cu-dan/phan-anh";
+            }
+            
+            model.addAttribute("phanAnh", phanAnh);
+            model.addAttribute("username", authentication.getName());
+            return "cu-dan/phan-anh/detail";
+        } catch (Exception e) {
+            return "redirect:/cu-dan/phan-anh?error=" + e.getMessage();
+        }
     }
 }
 
