@@ -88,7 +88,7 @@
                         </div>
                         <div class="detail-item">
                             <strong>Loại xe:</strong> 
-                            <span class="badge badge-info" th:text="${yeuCau.loaiXe == 'oto'} ? 'Ô tô' : (${yeuCau.loaiXe == 'xe_may'} ? 'Xe máy' : 'Khác')">Ô tô</span>
+                            <span class="badge badge-info" th:text="${yeuCau.loaiXe == 'oto' ? 'Ô tô' : (yeuCau.loaiXe == 'xe_may' ? 'Xe máy' : 'Khác')}">Ô tô</span>
                         </div>
                         <div class="detail-item">
                             <strong>Ngày gửi:</strong> <span th:text="${yeuCau.ngayTao != null ? #temporals.format(yeuCau.ngayTao, 'dd/MM/yyyy HH:mm') : 'N/A'}"></span>
@@ -100,8 +100,8 @@
                         <div class="detail-item">
                             <strong>Trạng thái:</strong>
                             <span class="badge"
-                                  th:classappend="${yeuCau.trangThai == 'da_duyet'} ? 'badge-success' : (${yeuCau.trangThai == 'tu_choi'} ? 'badge-danger' : 'badge-warning')"
-                                  th:text="${yeuCau.trangThai == 'da_duyet'} ? 'Đã duyệt' : (${yeuCau.trangThai == 'tu_choi'} ? 'Từ chối' : 'Chờ duyệt')}">Chờ duyệt</span>
+                                  th:classappend="${yeuCau.trangThai == 'da_duyet' ? 'badge-success' : (yeuCau.trangThai == 'tu_choi' ? 'badge-danger' : 'badge-warning')}"
+                                  th:text="${yeuCau.trangThai == 'da_duyet' ? 'Đã duyệt' : (yeuCau.trangThai == 'tu_choi' ? 'Từ chối' : 'Chờ duyệt')}">Chờ duyệt</span>
                         </div>
                     </div>
                     

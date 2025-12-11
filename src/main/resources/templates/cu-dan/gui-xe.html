@@ -118,13 +118,13 @@
                                 <td style="text-align: center; font-weight: 600;" th:text="${yc.bienSo}">30A-123.45</td>
                                 <td style="text-align: center;">
                                     <span class="badge badge-info"
-                                          th:text="${yc.loaiXe == 'oto'} ? 'Ô tô' : (${yc.loaiXe == 'xe_may'} ? 'Xe máy' : 'Khác')">Ô tô</span>
+                                          th:text="${yc.loaiXe == 'oto' ? 'Ô tô' : (yc.loaiXe == 'xe_may' ? 'Xe máy' : 'Khác')}">Ô tô</span>
                                 </td>
                                 <td style="text-align: center;" th:text="${yc.ngayTao != null ? #temporals.format(yc.ngayTao, 'dd/MM/yyyy') : 'N/A'}">01/01/2025</td>
                                 <td style="text-align: center;">
                                     <span class="badge"
-                                          th:classappend="${yc.trangThai == 'da_duyet'} ? 'badge-success' : (${yc.trangThai == 'tu_choi'} ? 'badge-danger' : 'badge-warning')"
-                                          th:text="${yc.trangThai == 'da_duyet'} ? 'Đã duyệt' : (${yc.trangThai == 'tu_choi'} ? 'Từ chối' : 'Chờ duyệt')}">Chờ duyệt</span>
+                                          th:classappend="${yc.trangThai == 'da_duyet' ? 'badge-success' : (yc.trangThai == 'tu_choi' ? 'badge-danger' : 'badge-warning')}"
+                                          th:text="${yc.trangThai == 'da_duyet' ? 'Đã duyệt' : (yc.trangThai == 'tu_choi' ? 'Từ chối' : 'Chờ duyệt')}">Chờ duyệt</span>
                                 </td>
                                 <td class="actions" style="justify-content: center;">
                                     <a th:href="@{/cu-dan/gui-xe/chi-tiet/{id}(id=${yc.maYeuCau})}" class="btn btn-sm btn-info">Chi tiết</a>
