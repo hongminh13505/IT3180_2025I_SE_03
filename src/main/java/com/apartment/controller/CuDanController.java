@@ -26,10 +26,12 @@ import com.apartment.entity.ThanhVienHo;
 import com.apartment.entity.ThongBao; // Import ThongBao
 import com.apartment.repository.ThanhVienHoRepository;
 import com.apartment.entity.PhanAnh;
+import com.apartment.entity.PhanAnh;
 import com.apartment.service.BaoCaoSuCoService;
 import com.apartment.service.DoiTuongService;
 import com.apartment.service.HoaDonService;
 import com.apartment.service.LichSuChinhSuaService;
+import com.apartment.service.PhanAnhService;
 import com.apartment.service.PhanAnhService;
 import com.apartment.service.ThongBaoService;
 import com.apartment.service.YeuCauGuiXeService;
@@ -132,11 +134,38 @@ public class CuDanController {
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy thông tin cá nhân"));
             
             Map<String, LichSuChinhSuaService.ChangeInfo> thayDoi = new HashMap<>();
-            
-            if (!equalsValue(existingDoiTuong.getHoVaTen(), doiTuong.getHoVaTen())) {
-                thayDoi.put("Họ và tên", new LichSuChinhSuaService.ChangeInfo(existingDoiTuong.getHoVaTen(), doiTuong.getHoVaTen()));
+           if (!equalsValue(existingDoiTuong.getHoVaTen(), doiTuong.getHoVaTen())) {
+                thayDoi.put("Họ và tên", new LichSuChinhSuaService.ChangeInfo(
+                    existingDoiTuong.getHoVaTen(), doiTuong.getHoVaTen()));
             }
-            // ... (Giữ nguyên logic so sánh của nhóm) ...
+            if (!equalsValue(existingDoiTuong.getNgaySinh(), doiTuong.getNgaySinh())) {
+                thayDoi.put("Ngày sinh", new LichSuChinhSuaService.ChangeInfo(
+                    String.valueOf(existingDoiTuong.getNgaySinh()), 
+                    String.valueOf(doiTuong.getNgaySinh())));
+            }
+            if (!equalsValue(existingDoiTuong.getGioiTinh(), doiTuong.getGioiTinh())) {
+                thayDoi.put("Giới tính", new LichSuChinhSuaService.ChangeInfo(
+                    existingDoiTuong.getGioiTinh(), doiTuong.getGioiTinh()));
+            }
+            if (!equalsValue(existingDoiTuong.getSoDienThoai(), doiTuong.getSoDienThoai())) {
+                thayDoi.put("Số điện thoại", new LichSuChinhSuaService.ChangeInfo(
+                    existingDoiTuong.getSoDienThoai(), doiTuong.getSoDienThoai()));
+            }
+            if (!equalsValue(existingDoiTuong.getEmail(), doiTuong.getEmail())) {
+                thayDoi.put("Email", new LichSuChinhSuaService.ChangeInfo(
+                    existingDoiTuong.getEmail(), doiTuong.getEmail()));
+            }
+            if (!equalsValue(existingDoiTuong.getQueQuan(), doiTuong.getQueQuan())) {
+                thayDoi.put("Quê quán", new LichSuChinhSuaService.ChangeInfo(
+                    existingDoiTuong.getQueQuan(), doiTuong.getQueQuan()));
+            }
+            if (!equalsValue(existingDoiTuong.getNgheNghiep(), doiTuong.getNgheNghiep())) {
+                thayDoi.put("Nghề nghiệp", new LichSuChinhSuaService.ChangeInfo(
+                    existingDoiTuong.getNgheNghiep(), doiTuong.getNgheNghiep()));
+            }
+            if (matKhau != null && !matKhau.trim().isEmpty()) {
+                thayDoi.put("Mật khẩu", new LichSuChinhSuaService.ChangeInfo("***", "***"));
+            }
             
             existingDoiTuong.setHoVaTen(doiTuong.getHoVaTen());
             existingDoiTuong.setNgaySinh(doiTuong.getNgaySinh());
