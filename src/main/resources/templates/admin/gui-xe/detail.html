@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" 
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi tiết gửi xe - Quản lý chung cư</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+    <div class="wrapper">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h3>BLUE MOON</h3>
+            </div>
+            <nav class="sidebar-menu">
+                <ul>
+                    <li>
+                        <a th:href="@{/admin/dashboard}">
+                            <img src="/images/img4.png" alt="Dashboard" style="width: 18px; height: 18px; margin-right: 12px;"> Dashboard
+                        </a>
+                    </li>
+                    <li>
+                        <a th:href="@{/admin/doi-tuong}">
+                            <img src="/images/quan-ly-cu-dan.png" alt="Quản lý cư dân" style="width: 18px; height: 18px; margin-right: 12px;"> Quản lý cư dân
+                        </a>
+                    </li>
+                    <li>
+                        <a th:href="@{/admin/ho-gia-dinh}">
+                            <img src="/images/ho-gia-dinh.png" alt="Hộ gia đình" style="width: 18px; height: 18px; margin-right: 12px;"> Hộ gia đình
+                        </a>
+                    </li>
+                    <li>
+                        <a th:href="@{/admin/tai-san}">
+                            <img src="/images/tai-san-chung-cu.png" alt="Tài sản chung cư" style="width: 18px; height: 18px; margin-right: 12px;"> Tài sản chung cư
+                        </a>
+                    </li>
+                    <li>
+                        <a th:href="@{/admin/hoa-don-2}">
+                            <img src="/images/hoa-don.png" alt="Hóa đơn" style="width: 18px; height: 18px; margin-right: 12px;"> Hóa đơn
+                        </a>
+                    </li>
+                    <li>
+                        <a th:href="@{/admin/bao-cao-su-co}">
+                            <img src="/images/bao-cao-su-co.png" alt="Báo cáo sự cố" style="width: 18px; height: 18px; margin-right: 12px;"> Báo cáo sự cố
+                        </a>
+                    </li>
+                    <li>
+                        <a th:href="@{/admin/thong-bao-2}">
+                            <img src="/images/thong-bao.png" alt="Thông báo" style="width: 18px; height: 18px; margin-right: 12px;"> Thông báo
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a th:href="@{/admin/gui-xe}" class="active">
+                            <img src="/images/tai-san-chung-cu.png" alt="Gửi xe" style="width: 18px; height: 18px; margin-right: 12px;"> Gửi xe
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a th:href="@{/admin/phan-anh}">
+                            <img src="/images/phan-anh.png" alt="Phản ánh" style="width: 18px; height: 18px; margin-right: 12px;"> Phản ánh
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a th:href="@{/admin/lich-su-chinh-sua}">
+                            <img src="/images/lichsu.png" alt="Lịch sử chỉnh sửa" style="width: 18px; height: 18px; margin-right: 12px; filter: brightness(0) invert(1);"> Lịch sử chỉnh sửa
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+        
+        <div class="main-content">
+            <header class="header">
+                <div class="header-left">
+                    <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+                    <h2>Chi tiết yêu cầu gửi xe</h2>
+                </div>
+                <div class="header-right">
+                    <div class="user-info">
+                        <span>Xin chào, <strong sec:authentication="name">Admin</strong></span>
+                        <form th:action="@{/logout}" method="post" style="display: inline;">
+                            <button type="submit" class="btn btn-sm btn-danger">Đăng xuất</button>
+                        </form>
+                    </div>
+                </div>
+            </header>
+            
+            <main class="page-content">
+                <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+                <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+                
+                <div class="detail-container">
+                    <div class="detail-card">
+                        <h3>Thông tin yêu cầu</h3>
+                        <div class="detail-item">
+                            <strong>Mã yêu cầu:</strong> <span th:text="${yeuCau.maYeuCau}">1</span>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Người gửi:</strong> <span th:text="${yeuCau.nguoiGui != null ? yeuCau.nguoiGui.hoVaTen + ' (' + yeuCau.cccdNguoiGui + ')' : yeuCau.cccdNguoiGui}">Nguyễn Văn A</span>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Biển số:</strong> <span th:text="${yeuCau.bienSo}">30A-123.45</span>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Loại xe:</strong> 
+                            <span class="badge badge-info" th:text="${yeuCau.loaiXe == 'oto' ? 'Ô tô' : (yeuCau.loaiXe == 'xe_may' ? 'Xe máy' : 'Khác')}">Ô tô</span>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Ngày gửi:</strong> <span th:text="${yeuCau.ngayTao != null ? #temporals.format(yeuCau.ngayTao, 'dd/MM/yyyy HH:mm') : 'N/A'}">01/01/2025</span>
+                        </div>
+                        <div class="detail-item" th:if="${yeuCau.moTa != null && !yeuCau.moTa.isEmpty()}">
+                            <strong>Ghi chú:</strong>
+                            <p th:text="${yeuCau.moTa}">Nội dung</p>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Trạng thái:</strong>
+                            <span class="badge"
+                                  th:classappend="${yeuCau.trangThai == 'da_duyet' ? 'badge-success' : (yeuCau.trangThai == 'tu_choi' ? 'badge-danger' : 'badge-warning')}"
+                                  th:text="${yeuCau.trangThai == 'da_duyet' ? 'Đã duyệt' : (yeuCau.trangThai == 'tu_choi' ? 'Từ chối' : 'Chờ duyệt')}">Chờ duyệt</span>
+                        </div>
+                    </div>
+                    
+                    <div class="detail-card">
+                        <h3>Phản hồi / Xử lý</h3>
+                        
+                        <div th:if="${yeuCau.trangThai == 'da_duyet' or yeuCau.trangThai == 'tu_choi'}">
+                            <div class="detail-item">
+                                <strong>Người xử lý:</strong> <span th:text="${yeuCau.nguoiXuLy != null ? yeuCau.nguoiXuLy.hoVaTen + ' (' + yeuCau.cccdNguoiXuLy + ')' : 'N/A'}"></span>
+                            </div>
+                            <div class="detail-item">
+                                <strong>Ngày xử lý:</strong> <span th:text="${yeuCau.ngayXuLy != null ? #temporals.format(yeuCau.ngayXuLy, 'dd/MM/yyyy HH:mm') : 'N/A'}"></span>
+                            </div>
+                            <div class="detail-item" th:if="${yeuCau.ghiChuXuLy != null && !yeuCau.ghiChuXuLy.isEmpty()}">
+                                <strong>Ghi chú:</strong>
+                                <p th:text="${yeuCau.ghiChuXuLy}"></p>
+                            </div>
+                        </div>
+                        
+                        <div th:if="${yeuCau.trangThai == 'cho_duyet'}">
+                            <form th:action="@{/admin/gui-xe/xu-ly/{id}(id=${yeuCau.maYeuCau})}" method="post">
+                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                <div class="form-group">
+                                    <label for="ghiChuXuLy">Ghi chú xử lý</label>
+                                    <textarea id="ghiChuXuLy" name="ghiChuXuLy" class="form-control" rows="4" placeholder="Nhập ghi chú (nếu có)"></textarea>
+                                </div>
+                                <div class="form-actions" style="gap: 10px;">
+                                    <button type="submit" name="action" value="approve" class="btn btn-success">Duyệt</button>
+                                    <button type="submit" name="action" value="reject" class="btn btn-danger" onclick="return confirm('Từ chối yêu cầu này?')">Từ chối</button>
+                                    <a th:href="@{/admin/gui-xe}" class="btn btn-secondary">Quay lại</a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <div class="form-actions" style="margin-top: 20px;">
+                        <a th:href="@{/admin/gui-xe}" class="btn btn-secondary">
+                            <span>↩</span> Quay lại danh sách
+                        </a>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    <script th:src="@{/js/script.js}"></script>
+</body>
+</html>
+

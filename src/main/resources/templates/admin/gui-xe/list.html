@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quản lý hộ gia đình - Quản lý chung cư</title>
+    <title>Quản lý gửi xe - Quản lý chung cư</title>
     <link rel="stylesheet" th:href="@{/css/style.css}">
     <link rel="stylesheet" th:href="@{/css/admin.css}">
 </head>
@@ -15,7 +15,6 @@
             <div class="sidebar-header">
                 <h3>BLUE MOON</h3>
             </div>
-            
             <nav class="sidebar-menu">
                 <ul>
                     <li>
@@ -23,37 +22,31 @@
                             <img src="/images/img4.png" alt="Dashboard" style="width: 18px; height: 18px; margin-right: 12px;"> Dashboard
                         </a>
                     </li>
-                    
                     <li>
                         <a th:href="@{/admin/doi-tuong}">
                             <img src="/images/quan-ly-cu-dan.png" alt="Quản lý cư dân" style="width: 18px; height: 18px; margin-right: 12px;"> Quản lý cư dân
                         </a>
                     </li>
-                    
                     <li>
-                        <a th:href="@{/admin/ho-gia-dinh}" class="active">
+                        <a th:href="@{/admin/ho-gia-dinh}">
                             <img src="/images/ho-gia-dinh.png" alt="Hộ gia đình" style="width: 18px; height: 18px; margin-right: 12px;"> Hộ gia đình
                         </a>
                     </li>
-                    
                     <li>
                         <a th:href="@{/admin/tai-san}">
                             <img src="/images/tai-san-chung-cu.png" alt="Tài sản chung cư" style="width: 18px; height: 18px; margin-right: 12px;"> Tài sản chung cư
                         </a>
                     </li>
-                    
                     <li>
                         <a th:href="@{/admin/hoa-don-2}">
                             <img src="/images/hoa-don.png" alt="Hóa đơn" style="width: 18px; height: 18px; margin-right: 12px;"> Hóa đơn
                         </a>
                     </li>
-                    
                     <li>
                         <a th:href="@{/admin/bao-cao-su-co}">
                             <img src="/images/bao-cao-su-co.png" alt="Báo cáo sự cố" style="width: 18px; height: 18px; margin-right: 12px;"> Báo cáo sự cố
                         </a>
                     </li>
-                    
                     <li>
                         <a th:href="@{/admin/thong-bao-2}">
                             <img src="/images/thong-bao.png" alt="Thông báo" style="width: 18px; height: 18px; margin-right: 12px;"> Thông báo
@@ -61,7 +54,7 @@
                     </li>
                     
                     <li>
-                        <a th:href="@{/admin/gui-xe}">
+                        <a th:href="@{/admin/gui-xe}" class="active">
                             <img src="/images/tai-san-chung-cu.png" alt="Gửi xe" style="width: 18px; height: 18px; margin-right: 12px;"> Gửi xe
                         </a>
                     </li>
@@ -85,7 +78,7 @@
             <header class="header">
                 <div class="header-left">
                     <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
-                    <h2>Quản lý hộ gia đình</h2>
+                    <h2>Yêu cầu gửi xe</h2>
                 </div>
                 <div class="header-right">
                     <div class="user-info">
@@ -101,50 +94,54 @@
                 <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
                 <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
                 
-                <div class="content-header">
-                    <div class="search-bar">
-                        <form th:action="@{/admin/ho-gia-dinh}" method="get">
-                            <input type="text" name="search" th:value="${search}" placeholder="Tìm kiếm..." class="form-control">
-                            <button type="submit" class="btn btn-primary">Tìm kiếm</button>
+                <div class="content-header" style="display: flex; flex-wrap: wrap; gap: 15px; align-items: center; justify-content: space-between;">
+                    <div class="filter-group" style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <a th:href="@{/admin/gui-xe}" th:classappend="${trangThai == null || trangThai.isEmpty()} ? 'btn-primary' : 'btn-secondary'" class="btn btn-sm">Tất cả</a>
+                        <a th:href="@{/admin/gui-xe(trangThai='cho_duyet')}" th:classappend="${trangThai == 'cho_duyet'} ? 'btn-primary' : 'btn-secondary'" class="btn btn-sm">Chờ duyệt</a>
+                        <a th:href="@{/admin/gui-xe(trangThai='da_duyet')}" th:classappend="${trangThai == 'da_duyet'} ? 'btn-primary' : 'btn-secondary'" class="btn btn-sm">Đã duyệt</a>
+                        <a th:href="@{/admin/gui-xe(trangThai='tu_choi')}" th:classappend="${trangThai == 'tu_choi'} ? 'btn-primary' : 'btn-secondary'" class="btn btn-sm">Từ chối</a>
+                    </div>
+                    <div class="search-bar" style="flex: 0 1 auto; min-width: 280px; max-width: 400px; width: 100%;">
+                        <form th:action="@{/admin/gui-xe}" method="get" style="display: flex; gap: 8px; width: 100%;">
+                            <input type="hidden" name="trangThai" th:value="${trangThai}">
+                            <input type="text" name="search" th:value="${search}" placeholder="Biển số, CCCD, loại xe..." class="form-control" style="flex: 1; min-width: 0;">
+                            <button type="submit" class="btn btn-primary" style="flex-shrink: 0; white-space: nowrap;">Tìm kiếm</button>
                         </form>
                     </div>
-                    <a th:href="@{/admin/ho-gia-dinh/create}" class="btn btn-success">+ Thêm mới</a>
                 </div>
                 
                 <div class="table-responsive">
                     <table class="table table-compact">
                         <thead>
                             <tr>
-                                <th style="width: 100px; text-align: center;">Mã hộ</th>
-                                <th style="width: 180px;">Tên chủ hộ</th>
-                                <th style="width: 150px;">Căn hộ</th>
-                                <th style="width: 120px; text-align: center;">Ngày thành lập</th>
-                                <th style="width: 130px; text-align: center;">Trạng thái</th>
-                                <th style="width: 180px; text-align: center;">Thao tác</th>
+                                <th style="width: 60px; text-align: center;">Mã</th>
+                                <th style="width: 130px; text-align: center;">Biển số</th>
+                                <th style="width: 120px; text-align: center;">Loại xe</th>
+                                <th style="width: 170px; text-align: center;">Người gửi</th>
+                                <th style="width: 140px; text-align: center;">Ngày gửi</th>
+                                <th style="width: 120px; text-align: center;">Trạng thái</th>
+                                <th style="width: 110px; text-align: center;">Thao tác</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr th:each="ho : ${hoGiaDinhList}">
-                                <td style="text-align: center; font-size: 13px;" th:text="${ho.maHo}">HO001</td>
-                                <td style="font-size: 13px;" th:text="${ho.tenHo}">Hộ gia đình A</td>
-                                <td style="font-size: 13px;">
-                                    <span th:with="canHo=${allCanHo.?[maTaiSan == __${ho.maCanHo}__].![tenTaiSan + (viTri != null ? ' - ' + viTri : '')]}">
-                                        <span th:if="${!canHo.isEmpty()}" th:text="${canHo[0]}">Căn hộ 101</span>
-                                        <span th:if="${canHo.isEmpty()}" style="color: #94a3b8;">Chưa có</span>
-                                    </span>
-                                </td>
-                                <td style="text-align: center; font-size: 13px;" th:text="${#temporals.format(ho.ngayThanhLap, 'dd/MM/yyyy')}">01/01/2020</td>
+                            <tr th:if="${yeuCauList.isEmpty()}">
+                                <td colspan="7" style="text-align: center; color: #94a3b8;">Không có yêu cầu</td>
+                            </tr>
+                            <tr th:each="yc : ${yeuCauList}">
+                                <td style="text-align: center;" th:text="${yc.maYeuCau}">1</td>
+                                <td style="text-align: center; font-weight: 600;" th:text="${yc.bienSo}">30A-123.45</td>
                                 <td style="text-align: center;">
-                                    <span class="badge" 
-                                          th:classappend="${ho.trangThai == 'hoat_dong'} ? 'badge-success' : 'badge-secondary'"
-                                          th:text="${ho.trangThai == 'hoat_dong'} ? 'Hoạt động' : 'Ngưng hoạt động'">Hoạt động</span>
+                                    <span class="badge badge-info" th:text="${yc.loaiXe == 'oto' ? 'Ô tô' : (yc.loaiXe == 'xe_may' ? 'Xe máy' : 'Khác')}">Ô tô</span>
+                                </td>
+                                <td style="text-align: center;" th:text="${yc.nguoiGui != null ? yc.nguoiGui.hoVaTen + ' (' + yc.cccdNguoiGui + ')' : yc.cccdNguoiGui}">Nguyễn Văn A</td>
+                                <td style="text-align: center;" th:text="${yc.ngayTao != null ? #temporals.format(yc.ngayTao, 'dd/MM/yyyy HH:mm') : 'N/A'}">01/01/2025</td>
+                                <td style="text-align: center;">
+                                    <span class="badge"
+                                          th:classappend="${yc.trangThai == 'da_duyet' ? 'badge-success' : (yc.trangThai == 'tu_choi' ? 'badge-danger' : 'badge-warning')}"
+                                          th:text="${yc.trangThai == 'da_duyet' ? 'Đã duyệt' : (yc.trangThai == 'tu_choi' ? 'Từ chối' : 'Chờ duyệt')}">Chờ duyệt</span>
                                 </td>
                                 <td class="actions" style="justify-content: center;">
-                                    <a th:href="@{/admin/ho-gia-dinh/detail/{maHo}(maHo=${ho.maHo})}" class="btn btn-sm btn-info">Chi tiết</a>
-                                    <a th:href="@{/admin/ho-gia-dinh/edit/{maHo}(maHo=${ho.maHo})}" class="btn btn-sm btn-warning">Sửa</a>
-                                    <a th:href="@{/admin/ho-gia-dinh/delete/{maHo}(maHo=${ho.maHo})}" 
-                                       class="btn btn-sm btn-danger" 
-                                       onclick="return confirm('Bạn có chắc chắn muốn xóa?')">Xóa</a>
+                                    <a th:href="@{/admin/gui-xe/detail/{id}(id=${yc.maYeuCau})}" class="btn btn-sm btn-info">Chi tiết</a>
                                 </td>
                             </tr>
                         </tbody>
@@ -153,9 +150,7 @@
             </main>
         </div>
     </div>
-    
     <script th:src="@{/js/script.js}"></script>
 </body>
 </html>
-
 

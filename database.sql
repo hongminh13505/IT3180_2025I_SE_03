@@ -334,6 +334,25 @@ CREATE TABLE phan_anh (
         ON UPDATE CASCADE
 );
 
+-- Yêu cầu gửi xe
+CREATE TABLE yeu_cau_gui_xe (
+    ma_yeu_cau SERIAL PRIMARY KEY,
+    cccd_nguoi_gui VARCHAR(12) NOT NULL,
+    ma_ho VARCHAR(20),
+    bien_so VARCHAR(20) NOT NULL,
+    loai_xe VARCHAR(20) DEFAULT 'xe_may' CHECK (loai_xe IN ('oto', 'xe_may', 'khac')),
+    mo_ta TEXT,
+    trang_thai VARCHAR(20) DEFAULT 'cho_duyet' CHECK (trang_thai IN ('cho_duyet', 'da_duyet', 'tu_choi')),
+    ngay_tao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    ngay_xu_ly TIMESTAMP,
+    cccd_nguoi_xu_ly VARCHAR(12),
+    ghi_chu_xu_ly TEXT,
+    CONSTRAINT fk_gui_xe_cccd FOREIGN KEY (cccd_nguoi_gui) REFERENCES doi_tuong(cccd) ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT fk_gui_xe_xu_ly FOREIGN KEY (cccd_nguoi_xu_ly) REFERENCES doi_tuong(cccd) ON DELETE SET NULL ON UPDATE CASCADE
+);
+CREATE INDEX idx_gui_xe_trang_thai ON yeu_cau_gui_xe(trang_thai);
+CREATE INDEX idx_gui_xe_bien_so ON yeu_cau_gui_xe(bien_so);
+
 -- Bảng phản hồi
 CREATE TABLE phan_hoi (
     ma_phan_hoi SERIAL PRIMARY KEY,

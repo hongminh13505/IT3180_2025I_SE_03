@@ -50,6 +50,14 @@
                             <img src="/images/phan-anh.png" alt="Phản ánh" style="width: 18px; height: 18px; margin-right: 12px;"> Phản ánh
                         </a>
                     </li>
+<<<<<<< HEAD
+                    <li>
+                        <a th:href="@{/cu-dan/gui-xe}">
+                            <img src="/images/tai-san-chung-cu.png" alt="Gửi xe" style="width: 18px; height: 18px; margin-right: 12px;"> Gửi xe
+                        </a>
+                    </li>
+=======
+>>>>>>> main
                 </ul>
             </nav>
         </aside>
@@ -81,11 +89,11 @@
                 
                 <!-- Payment Info Banner -->
                 <div class="info-banner" style="background: #e8f5e8; border: 2px solid #28a745; border-radius: 8px; padding: 20px; margin-bottom: 30px;">
-                    <h4 style="color: #28a745; margin-bottom: 10px;">📋 THÔNG TIN CHUYỂN KHOẢN</h4>
+                    <h4 style="color: #28a745; margin-bottom: 10px;">THÔNG TIN CHUYỂN KHOẢN</h4>
                     <p style="margin: 5px 0; font-size: 16px;"><strong>STK:</strong> 999999</p>
                     <p style="margin: 5px 0; font-size: 16px;"><strong>Ngân hàng:</strong> MBB BANK</p>
                     <p style="margin: 5px 0; font-size: 16px;"><strong>Chủ tài khoản:</strong> CHUNG CƯ BLUE MOON</p>
-                    <p style="margin: 10px 0 0 0; color: #666; font-size: 14px;">⚠️ Vui lòng chuyển khoản và bấm nút "Đã thanh toán" sau khi đã hoàn tất giao dịch.</p>
+                    <p style="margin: 10px 0 0 0; color: #666; font-size: 14px;">Vui lòng chuyển khoản và bấm nút "Đã thanh toán" sau khi đã hoàn tất giao dịch.</p>
                 </div>
                 
                 <!-- Table -->
@@ -109,12 +117,12 @@
                                 <td style="text-align: center; font-size: 13px;" th:text="${hoaDon.maHoaDon}">HD001</td>
                                 <td style="text-align: center;">
                                     <span th:switch="${hoaDon.loaiHoaDon}">
-                                        <span th:case="'dien_nuoc'" style="color: #4894ec;">⚡ Điện nước</span>
-                                        <span th:case="'dich_vu'" style="color: #ec4899;">🛠️ Dịch vụ</span>
-                                        <span th:case="'sua_chua'" style="color: #8b5cf6;">🔧 Sửa chữa</span>
+                                        <span th:case="'dien_nuoc'" style="color: #4894ec;">Điện nước</span>
+                                        <span th:case="'dich_vu'" style="color: #ec4899;">Dịch vụ</span>
+                                        <span th:case="'sua_chua'" style="color: #8b5cf6;">Sửa chữa</span>
                                         <span th:case="'phat'" style="color: #ef4444;">Phạt</span>
-                                        <span th:case="'khac'" style="color: #6b7280;">📄 Khác</span>
-                                        <span th:case="*" style="color: #6b7280;">📄 Khác</span>
+                                        <span th:case="'khac'" style="color: #6b7280;">Khác</span>
+                                        <span th:case="*" style="color: #6b7280;">Khác</span>
                                     </span>
                                 </td>
                                 <td style="text-align: center; font-size: 13px;" th:text="${#numbers.formatDecimal(hoaDon.soTien, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">0 VNĐ</td>
@@ -123,20 +131,21 @@
                                     <span class="badge" 
                                           th:classappend="${hoaDon.trangThai == 'da_thanh_toan'} ? 'badge-success' : (${hoaDon.trangThai == 'qua_han'} ? 'badge-danger' : 'badge-warning')">
                                         <span th:switch="${hoaDon.trangThai}">
-                                            <span th:case="'da_thanh_toan'">✓ Đã thanh toán</span>
-                                            <span th:case="'chua_thanh_toan'">⏳ Chưa thanh toán</span>
-                                            <span th:case="'qua_han'">⚠️ Quá hạn</span>
+                                            <span th:case="'da_thanh_toan'">Đã thanh toán</span>
+                                            <span th:case="'chua_thanh_toan'">Chưa thanh toán</span>
+                                            <span th:case="'qua_han'">Quá hạn</span>
                                             <span th:case="*">Chưa thanh toán</span>
                                         </span>
                                     </span>
                                 </td>
                                 <td class="actions" style="justify-content: center;" th:if="${isChuHo && hoaDon.trangThai != 'da_thanh_toan'}">
-                                    <form th:action="@{/cu-dan/hoa-don/thanh-toan/{id}(id=${hoaDon.maHoaDon})}" method="post" style="display: inline;">
-                                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                                        <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('Xác nhận đã thanh toán hóa đơn #' + this.form.action.split('/').pop() + '?')">
-                                            💳 Thanh toán
-                                        </button>
-                                    </form>
+                                    <button type="button" class="btn btn-sm btn-success payment-btn" 
+                                            th:data-ma-hoa-don="${hoaDon.maHoaDon}"
+                                            th:data-loai-hoa-don="${hoaDon.loaiHoaDon}"
+                                            th:data-so-tien="${hoaDon.soTien}"
+                                            th:data-han-thanh-toan="${hoaDon.hanThanhToan != null ? #temporals.format(hoaDon.hanThanhToan, 'dd/MM/yyyy') : 'N/A'}">
+                                        <img src="/images/money.png" alt="Thanh toán" style="width: 16px; height: 16px; margin-right: 4px; filter: brightness(0) invert(1);"> Thanh toán
+                                    </button>
                                 </td>
                                 <td th:if="${isChuHo && hoaDon.trangThai == 'da_thanh_toan'}" style="text-align: center; color: #94a3b8;">
                                     Đã thanh toán
@@ -152,7 +161,271 @@
         </div>
     </div>
     
+    <!-- Payment Confirmation Modal -->
+    <div id="paymentModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content payment-modal-content" style="max-width: 600px;">
+            <div class="modal-header payment-modal-header" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 24px; border-radius: 12px 12px 0 0;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div style="width: 48px; height: 48px; background: rgba(255, 255, 255, 0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                        <img src="/images/money.png" alt="Thanh toán" style="width: 28px; height: 28px; filter: brightness(0) invert(1);">
+                    </div>
+                    <div>
+                        <h3 style="margin: 0; font-size: 22px; font-weight: 600;">Xác nhận thanh toán</h3>
+                        <p style="margin: 4px 0 0 0; font-size: 14px; opacity: 0.9;">Vui lòng kiểm tra thông tin trước khi xác nhận</p>
+                    </div>
+                </div>
+                <button type="button" class="modal-close" onclick="closePaymentModal()" style="color: white; font-size: 28px; background: none; border: none; cursor: pointer; padding: 0; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.2)'" onmouseout="this.style.background='none'">&times;</button>
+            </div>
+            
+            <div class="modal-body payment-modal-body" style="padding: 30px;">
+                <!-- Invoice Details -->
+                <div style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border-radius: 12px; padding: 20px; margin-bottom: 24px; border: 2px solid #10b981;">
+                    <h4 style="margin: 0 0 16px 0; color: #059669; font-size: 18px; font-weight: 600;">
+                        Thông tin hóa đơn
+                    </h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                        <div>
+                            <label style="font-weight: 600; color: #64748b; font-size: 13px; display: block; margin-bottom: 4px;">Mã hóa đơn:</label>
+                            <p style="margin: 0; font-weight: 600; color: #1e293b; font-size: 16px;" id="modalMaHoaDon">HD001</p>
+                        </div>
+                        <div>
+                            <label style="font-weight: 600; color: #64748b; font-size: 13px; display: block; margin-bottom: 4px;">Loại hóa đơn:</label>
+                            <p style="margin: 0; font-weight: 600; color: #1e293b; font-size: 16px;" id="modalLoaiHoaDon">Điện nước</p>
+                        </div>
+                        <div>
+                            <label style="font-weight: 600; color: #64748b; font-size: 13px; display: block; margin-bottom: 4px;">Số tiền:</label>
+                            <p style="margin: 0; font-weight: 700; color: #ef4444; font-size: 20px;" id="modalSoTien">0 VNĐ</p>
+                        </div>
+                        <div>
+                            <label style="font-weight: 600; color: #64748b; font-size: 13px; display: block; margin-bottom: 4px;">Hạn thanh toán:</label>
+                            <p style="margin: 0; font-weight: 600; color: #1e293b; font-size: 16px;" id="modalHanThanhToan">01/01/2024</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Payment Method Selection -->
+                <div style="margin-bottom: 24px;">
+                    <label style="font-weight: 600; color: #1e293b; font-size: 16px; display: block; margin-bottom: 12px;">
+                        Phương thức thanh toán
+                    </label>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                        <label style="display: flex; align-items: center; gap: 12px; padding: 16px; border: 2px solid #e2e8f0; border-radius: 12px; cursor: pointer; transition: all 0.2s; background: #f8fafc;" 
+                               onmouseover="this.style.borderColor='#0ea5e9'; this.style.background='#f0f9ff'" 
+                               onmouseout="this.style.borderColor='#e2e8f0'; this.style.background='#f8fafc'">
+                            <input type="radio" name="phuongThucThanhToan" value="chuyen_khoan" checked style="width: 20px; height: 20px; cursor: pointer;">
+                            <div>
+                                <div style="font-weight: 600; color: #1e293b;">Chuyển khoản</div>
+                                <div style="font-size: 12px; color: #64748b;">Ngân hàng</div>
+                            </div>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 12px; padding: 16px; border: 2px solid #e2e8f0; border-radius: 12px; cursor: pointer; transition: all 0.2s; background: #f8fafc;" 
+                               onmouseover="this.style.borderColor='#0ea5e9'; this.style.background='#f0f9ff'" 
+                               onmouseout="this.style.borderColor='#e2e8f0'; this.style.background='#f8fafc'">
+                            <input type="radio" name="phuongThucThanhToan" value="tien_mat" style="width: 20px; height: 20px; cursor: pointer;">
+                            <div>
+                                <div style="font-weight: 600; color: #1e293b;">Tiền mặt</div>
+                                <div style="font-size: 12px; color: #64748b;">Trực tiếp</div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- Bank Transfer Info -->
+                <div id="bankInfo" style="background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border-radius: 12px; padding: 20px; margin-bottom: 24px; border: 2px solid #0ea5e9; border-left: 4px solid #0ea5e9;">
+                    <h4 style="margin: 0 0 12px 0; color: #0369a1; font-size: 16px; font-weight: 600;">
+                        Thông tin chuyển khoản
+                    </h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                        <div>
+                            <label style="font-weight: 600; color: #64748b; font-size: 13px; display: block; margin-bottom: 4px;">Số tài khoản:</label>
+                            <p style="margin: 0; font-weight: 700; color: #1e293b; font-size: 18px;">999999</p>
+                        </div>
+                        <div>
+                            <label style="font-weight: 600; color: #64748b; font-size: 13px; display: block; margin-bottom: 4px;">Ngân hàng:</label>
+                            <p style="margin: 0; font-weight: 600; color: #1e293b; font-size: 16px;">MBB BANK</p>
+                        </div>
+                        <div style="grid-column: 1 / -1;">
+                            <label style="font-weight: 600; color: #64748b; font-size: 13px; display: block; margin-bottom: 4px;">Chủ tài khoản:</label>
+                            <p style="margin: 0; font-weight: 600; color: #1e293b; font-size: 16px;">CHUNG CƯ BLUE MOON</p>
+                        </div>
+                    </div>
+                    <div style="margin-top: 12px; padding: 12px; background: rgba(14, 165, 233, 0.1); border-radius: 8px;">
+                        <p style="margin: 0; font-size: 13px; color: #0369a1;">
+                            Vui lòng chuyển khoản đúng số tiền và nội dung chuyển khoản là mã hóa đơn
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Warning Message -->
+                <div style="background: #fef3c7; border: 2px solid #f59e0b; border-radius: 12px; padding: 16px; margin-bottom: 24px;">
+                    <p style="margin: 0; color: #92400e; font-size: 14px;">
+                        <strong>Lưu ý:</strong> Sau khi xác nhận, hệ thống sẽ tự động cập nhật trạng thái hóa đơn và gửi thông báo xác nhận đến Ban quản trị.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="modal-footer payment-modal-footer" style="padding: 20px 30px; background: #f8fafc; border-top: 1px solid #e2e8f0; border-radius: 0 0 12px 12px; display: flex; justify-content: flex-end; gap: 12px;">
+                <button type="button" class="btn btn-secondary" onclick="closePaymentModal()" style="padding: 12px 24px; font-size: 15px;">
+                    Hủy
+                </button>
+                <form id="paymentForm" method="post" style="display: inline;">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <input type="hidden" name="phuongThucThanhToan" id="phuongThucThanhToanInput" value="chuyen_khoan"/>
+                    <button type="submit" class="btn btn-primary" style="padding: 12px 24px; font-size: 15px; display: flex; align-items: center; gap: 8px;">
+                        <img src="/images/money.png" alt="Xác nhận" style="width: 18px; height: 18px; filter: brightness(0) invert(1);"> Xác nhận thanh toán
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
     <script th:src="@{/js/script.js}"></script>
+    <script>
+        // Payment Modal Functions
+        function openPaymentModal(maHoaDon, loaiHoaDon, soTien, hanThanhToan) {
+            // Set invoice details
+            document.getElementById('modalMaHoaDon').textContent = 'HD' + String(maHoaDon).padStart(3, '0');
+            
+            // Map loaiHoaDon to display name
+            const loaiHoaDonMap = {
+                'dien_nuoc': 'Điện nước',
+                'dich_vu': 'Dịch vụ',
+                'sua_chua': 'Sửa chữa',
+                'phat': 'Phạt',
+                'khac': 'Khác'
+            };
+            document.getElementById('modalLoaiHoaDon').textContent = loaiHoaDonMap[loaiHoaDon] || 'Khác';
+            
+            // Format soTien
+            const formattedSoTien = new Intl.NumberFormat('vi-VN').format(soTien) + ' VNĐ';
+            document.getElementById('modalSoTien').textContent = formattedSoTien;
+            
+            document.getElementById('modalHanThanhToan').textContent = hanThanhToan;
+            
+            // Set form action
+            const form = document.getElementById('paymentForm');
+            form.action = '/cu-dan/hoa-don/thanh-toan/' + maHoaDon;
+            
+            // Show modal
+            document.getElementById('paymentModal').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+            
+            // Update payment method visibility
+            updatePaymentMethodVisibility();
+        }
+        
+        function closePaymentModal() {
+            document.getElementById('paymentModal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+        
+        function updatePaymentMethodVisibility() {
+            const selectedMethod = document.querySelector('input[name="phuongThucThanhToan"]:checked').value;
+            const bankInfo = document.getElementById('bankInfo');
+            
+            if (selectedMethod === 'chuyen_khoan') {
+                bankInfo.style.display = 'block';
+            } else {
+                bankInfo.style.display = 'none';
+            }
+        }
+        
+        // Initialize all event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize payment buttons
+            const paymentButtons = document.querySelectorAll('.payment-btn');
+            paymentButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const maHoaDon = this.getAttribute('data-ma-hoa-don');
+                    const loaiHoaDon = this.getAttribute('data-loai-hoa-don');
+                    const soTien = parseFloat(this.getAttribute('data-so-tien'));
+                    const hanThanhToan = this.getAttribute('data-han-thanh-toan');
+                    openPaymentModal(maHoaDon, loaiHoaDon, soTien, hanThanhToan);
+                });
+            });
+            
+            // Update payment method input when radio changes
+            const radioButtons = document.querySelectorAll('input[name="phuongThucThanhToan"]');
+            radioButtons.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    document.getElementById('phuongThucThanhToanInput').value = this.value;
+                    updatePaymentMethodVisibility();
+                });
+            });
+            
+            // Close modal when clicking outside
+            const modal = document.getElementById('paymentModal');
+            if (modal) {
+                modal.addEventListener('click', function(event) {
+                    if (event.target === this) {
+                        closePaymentModal();
+                    }
+                });
+            }
+        });
+    </script>
+    <style>
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(4px);
+        }
+        
+        .payment-modal-content {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            animation: modalSlideIn 0.3s ease-out;
+        }
+        
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        
+        .payment-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+        
+        .payment-modal-body {
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+        
+        .payment-modal-body::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .payment-modal-body::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 4px;
+        }
+        
+        .payment-modal-body::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        
+        .payment-modal-body::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
 </body>
 </html>
 
