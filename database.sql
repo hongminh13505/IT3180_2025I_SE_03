@@ -1,11 +1,3 @@
--- =====================================================
--- HỆ THỐNG QUẢN LÝ CHUNG CƯ - POSTGRESQL SCHEMA V2
--- Hỗ trợ lưu lịch sử đầy đủ
--- =====================================================
-
--- =====================================================
--- PHẦN 1: QUẢN LÝ NGƯỜI DÙNG & CƯ DÂN
--- =====================================================
 
 -- Bảng người dùng (tài khoản đăng nhập hệ thống)
 CREATE TABLE doi_tuong (
@@ -46,8 +38,8 @@ CREATE TABLE thanh_vien_ho (
     la_chu_ho BOOLEAN DEFAULT FALSE,
     quan_he_voi_chu_ho VARCHAR(50),
     ngay_bat_dau DATE NOT NULL DEFAULT CURRENT_DATE,
-    ngay_ket_thuc DATE, -- NULL = đang sinh sống
-    ly_do_ket_thuc VARCHAR(100), -- 'chuyen_di', 'qua_doi', 'chuyen_chu_ho', 'tach_ho'
+    ngay_ket_thuc DATE, 
+    ly_do_ket_thuc VARCHAR(100), 
     ghi_chu TEXT,
     CONSTRAINT pk_thanh_vien_ho PRIMARY KEY (cccd, ngay_bat_dau),
     CONSTRAINT fk_ma_ho FOREIGN KEY (ma_ho) 
@@ -61,19 +53,16 @@ CREATE TABLE thanh_vien_ho (
     CONSTRAINT check_ngay_thanh_vien CHECK (ngay_ket_thuc IS NULL OR ngay_ket_thuc >= ngay_bat_dau)
 );
 
--- =====================================================
--- PHẦN 2: QUẢN LÝ TÀI SẢN
--- =====================================================
 
 -- Bảng tài sản chung cư
 CREATE TABLE tai_san_chung_cu (
     ma_tai_san SERIAL PRIMARY KEY,
     ten_tai_san VARCHAR(100) NOT NULL,
     loai_tai_san VARCHAR(30) NOT NULL CHECK (loai_tai_san IN ('can_ho', 'thiet_bi', 'tien_ich')),
-    ma_ho VARCHAR(20), -- Hộ gia đình sở hữu/sử dụng
+    ma_ho VARCHAR(20), 
     trang_thai VARCHAR(20) DEFAULT 'hoat_dong' 
         CHECK (trang_thai IN ('hoat_dong', 'bao_tri', 'hong', 'ngung_hoat_dong')),
-    dien_tich DECIMAL(10,2), -- m2 (cho căn hộ)
+    dien_tich DECIMAL(10,2), 
     vi_tri TEXT,
     gia_tri DECIMAL(15,2),
     ngay_them TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -83,16 +72,12 @@ CREATE TABLE tai_san_chung_cu (
         ON UPDATE CASCADE
 );
 
--- Cập nhật liên kết ngược từ ho_gia_dinh đến tai_san_chung_cu
 ALTER TABLE ho_gia_dinh
 ADD CONSTRAINT fk_ma_can_ho FOREIGN KEY (ma_can_ho) 
     REFERENCES tai_san_chung_cu(ma_tai_san) 
     ON DELETE SET NULL 
     ON UPDATE CASCADE;
 
--- =====================================================
--- PHẦN 3: QUẢN LÝ DỊCH VỤ
--- =====================================================
 
 -- Bảng dịch vụ (các dịch vụ có phí)
 CREATE TABLE dich_vu (
@@ -101,7 +86,7 @@ CREATE TABLE dich_vu (
     cccd_ban_quan_tri VARCHAR(12),
     mo_ta TEXT,
     gia_thanh DECIMAL(15,2) NOT NULL,
-    don_vi VARCHAR(20), -- VD: VNĐ/tháng, VNĐ/lần
+    don_vi VARCHAR(20), 
     loai_dich_vu VARCHAR(30) CHECK (loai_dich_vu IN ('dinh_ky', 'theo_yeu_cau')),
     trang_thai VARCHAR(20) DEFAULT 'hoat_dong' CHECK (trang_thai IN ('hoat_dong', 'tam_ngung')),
     ngay_tao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -120,10 +105,10 @@ CREATE TABLE dang_ky_dich_vu (
     mo_ta_yeu_cau TEXT,
     ngay_dang_ky TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     ngay_bat_dau_su_dung DATE,
-    ngay_ket_thuc_su_dung DATE, -- NULL = vô thời hạn (cho dịch vụ định kỳ)
+    ngay_ket_thuc_su_dung DATE, 
     trang_thai VARCHAR(20) DEFAULT 'cho_duyet' 
         CHECK (trang_thai IN ('cho_duyet', 'da_duyet', 'dang_su_dung', 'da_huy', 'da_ket_thuc')),
-    cccd_nguoi_duyet VARCHAR(12), -- BQL phê duyệt
+    cccd_nguoi_duyet VARCHAR(12), 
     ngay_duyet TIMESTAMP,
     ghi_chu TEXT,
     CONSTRAINT fk_cccd_nguoidung_dkdv FOREIGN KEY (cccd_nguoi_dung) 
@@ -140,18 +125,14 @@ CREATE TABLE dang_ky_dich_vu (
         ON UPDATE CASCADE
 );
 
--- =====================================================
--- PHẦN 4: BÁO CÁO SỰ CỐ (tách riêng khỏi dịch vụ)
--- =====================================================
-
 -- Bảng báo cáo sự cố
 CREATE TABLE bao_cao_su_co (
     ma_bao_cao SERIAL PRIMARY KEY,
-    cccd_nguoi_bao_cao VARCHAR(12) NOT NULL, -- Cư dân báo sự cố
-    cccd_nguoi_nhap VARCHAR(12), -- NULL nếu cư dân tự báo, có giá trị nếu BQL nhập thay
+    cccd_nguoi_bao_cao VARCHAR(12) NOT NULL, 
+    cccd_nguoi_nhap VARCHAR(12), 
     tieu_de VARCHAR(200) NOT NULL,
     mo_ta_su_co TEXT NOT NULL,
-    vi_tri_su_co TEXT, -- Vị trí xảy ra sự cố
+    vi_tri_su_co TEXT, 
     muc_do_uu_tien VARCHAR(20) DEFAULT 'binh_thuong' 
         CHECK (muc_do_uu_tien IN ('thap', 'binh_thuong', 'cao', 'khan_cap')),
     phuong_thuc_bao_cao VARCHAR(20) DEFAULT 'truc_tuyen' 
@@ -159,7 +140,7 @@ CREATE TABLE bao_cao_su_co (
     ngay_bao_cao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     trang_thai VARCHAR(20) DEFAULT 'moi_tiep_nhan' 
         CHECK (trang_thai IN ('moi_tiep_nhan', 'dang_xu_ly', 'cho_phe_duyet', 'da_hoan_thanh', 'da_huy')),
-    cccd_nguoi_xu_ly VARCHAR(12), -- Nhân viên kỹ thuật xử lý
+    cccd_nguoi_xu_ly VARCHAR(12), 
     ngay_bat_dau_xu_ly TIMESTAMP,
     ngay_hoan_thanh TIMESTAMP,
     ket_qua_xu_ly TEXT,
@@ -192,18 +173,15 @@ CREATE TABLE anh_bao_cao_su_co (
         ON DELETE CASCADE
 );
 
--- =====================================================
--- PHẦN 5: HÓA ĐƠN & THANH TOÁN
--- =====================================================
 
 -- Bảng hóa đơn
 CREATE TABLE hoa_don (
     ma_hoa_don SERIAL PRIMARY KEY,
-    ma_ho VARCHAR(20) NOT NULL, -- Hóa đơn theo hộ gia đình
+    ma_ho VARCHAR(20) NOT NULL, 
     so_tien DECIMAL(15,2) NOT NULL,
-    ma_dich_vu INTEGER, -- Hóa đơn dịch vụ
-    ma_bao_cao INTEGER, -- Hóa đơn chi phí sửa chữa (nếu có)
-    ma_tai_san INTEGER, -- Căn hộ liên quan
+    ma_dich_vu INTEGER, 
+    ma_bao_cao INTEGER, 
+    ma_tai_san INTEGER, 
     loai_hoa_don VARCHAR(30) CHECK (loai_hoa_don IN ('dich_vu', 'dien_nuoc', 'sua_chua', 'phat', 'khac')),
     trang_thai VARCHAR(20) DEFAULT 'chua_thanh_toan' 
         CHECK (trang_thai IN ('da_thanh_toan', 'chua_thanh_toan', 'qua_han', 'giam_tru')),
@@ -235,25 +213,22 @@ CREATE TABLE hoa_don (
         (CASE WHEN ma_tai_san IS NOT NULL THEN 1 ELSE 0 END) <= 1)
 );
 
--- =====================================================
--- PHẦN 6: CHỈ SỐ ĐIỆN NƯỚC
--- =====================================================
 
 -- Bảng chỉ số điện nước
 CREATE TABLE chi_so_dien_nuoc (
     ma_chi_so SERIAL PRIMARY KEY,
     ma_ho VARCHAR(20) NOT NULL,
-    ma_hoa_don INTEGER, -- Foreign key đến bảng hoa_don
-    ky_thanh_toan VARCHAR(20) NOT NULL, -- VD: "01/2024"
+    ma_hoa_don INTEGER, 
+    ky_thanh_toan VARCHAR(20) NOT NULL, 
     dien_cu INTEGER NOT NULL DEFAULT 0,
     dien_moi INTEGER NOT NULL DEFAULT 0,
     nuoc_cu INTEGER NOT NULL DEFAULT 0,
     nuoc_moi INTEGER NOT NULL DEFAULT 0,
-    don_gia_dien DECIMAL(15,2) DEFAULT 3500.00, -- VNĐ/số
-    don_gia_nuoc DECIMAL(15,2) DEFAULT 10000.00, -- VNĐ/khối
+    don_gia_dien DECIMAL(15,2) DEFAULT 3500.00,
+    don_gia_nuoc DECIMAL(15,2) DEFAULT 10000.00, 
     tien_dien DECIMAL(15,2) DEFAULT 0,
     tien_nuoc DECIMAL(15,2) DEFAULT 0,
-    tien_dich_vu DECIMAL(15,2) DEFAULT 0, -- Tổng tiền dịch vụ khác
+    tien_dich_vu DECIMAL(15,2) DEFAULT 0, 
     tong_tien DECIMAL(15,2) DEFAULT 0,
     ngay_nhap TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     ghi_chu TEXT,
@@ -272,10 +247,6 @@ CREATE TABLE chi_so_dien_nuoc (
     CONSTRAINT unique_ma_ho_ky UNIQUE (ma_ho, ky_thanh_toan)
 );
 
--- =====================================================
--- PHẦN 7: THÔNG BÁO & PHẢN HỒI
--- =====================================================
-
 -- Bảng thông báo
 CREATE TABLE thong_bao (
     ma_thong_bao SERIAL PRIMARY KEY,
@@ -287,7 +258,7 @@ CREATE TABLE thong_bao (
     loai_thong_bao VARCHAR(30) DEFAULT 'binh_thuong' 
         CHECK (loai_thong_bao IN ('quan_trong', 'binh_thuong', 'khan_cap')),
     doi_tuong_nhan VARCHAR(20) DEFAULT 'tat_ca' 
-        CHECK (doi_tuong_nhan IN ('tat_ca', 'chu_ho', 'ho_gia_dinh')), -- Gửi cho ai: tất cả, chủ hộ, hoặc hộ gia đình cụ thể
+        CHECK (doi_tuong_nhan IN ('tat_ca', 'chu_ho', 'ho_gia_dinh')), 
     CONSTRAINT fk_cccd_bqt_thongbao FOREIGN KEY (cccd_ban_quan_tri) 
         REFERENCES doi_tuong(cccd) 
         ON DELETE CASCADE 
@@ -369,9 +340,6 @@ CREATE TABLE phan_hoi (
         ON DELETE CASCADE
 );
 
--- =====================================================
--- PHẦN 8: LỊCH SỬ CHỈNH SỬA
--- =====================================================
 
 -- Bảng lịch sử chỉnh sửa
 CREATE TABLE IF NOT EXISTS lich_su_chinh_sua (
@@ -393,13 +361,11 @@ CREATE TABLE IF NOT EXISTS lich_su_chinh_sua (
         REFERENCES doi_tuong(cccd) ON DELETE SET NULL
 );
 
--- Tạo index để tăng tốc độ truy vấn
 CREATE INDEX IF NOT EXISTS idx_lich_su_loai_ma ON lich_su_chinh_sua(loai_doi_tuong, ma_doi_tuong);
 CREATE INDEX IF NOT EXISTS idx_lich_su_cccd ON lich_su_chinh_sua(cccd_nguoi_chinh_sua);
 CREATE INDEX IF NOT EXISTS idx_lich_su_thoi_gian ON lich_su_chinh_sua(thoi_gian DESC);
 CREATE INDEX IF NOT EXISTS idx_lich_su_nguon ON lich_su_chinh_sua(nguon_chinh_sua);
 
--- Comment cho bảng
 COMMENT ON TABLE lich_su_chinh_sua IS 'Bảng lưu lịch sử chỉnh sửa thông tin của các đối tượng trong hệ thống';
 COMMENT ON COLUMN lich_su_chinh_sua.loai_doi_tuong IS 'Loại đối tượng: doi_tuong, ho_gia_dinh, thanh_vien_ho';
 COMMENT ON COLUMN lich_su_chinh_sua.ma_doi_tuong IS 'Mã đối tượng (CCCD hoặc mã hộ)';

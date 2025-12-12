@@ -829,3 +829,216 @@
 }
 
 
+/* Detail view enhancements */
+.page-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+}
+
+.btn-ghost {
+    background: white;
+    color: var(--secondary-color);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.btn-ghost:hover {
+    background: #f8fafc;
+    color: var(--dark-text);
+    transform: translateY(-1px);
+}
+
+.detail-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.detail-hero {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 24px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, #ffffff 0%, #f4f7fb 100%);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+    border: 1px solid rgba(226, 232, 240, 0.9);
+}
+
+.eyebrow {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #94a3b8;
+    margin: 0 0 6px 0;
+    font-weight: 700;
+}
+
+.hero-title {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--dark-text);
+    letter-spacing: -0.3px;
+}
+
+.hero-meta {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+}
+
+.meta-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: #f8fafc;
+    border: 1px solid var(--border-color);
+    border-radius: 999px;
+    font-weight: 600;
+    color: var(--dark-text);
+}
+
+.dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: var(--secondary-color);
+}
+
+.dot-primary { background: var(--primary-color); }
+.dot-info { background: var(--info-color); }
+.dot-neutral { background: #94a3b8; }
+
+.badge-large {
+    padding: 8px 14px;
+    font-size: 12px;
+    letter-spacing: 0.05em;
+}
+
+.detail-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 16px;
+}
+
+.detail-card {
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    border: 1px solid rgba(226, 232, 240, 0.9);
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 14px;
+}
+
+.card-header h4 {
+    margin: 0;
+    font-size: 18px;
+    color: var(--dark-text);
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px 16px;
+}
+
+.info-item {
+    background: #f8fafc;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.info-item.full-row {
+    grid-column: 1 / -1;
+}
+
+.info-label {
+    font-size: 12px;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.info-value {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--dark-text);
+    word-break: break-word;
+}
+
+.info-value.muted {
+    font-weight: 500;
+    color: #475569;
+    line-height: 1.6;
+}
+
+.info-badge {
+    align-self: flex-start;
+    font-size: 12px;
+    padding: 6px 10px;
+}
+
+.status-block {
+    display: grid;
+    gap: 12px;
+}
+
+.status-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: #f8fafc;
+    border: 1px dashed var(--border-color);
+    color: var(--secondary-color);
+    font-weight: 600;
+}
+
+.status-meta strong {
+    color: var(--dark-text);
+}
+
+.status-note {
+    background: #f1f5f9;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 12px 14px;
+    color: #334155;
+    line-height: 1.6;
+}
+
+.stacked-form .form-group {
+    margin-bottom: 14px;
+}
+
+.form-actions.compact {
+    border-top: none;
+    padding-top: 0;
+    margin-top: 10px;
+}
+
+@media (max-width: 768px) {
+    .detail-hero {
+        flex-direction: column;
+    }
+}
+

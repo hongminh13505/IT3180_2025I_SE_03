@@ -39,6 +39,10 @@ public class TaiSanChungCuService {
         return taiSanRepository.findByMaHo(maHo);
     }
     
+    public Optional<TaiSanChungCu> findCanHoByTen(String tenCanHo) {
+        return taiSanRepository.findByLoaiTaiSanAndTenTaiSanIgnoreCase("can_ho", tenCanHo);
+    }
+    
     @Transactional
     public TaiSanChungCu save(TaiSanChungCu taiSan) {
         return taiSanRepository.save(taiSan);

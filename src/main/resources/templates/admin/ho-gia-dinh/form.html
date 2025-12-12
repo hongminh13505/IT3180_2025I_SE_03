@@ -114,6 +114,7 @@
                 
                 <div class="form-container">
                     <form th:action="@{/admin/ho-gia-dinh/save}" method="post" th:object="${hoGiaDinh}">
+                        <input type="hidden" name="isEdit" th:value="${isEdit}">
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="maHo">Mã hộ: <span class="required">*</span></label>

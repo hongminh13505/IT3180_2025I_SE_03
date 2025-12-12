@@ -131,6 +131,13 @@ public class HoGiaDinhController {
             @RequestParam String quanHe,
             @RequestParam(defaultValue = "false") boolean laChuHo) {
         try {
+            if (laChuHo) {
+                List<ThanhVienHo> chuHoHienTai = thanhVienHoRepository.findChuHoByMaHo(maHo);
+                if (!chuHoHienTai.isEmpty()) {
+                    return ResponseEntity.badRequest().body("Hộ này đã có chủ hộ đang hoạt động. Vui lòng kết thúc/chuyển chủ hộ trước khi thêm mới.");
+                }
+            }
+
             ThanhVienHo thanhVien = new ThanhVienHo();
             thanhVien.setMaHo(maHo);
             thanhVien.setCccd(cccd);
@@ -166,9 +173,16 @@ public class HoGiaDinhController {
                       RedirectAttributes redirectAttributes,
                       Authentication authentication) {
         try {
-            // Lấy thông tin hộ gia đình cũ để so sánh
+          
             boolean isNew = hoGiaDinhService.findByMaHo(hoGiaDinh.getMaHo()).isEmpty();
             HoGiaDinh existingHoGiaDinh = isNew ? null : hoGiaDinhService.findByMaHo(hoGiaDinh.getMaHo()).orElse(null);
+            boolean isEditFlag = isEdit != null && isEdit.equalsIgnoreCase("true");
+
+    
+            if (!isNew && !isEditFlag) {
+                redirectAttributes.addFlashAttribute("error", "Mã hộ đã tồn tại. Vui lòng nhập mã khác hoặc chỉnh sửa hộ gia đình hiện có.");
+                return "redirect:/admin/ho-gia-dinh/create";
+            }
           
             if (hoGiaDinh.getMaCanHo() != null) {
                 HoGiaDinh existingHo = hoGiaDinhService.findByMaCanHo(hoGiaDinh.getMaCanHo()).orElse(null);
@@ -189,7 +203,7 @@ public class HoGiaDinhController {
          
             hoGiaDinhService.save(hoGiaDinh);
             
-            // Ghi lại lịch sử chỉnh sửa
+        
             if (!isNew && existingHoGiaDinh != null) {
                 Map<String, LichSuChinhSuaService.ChangeInfo> thayDoi = new HashMap<>();
                 
@@ -225,7 +239,7 @@ public class HoGiaDinhController {
                     );
                 }
             } else if (isNew) {
-                // Tạo mới
+           
                 Map<String, LichSuChinhSuaService.ChangeInfo> thayDoi = new HashMap<>();
                 thayDoi.put("Tạo mới", new LichSuChinhSuaService.ChangeInfo("", "Tạo hộ gia đình mới"));
                 
@@ -243,13 +257,17 @@ public class HoGiaDinhController {
             }
            
             if (cccdChuHo != null && !cccdChuHo.trim().isEmpty()) {
-              
+                List<ThanhVienHo> chuHoHienTai = thanhVienHoRepository.findChuHoByMaHo(hoGiaDinh.getMaHo());
+                if (!chuHoHienTai.isEmpty() && !cccdChuHo.equals(chuHoHienTai.get(0).getCccd())) {
+                    redirectAttributes.addFlashAttribute("error", "Hộ này đã có chủ hộ: " + chuHoHienTai.get(0).getCccd() + ". Vui lòng kết thúc/chuyển chủ hộ trước.");
+                    return isNew ? "redirect:/admin/ho-gia-dinh" : "redirect:/admin/ho-gia-dinh/edit/" + hoGiaDinh.getMaHo();
+                }
+
                 List<ThanhVienHo> existingMembers = thanhVienHoRepository.findActiveByCccd(cccdChuHo);
                 boolean alreadyExists = existingMembers.stream()
                     .anyMatch(m -> m.getMaHo().equals(hoGiaDinh.getMaHo()) && m.getLaChuHo());
                 
                 if (!alreadyExists) {
-                    
                     ThanhVienHo chuHo = new ThanhVienHo();
                     chuHo.setCccd(cccdChuHo);
                     chuHo.setMaHo(hoGiaDinh.getMaHo());
