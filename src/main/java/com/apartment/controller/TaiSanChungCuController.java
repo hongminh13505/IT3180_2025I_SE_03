@@ -2,6 +2,7 @@ package com.apartment.controller;
 
 import com.apartment.entity.TaiSanChungCu;
 import com.apartment.service.TaiSanChungCuService;
+import com.apartment.service.HoGiaDinhService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -21,13 +22,28 @@ public class TaiSanChungCuController {
     @Autowired
     private TaiSanChungCuService taiSanService;
     
+    @Autowired
+    private HoGiaDinhService hoGiaDinhService;
+    
     @GetMapping
     public String list(@RequestParam(required = false) String loai, Model model) {
+        java.util.List<TaiSanChungCu> taiSanList;
         if (loai != null && !loai.isEmpty()) {
-            model.addAttribute("taiSanList", taiSanService.findByLoaiTaiSan(loai));
+            taiSanList = taiSanService.findByLoaiTaiSan(loai);
         } else {
-            model.addAttribute("taiSanList", taiSanService.findAll());
+            taiSanList = taiSanService.findAll();
         }
+        
+        // Tạo Map để tra cứu hộ gia đình theo maCanHo
+        java.util.Map<Integer, String> hoGiaDinhMap = new java.util.HashMap<>();
+        hoGiaDinhService.findAll().forEach(ho -> {
+            if (ho.getMaCanHo() != null) {
+                hoGiaDinhMap.put(ho.getMaCanHo(), ho.getMaHo());
+            }
+        });
+        
+        model.addAttribute("taiSanList", taiSanList);
+        model.addAttribute("hoGiaDinhMap", hoGiaDinhMap);
         model.addAttribute("loai", loai);
         return "admin/tai-san/list";
     }

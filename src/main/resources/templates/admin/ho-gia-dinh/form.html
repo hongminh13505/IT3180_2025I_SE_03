@@ -106,6 +106,9 @@
             </header>
             
             <main class="page-content">
+                <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+                <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+                
                 <!-- Cảnh báo nếu chưa có căn hộ -->
                 <div th:if="${canHoList != null and canHoList.isEmpty()}" class="alert alert-warning" style="background: #fff3cd; border: 1px solid #ffc107; padding: 15px; border-radius: 6px; margin-bottom: 20px;">
                     <strong>Chú ý:</strong> Chưa có căn hộ nào trong hệ thống. 

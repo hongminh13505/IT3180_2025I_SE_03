@@ -153,7 +153,14 @@
                                     <span th:if="${ts.trangThai == 'hong'}" class="badge badge-danger">Hỏng</span>
                                     <span th:if="${ts.trangThai == 'ngung_hoat_dong'}" class="badge badge-secondary">Ngừng hoạt động</span>
                                 </td>
-                                <td style="text-align: center; font-size: 13px;" th:text="${ts.maHo != null ? ts.maHo : 'Trống'}"></td>
+                                <td style="text-align: center; font-size: 13px;">
+                                    <span th:if="${ts.loaiTaiSan == 'can_ho'}">
+                                        <span th:text="${hoGiaDinhMap != null && hoGiaDinhMap.containsKey(ts.maTaiSan) ? hoGiaDinhMap.get(ts.maTaiSan) : 'Trống'}"></span>
+                                    </span>
+                                    <span th:if="${ts.loaiTaiSan != 'can_ho'}">
+                                        <span th:text="${ts.maHo != null ? ts.maHo : 'Trống'}"></span>
+                                    </span>
+                                </td>
                                 <td class="actions" style="justify-content: center; white-space: nowrap;">
                                     <a th:href="@{/admin/tai-san/edit/{id}(id=${ts.maTaiSan})}" class="btn btn-sm btn-primary">Sửa</a>
                                     <a th:href="@{/admin/tai-san/delete/{id}(id=${ts.maTaiSan})}" 

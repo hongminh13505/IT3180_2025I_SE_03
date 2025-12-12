@@ -19,6 +19,9 @@ public interface TaiSanChungCuRepository extends JpaRepository<TaiSanChungCu, In
     @Query("SELECT ts FROM TaiSanChungCu ts WHERE ts.loaiTaiSan = 'can_ho'")
     List<TaiSanChungCu> findAllCanHo();
     
+    @Query("SELECT ts FROM TaiSanChungCu ts WHERE ts.loaiTaiSan = 'can_ho' AND ts.trangThai = 'hoat_dong'")
+    List<TaiSanChungCu> findAllCanHoActive();
+    
     @Query("SELECT COUNT(ts) FROM TaiSanChungCu ts WHERE ts.loaiTaiSan = 'can_ho'")
     Long countCanHo();
 
