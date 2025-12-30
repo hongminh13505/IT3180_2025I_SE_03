@@ -18,6 +18,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 
 import com.apartment.entity.BaoCaoSuCo;
 import com.apartment.entity.DoiTuong;
@@ -210,26 +214,27 @@ public class CuDanController {
     
  
     @GetMapping("/thong-bao")
-    public String thongBao(@org.springframework.web.bind.annotation.RequestParam(required = false) String search,
+    public String thongBao(@RequestParam(required = false) String search,
+                           @RequestParam(defaultValue = "0") int page,
+                           @RequestParam(defaultValue = "20") int size,
                            Model model,
                            Authentication authentication) {
         try {
-            java.util.List<com.apartment.entity.ThongBao> thongBaoList = thongBaoService.findAll();
-    
-            thongBaoList.sort((t1, t2) -> t2.getNgayTaoThongBao().compareTo(t1.getNgayTaoThongBao()));
-           
+            Pageable pageable = PageRequest.of(page, size);
+            Page<com.apartment.entity.ThongBao> thongBaoPage;
+            
             if (search != null && !search.trim().isEmpty()) {
-                String searchLower = search.trim().toLowerCase();
-                thongBaoList = thongBaoList.stream()
-                    .filter(tb -> 
-                        (tb.getTieuDe() != null && tb.getTieuDe().toLowerCase().contains(searchLower)) ||
-                        (tb.getNoiDungThongBao() != null && tb.getNoiDungThongBao().toLowerCase().contains(searchLower))
-                    )
-                    .collect(java.util.stream.Collectors.toList());
+                thongBaoPage = thongBaoService.searchByKeyword(search, pageable);
+            } else {
+                thongBaoPage = thongBaoService.findAll(pageable);
             }
             
-            model.addAttribute("thongBaoList", thongBaoList);
+            model.addAttribute("thongBaoList", thongBaoPage.getContent());
+            model.addAttribute("thongBaoPage", thongBaoPage);
             model.addAttribute("search", search);
+            model.addAttribute("currentPage", page);
+            model.addAttribute("totalPages", thongBaoPage.getTotalPages());
+            model.addAttribute("totalElements", thongBaoPage.getTotalElements());
             model.addAttribute("username", authentication.getName());
             return "cu-dan/thong-bao";
         } catch (Exception e) {
@@ -241,16 +246,20 @@ public class CuDanController {
     
 
     @GetMapping("/bao-cao-su-co")
-    public String baoCaoSuCo(@org.springframework.web.bind.annotation.RequestParam(required = false) String search,
+    public String baoCaoSuCo(@RequestParam(required = false) String search,
+                             @RequestParam(defaultValue = "0") int page,
+                             @RequestParam(defaultValue = "20") int size,
                              Model model,
                              Authentication authentication) {
         try {
             String cccd = authentication.getName();
-            java.util.List<com.apartment.entity.BaoCaoSuCo> baoCaoList = baoCaoSuCoService.findByCccdNguoiBaoCao(cccd);
-          
+            Pageable pageable = PageRequest.of(page, size);
+            
+            java.util.List<com.apartment.entity.BaoCaoSuCo> allBaoCao = baoCaoSuCoService.findByCccdNguoiBaoCao(cccd);
+            
             if (search != null && !search.trim().isEmpty()) {
                 String searchLower = search.trim().toLowerCase();
-                baoCaoList = baoCaoList.stream()
+                allBaoCao = allBaoCao.stream()
                     .filter(bc -> 
                         (bc.getTieuDe() != null && bc.getTieuDe().toLowerCase().contains(searchLower)) ||
                         (bc.getTrangThai() != null && bc.getTrangThai().toLowerCase().contains(searchLower))
@@ -258,8 +267,21 @@ public class CuDanController {
                     .collect(java.util.stream.Collectors.toList());
             }
             
-            model.addAttribute("baoCaoList", baoCaoList);
+            int start = (int) pageable.getOffset();
+            int end = Math.min((start + pageable.getPageSize()), allBaoCao.size());
+            java.util.List<com.apartment.entity.BaoCaoSuCo> pageContent = start < allBaoCao.size() 
+                ? allBaoCao.subList(start, end) 
+                : java.util.Collections.emptyList();
+            
+            Page<com.apartment.entity.BaoCaoSuCo> baoCaoPage = 
+                new PageImpl<>(pageContent, pageable, allBaoCao.size());
+            
+            model.addAttribute("baoCaoList", baoCaoPage.getContent());
+            model.addAttribute("baoCaoPage", baoCaoPage);
             model.addAttribute("search", search);
+            model.addAttribute("currentPage", page);
+            model.addAttribute("totalPages", baoCaoPage.getTotalPages());
+            model.addAttribute("totalElements", baoCaoPage.getTotalElements());
             model.addAttribute("username", authentication.getName());
             return "cu-dan/bao-cao-su-co";
         } catch (Exception e) {
@@ -304,7 +326,10 @@ public class CuDanController {
     }
 
     @GetMapping("/hoa-don")
-    public String hoaDon(Model model, Authentication authentication) {
+    public String hoaDon(@RequestParam(defaultValue = "0") int page,
+                        @RequestParam(defaultValue = "20") int size,
+                        Model model, 
+                        Authentication authentication) {
         try {
             String cccd = authentication.getName();
             String maHo = getMaHoByCccd(cccd);
@@ -317,11 +342,25 @@ public class CuDanController {
             }
             
             boolean isChuHo = isChuHo(cccd, maHo);
-            java.util.List<HoaDon> hoaDonList = hoaDonService.findByMaHo(maHo);
+            java.util.List<HoaDon> allHoaDon = hoaDonService.findByMaHo(maHo);
             
-            model.addAttribute("hoaDonList", hoaDonList);
+            Pageable pageable = PageRequest.of(page, size);
+            int start = (int) pageable.getOffset();
+            int end = Math.min((start + pageable.getPageSize()), allHoaDon.size());
+            java.util.List<HoaDon> pageContent = start < allHoaDon.size() 
+                ? allHoaDon.subList(start, end) 
+                : java.util.Collections.emptyList();
+            
+            Page<HoaDon> hoaDonPage = 
+                new PageImpl<>(pageContent, pageable, allHoaDon.size());
+            
+            model.addAttribute("hoaDonList", hoaDonPage.getContent());
+            model.addAttribute("hoaDonPage", hoaDonPage);
             model.addAttribute("isChuHo", isChuHo);
             model.addAttribute("maHo", maHo);
+            model.addAttribute("currentPage", page);
+            model.addAttribute("totalPages", hoaDonPage.getTotalPages());
+            model.addAttribute("totalElements", hoaDonPage.getTotalElements());
             model.addAttribute("username", authentication.getName());
             
             return "cu-dan/hoa-don";
@@ -389,27 +428,43 @@ public class CuDanController {
     @GetMapping("/gui-xe")
     public String danhSachGuiXe(@RequestParam(required = false) String search,
                                 @RequestParam(required = false) String trangThai,
+                                @RequestParam(defaultValue = "0") int page,
+                                @RequestParam(defaultValue = "20") int size,
                                 Model model,
                                 Authentication authentication) {
         try {
             String cccd = authentication.getName();
-            java.util.List<YeuCauGuiXe> list = yeuCauGuiXeService.findByCccdNguoiGui(cccd);
+            java.util.List<YeuCauGuiXe> allList = yeuCauGuiXeService.findByCccdNguoiGui(cccd);
             
             if (trangThai != null && !trangThai.isEmpty()) {
                 String tt = trangThai.trim();
-                list = list.stream().filter(x -> x.getTrangThai() != null && x.getTrangThai().equals(tt)).collect(Collectors.toList());
+                allList = allList.stream().filter(x -> x.getTrangThai() != null && x.getTrangThai().equals(tt)).collect(Collectors.toList());
             }
             if (search != null && !search.trim().isEmpty()) {
                 String searchLower = search.trim().toLowerCase();
-                list = list.stream().filter(x ->
+                allList = allList.stream().filter(x ->
                         (x.getBienSo() != null && x.getBienSo().toLowerCase().contains(searchLower)) ||
                         (x.getLoaiXe() != null && x.getLoaiXe().toLowerCase().contains(searchLower))
                 ).collect(Collectors.toList());
             }
             
-            model.addAttribute("yeuCauList", list);
+            Pageable pageable = PageRequest.of(page, size);
+            int start = (int) pageable.getOffset();
+            int end = Math.min((start + pageable.getPageSize()), allList.size());
+            java.util.List<YeuCauGuiXe> pageContent = start < allList.size() 
+                ? allList.subList(start, end) 
+                : java.util.Collections.emptyList();
+            
+            Page<YeuCauGuiXe> yeuCauPage = 
+                new PageImpl<>(pageContent, pageable, allList.size());
+            
+            model.addAttribute("yeuCauList", yeuCauPage.getContent());
+            model.addAttribute("yeuCauPage", yeuCauPage);
             model.addAttribute("search", search);
             model.addAttribute("trangThai", trangThai);
+            model.addAttribute("currentPage", page);
+            model.addAttribute("totalPages", yeuCauPage.getTotalPages());
+            model.addAttribute("totalElements", yeuCauPage.getTotalElements());
             model.addAttribute("username", authentication.getName());
             return "cu-dan/gui-xe";
         } catch (Exception e) {
@@ -477,16 +532,20 @@ public class CuDanController {
     }
     
     @GetMapping("/phan-anh")
-    public String phanAnh(@org.springframework.web.bind.annotation.RequestParam(required = false) String search,
+    public String phanAnh(@RequestParam(required = false) String search,
+                          @RequestParam(defaultValue = "0") int page,
+                          @RequestParam(defaultValue = "20") int size,
                           Model model,
                           Authentication authentication) {
         try {
             String cccd = authentication.getName();
-            java.util.List<PhanAnh> phanAnhList = phanAnhService.findByCccdNguoiPhanAnh(cccd);
+            Pageable pageable = PageRequest.of(page, size);
+            
+            java.util.List<PhanAnh> allPhanAnh = phanAnhService.findByCccdNguoiPhanAnh(cccd);
             
             if (search != null && !search.trim().isEmpty()) {
                 String searchLower = search.trim().toLowerCase();
-                phanAnhList = phanAnhList.stream()
+                allPhanAnh = allPhanAnh.stream()
                     .filter(pa -> 
                         (pa.getTieuDe() != null && pa.getTieuDe().toLowerCase().contains(searchLower)) ||
                         (pa.getNoiDung() != null && pa.getNoiDung().toLowerCase().contains(searchLower))
@@ -494,8 +553,21 @@ public class CuDanController {
                     .collect(java.util.stream.Collectors.toList());
             }
             
-            model.addAttribute("phanAnhList", phanAnhList);
+            int start = (int) pageable.getOffset();
+            int end = Math.min((start + pageable.getPageSize()), allPhanAnh.size());
+            java.util.List<PhanAnh> pageContent = start < allPhanAnh.size() 
+                ? allPhanAnh.subList(start, end) 
+                : java.util.Collections.emptyList();
+            
+            Page<PhanAnh> phanAnhPage = 
+                new PageImpl<>(pageContent, pageable, allPhanAnh.size());
+            
+            model.addAttribute("phanAnhList", phanAnhPage.getContent());
+            model.addAttribute("phanAnhPage", phanAnhPage);
             model.addAttribute("search", search);
+            model.addAttribute("currentPage", page);
+            model.addAttribute("totalPages", phanAnhPage.getTotalPages());
+            model.addAttribute("totalElements", phanAnhPage.getTotalElements());
             model.addAttribute("username", authentication.getName());
             return "cu-dan/phan-anh";
         } catch (Exception e) {

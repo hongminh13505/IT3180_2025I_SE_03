@@ -13,6 +13,8 @@ public interface PhanAnhRepository extends JpaRepository<PhanAnh, Integer> {
     
     List<PhanAnh> findByCccdNguoiPhanAnhOrderByNgayTaoDesc(String cccd);
     
+    Page<PhanAnh> findByCccdNguoiPhanAnhOrderByNgayTaoDesc(String cccd, Pageable pageable);
+    
     List<PhanAnh> findByTrangThaiOrderByNgayTaoDesc(String trangThai);
     
     Page<PhanAnh> findByTrangThaiOrderByNgayTaoDesc(String trangThai, Pageable pageable);

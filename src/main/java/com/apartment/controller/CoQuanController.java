@@ -8,6 +8,11 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 
 @Controller
 @RequestMapping("/co-quan")
@@ -53,26 +58,27 @@ public class CoQuanController {
     }
     
     @GetMapping("/doi-tuong")
-    public String danhSachCuDan(@org.springframework.web.bind.annotation.RequestParam(required = false) String search, 
+    public String danhSachCuDan(@RequestParam(required = false) String search,
+                                @RequestParam(defaultValue = "0") int page,
+                                @RequestParam(defaultValue = "20") int size,
                                 Model model, 
                                 Authentication authentication) {
         try {
-            java.util.List<com.apartment.entity.DoiTuong> doiTuongList = doiTuongService.findAll();
+            Pageable pageable = PageRequest.of(page, size);
+            Page<com.apartment.entity.DoiTuong> doiTuongPage;
             
-            // Tìm kiếm nếu có
             if (search != null && !search.trim().isEmpty()) {
-                String searchLower = search.trim().toLowerCase();
-                doiTuongList = doiTuongList.stream()
-                    .filter(dt -> 
-                        (dt.getHoVaTen() != null && dt.getHoVaTen().toLowerCase().contains(searchLower)) ||
-                        (dt.getCccd() != null && dt.getCccd().toLowerCase().contains(searchLower)) ||
-                        (dt.getSoDienThoai() != null && dt.getSoDienThoai().toLowerCase().contains(searchLower))
-                    )
-                    .collect(java.util.stream.Collectors.toList());
+                doiTuongPage = doiTuongService.searchByKeyword(search, pageable);
+            } else {
+                doiTuongPage = doiTuongService.findAll(pageable);
             }
             
-            model.addAttribute("doiTuongList", doiTuongList);
+            model.addAttribute("doiTuongList", doiTuongPage.getContent());
+            model.addAttribute("doiTuongPage", doiTuongPage);
             model.addAttribute("search", search);
+            model.addAttribute("currentPage", page);
+            model.addAttribute("totalPages", doiTuongPage.getTotalPages());
+            model.addAttribute("totalElements", doiTuongPage.getTotalElements());
             model.addAttribute("username", authentication.getName());
             return "co-quan/doi-tuong";
         } catch (Exception e) {
@@ -83,25 +89,27 @@ public class CoQuanController {
     }
     
     @GetMapping("/ho-gia-dinh")
-    public String danhSachHoGiaDinh(@org.springframework.web.bind.annotation.RequestParam(required = false) String search,
+    public String danhSachHoGiaDinh(@RequestParam(required = false) String search,
+                                    @RequestParam(defaultValue = "0") int page,
+                                    @RequestParam(defaultValue = "20") int size,
                                     Model model,
                                     Authentication authentication) {
         try {
-            java.util.List<com.apartment.entity.HoGiaDinh> hoGiaDinhList = hoGiaDinhService.findAll();
+            Pageable pageable = PageRequest.of(page, size);
+            Page<com.apartment.entity.HoGiaDinh> hoGiaDinhPage;
             
-            // Tìm kiếm nếu có
             if (search != null && !search.trim().isEmpty()) {
-                String searchLower = search.trim().toLowerCase();
-                hoGiaDinhList = hoGiaDinhList.stream()
-                    .filter(ho -> 
-                        (ho.getMaHo() != null && ho.getMaHo().toLowerCase().contains(searchLower)) ||
-                        (ho.getTenHo() != null && ho.getTenHo().toLowerCase().contains(searchLower))
-                    )
-                    .collect(java.util.stream.Collectors.toList());
+                hoGiaDinhPage = hoGiaDinhService.searchByName(search, pageable);
+            } else {
+                hoGiaDinhPage = hoGiaDinhService.findAll(pageable);
             }
             
-            model.addAttribute("hoGiaDinhList", hoGiaDinhList);
+            model.addAttribute("hoGiaDinhList", hoGiaDinhPage.getContent());
+            model.addAttribute("hoGiaDinhPage", hoGiaDinhPage);
             model.addAttribute("search", search);
+            model.addAttribute("currentPage", page);
+            model.addAttribute("totalPages", hoGiaDinhPage.getTotalPages());
+            model.addAttribute("totalElements", hoGiaDinhPage.getTotalElements());
             model.addAttribute("username", authentication.getName());
             return "co-quan/ho-gia-dinh";
         } catch (Exception e) {
@@ -138,25 +146,42 @@ public class CoQuanController {
     }
     
     @GetMapping("/bao-cao-su-co")
-    public String baoCaoSuCo(@org.springframework.web.bind.annotation.RequestParam(required = false) String search,
+    public String baoCaoSuCo(@RequestParam(required = false) String search,
+                             @RequestParam(defaultValue = "0") int page,
+                             @RequestParam(defaultValue = "20") int size,
                              Model model,
                              Authentication authentication) {
         try {
-            java.util.List<com.apartment.entity.BaoCaoSuCo> baoCaoList = baoCaoSuCoService.findAll();
+            Pageable pageable = PageRequest.of(page, size);
+            Page<com.apartment.entity.BaoCaoSuCo> baoCaoPage;
             
-            // Tìm kiếm nếu có
             if (search != null && !search.trim().isEmpty()) {
+                java.util.List<com.apartment.entity.BaoCaoSuCo> allBaoCao = baoCaoSuCoService.findAll();
                 String searchLower = search.trim().toLowerCase();
-                baoCaoList = baoCaoList.stream()
+                java.util.List<com.apartment.entity.BaoCaoSuCo> filteredList = allBaoCao.stream()
                     .filter(bc -> 
                         (bc.getTieuDe() != null && bc.getTieuDe().toLowerCase().contains(searchLower)) ||
                         (bc.getTrangThai() != null && bc.getTrangThai().toLowerCase().contains(searchLower))
                     )
                     .collect(java.util.stream.Collectors.toList());
+                
+                int start = (int) pageable.getOffset();
+                int end = Math.min((start + pageable.getPageSize()), filteredList.size());
+                java.util.List<com.apartment.entity.BaoCaoSuCo> pageContent = start < filteredList.size() 
+                    ? filteredList.subList(start, end) 
+                    : java.util.Collections.emptyList();
+                
+                baoCaoPage = new PageImpl<>(pageContent, pageable, filteredList.size());
+            } else {
+                baoCaoPage = baoCaoSuCoService.findAll(pageable);
             }
             
-            model.addAttribute("baoCaoList", baoCaoList);
+            model.addAttribute("baoCaoList", baoCaoPage.getContent());
+            model.addAttribute("baoCaoPage", baoCaoPage);
             model.addAttribute("search", search);
+            model.addAttribute("currentPage", page);
+            model.addAttribute("totalPages", baoCaoPage.getTotalPages());
+            model.addAttribute("totalElements", baoCaoPage.getTotalElements());
             model.addAttribute("username", authentication.getName());
             return "co-quan/bao-cao-su-co";
         } catch (Exception e) {
@@ -167,25 +192,27 @@ public class CoQuanController {
     }
     
     @GetMapping("/thong-bao")
-    public String thongBao(@org.springframework.web.bind.annotation.RequestParam(required = false) String search,
+    public String thongBao(@RequestParam(required = false) String search,
+                           @RequestParam(defaultValue = "0") int page,
+                           @RequestParam(defaultValue = "20") int size,
                            Model model,
                            Authentication authentication) {
         try {
-            java.util.List<com.apartment.entity.ThongBao> thongBaoList = thongBaoService.findAll();
+            Pageable pageable = PageRequest.of(page, size);
+            Page<com.apartment.entity.ThongBao> thongBaoPage;
             
-            // Tìm kiếm nếu có
             if (search != null && !search.trim().isEmpty()) {
-                String searchLower = search.trim().toLowerCase();
-                thongBaoList = thongBaoList.stream()
-                    .filter(tb -> 
-                        (tb.getTieuDe() != null && tb.getTieuDe().toLowerCase().contains(searchLower)) ||
-                        (tb.getNoiDungThongBao() != null && tb.getNoiDungThongBao().toLowerCase().contains(searchLower))
-                    )
-                    .collect(java.util.stream.Collectors.toList());
+                thongBaoPage = thongBaoService.searchByKeyword(search, pageable);
+            } else {
+                thongBaoPage = thongBaoService.findAll(pageable);
             }
             
-            model.addAttribute("thongBaoList", thongBaoList);
+            model.addAttribute("thongBaoList", thongBaoPage.getContent());
+            model.addAttribute("thongBaoPage", thongBaoPage);
             model.addAttribute("search", search);
+            model.addAttribute("currentPage", page);
+            model.addAttribute("totalPages", thongBaoPage.getTotalPages());
+            model.addAttribute("totalElements", thongBaoPage.getTotalElements());
             model.addAttribute("username", authentication.getName());
             return "co-quan/thong-bao";
         } catch (Exception e) {

@@ -30,6 +30,10 @@ public class PhanAnhService {
         return phanAnhRepository.findByCccdNguoiPhanAnhOrderByNgayTaoDesc(cccd);
     }
     
+    public Page<PhanAnh> findByCccdNguoiPhanAnh(String cccd, Pageable pageable) {
+        return phanAnhRepository.findByCccdNguoiPhanAnhOrderByNgayTaoDesc(cccd, pageable);
+    }
+    
     public List<PhanAnh> findByTrangThai(String trangThai) {
         return phanAnhRepository.findByTrangThaiOrderByNgayTaoDesc(trangThai);
     }
