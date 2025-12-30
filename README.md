@@ -67,8 +67,7 @@ java -jar target/apartment-management-1.0.0.jar
 
 ## 4. Truy cập ứng dụng
 
-1. URL: http://localhost:8080
-2. Trang đăng nhập: http://localhost:8080/login
+URL: https://apartment-management-system-se03-1-wwe1.onrender.com/
 
 ## 5. Tài khoản mặc định
 
