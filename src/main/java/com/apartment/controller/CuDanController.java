@@ -1,10 +1,10 @@
 package com.apartment.controller;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter; // Thêm cái này để format ngày giờ
+import java.time.format.DateTimeFormatter; 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Collectors; // Thêm cái này để lọc list
+import java.util.stream.Collectors; 
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -23,7 +23,7 @@ import com.apartment.entity.BaoCaoSuCo;
 import com.apartment.entity.DoiTuong;
 import com.apartment.entity.HoaDon;
 import com.apartment.entity.ThanhVienHo;
-import com.apartment.entity.ThongBao; // Import ThongBao
+import com.apartment.entity.ThongBao; 
 import com.apartment.repository.ThanhVienHoRepository;
 import com.apartment.entity.PhanAnh;
 import com.apartment.entity.PhanAnh;
@@ -83,7 +83,7 @@ public class CuDanController {
     
     @GetMapping("/dashboard")
     public String dashboard(Model model, Authentication authentication) {
-        // Code của nhóm: Giữ nguyên
+       
         model.addAttribute("thongBaoList", thongBaoService.findAllVisible());
         model.addAttribute("baoCaoSuCoList", baoCaoSuCoService.findAll());
         
@@ -92,7 +92,7 @@ public class CuDanController {
         return "cu-dan/dashboard";
     }
     
-    // --- THÔNG TIN CÁ NHÂN (Code nhóm đã làm tốt, giữ nguyên) ---
+ 
     @GetMapping("/thong-tin-ca-nhan")
     public String thongTinCaNhan(Model model, Authentication authentication) {
         try {
@@ -198,15 +198,14 @@ public class CuDanController {
         return oldValue.equals(newValue);
     }
     
-    // --- THÔNG BÁO (Đã chỉnh sửa cho US-35) ---
+ 
     @GetMapping("/thong-bao")
     public String thongBao(@org.springframework.web.bind.annotation.RequestParam(required = false) String search,
                            Model model,
                            Authentication authentication) {
         try {
             java.util.List<com.apartment.entity.ThongBao> thongBaoList = thongBaoService.findAll();
-            
-            // [MOD] Sắp xếp mới nhất lên đầu (Hoàn thiện US-35)
+    
             thongBaoList.sort((t1, t2) -> t2.getNgayTaoThongBao().compareTo(t1.getNgayTaoThongBao()));
            
             if (search != null && !search.trim().isEmpty()) {
@@ -230,7 +229,7 @@ public class CuDanController {
         }
     }
     
-    // --- BÁO CÁO SỰ CỐ (Giữ nguyên code nhóm) ---
+
     @GetMapping("/bao-cao-su-co")
     public String baoCaoSuCo(@org.springframework.web.bind.annotation.RequestParam(required = false) String search,
                              Model model,
@@ -293,8 +292,7 @@ public class CuDanController {
         }
         return "redirect:/cu-dan/bao-cao-su-co";
     }
-    
-    // --- HÓA ĐƠN (Giữ nguyên) ---
+
     @GetMapping("/hoa-don")
     public String hoaDon(Model model, Authentication authentication) {
         try {
@@ -325,7 +323,7 @@ public class CuDanController {
         }
     }
     
-    // --- THANH TOÁN (Đã chỉnh sửa cho US-28) ---
+
     @PostMapping("/hoa-don/thanh-toan/{id}")
     public String thanhToan(@PathVariable Integer id,
                            @RequestParam(required = false, defaultValue = "chuyen_khoan") String phuongThucThanhToan,
@@ -348,13 +346,13 @@ public class CuDanController {
                 return "redirect:/cu-dan/hoa-don";
             }
             
-            // 1. Cập nhật trạng thái
+       
             hoaDon.setTrangThai("da_thanh_toan");
             hoaDon.setPhuongThucThanhToan(phuongThucThanhToan);
             hoaDon.setNgayThanhToan(LocalDateTime.now());
             hoaDonService.save(hoaDon);
             
-            // 2. [MOD] TẠO THÔNG BÁO TỰ ĐỘNG (Hoàn thiện US-28)
+          
             ThongBao tb = new ThongBao();
             tb.setTieuDe("Xác nhận thanh toán hóa đơn #" + id);
             String noiDung = String.format("Hộ gia đình %s đã thanh toán thành công hóa đơn %s. Số tiền: %,.0f VNĐ. Thời gian: %s", 
@@ -364,7 +362,6 @@ public class CuDanController {
             tb.setNgayTaoThongBao(LocalDateTime.now());
             tb.setLoaiThongBao("binh_thuong");
             tb.setDoiTuongNhan("tat_ca");
-            // Hardcode Admin ID để tránh lỗi (đảm bảo ID này tồn tại trong DB)
             tb.setCccdBanQuanTri("001234567891"); 
             
             thongBaoService.save(tb);
@@ -378,7 +375,6 @@ public class CuDanController {
         return "redirect:/cu-dan/hoa-don";
     }
     
-    // ====== CÁC CHỨC NĂNG KHÁC CỦA NHÓM (GỬI XE, PHẢN ÁNH) - GIỮ NGUYÊN ======
     
     @GetMapping("/gui-xe")
     public String danhSachGuiXe(@RequestParam(required = false) String search,
@@ -453,7 +449,7 @@ public class CuDanController {
                                Authentication authentication) {
         try {
             String cccd = authentication.getName();
-            YeuCauGuiXe yeuCau = yeuCauGuiXeService.findById(id)
+            YeuCauGuiXe yeuCau = yeuCauGuiXeService.findWithNguoiById(id)
                     .orElseThrow(() -> new RuntimeException("Không tìm thấy yêu cầu gửi xe"));
 
             if (!cccd.equals(yeuCau.getCccdNguoiGui())) {
@@ -470,7 +466,6 @@ public class CuDanController {
         }
     }
     
-    // --- PHẢN ÁNH (Code nhóm) ---
     @GetMapping("/phan-anh")
     public String phanAnh(@org.springframework.web.bind.annotation.RequestParam(required = false) String search,
                           Model model,

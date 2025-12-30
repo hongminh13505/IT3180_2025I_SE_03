@@ -2,6 +2,7 @@ package com.apartment.controller;
 
 import com.apartment.entity.TaiSanChungCu;
 import com.apartment.service.TaiSanChungCuService;
+import com.apartment.service.HoGiaDinhService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -21,13 +22,28 @@ public class TaiSanChungCuController {
     @Autowired
     private TaiSanChungCuService taiSanService;
     
+    @Autowired
+    private HoGiaDinhService hoGiaDinhService;
+    
     @GetMapping
     public String list(@RequestParam(required = false) String loai, Model model) {
+        java.util.List<TaiSanChungCu> taiSanList;
         if (loai != null && !loai.isEmpty()) {
-            model.addAttribute("taiSanList", taiSanService.findByLoaiTaiSan(loai));
+            taiSanList = taiSanService.findByLoaiTaiSan(loai);
         } else {
-            model.addAttribute("taiSanList", taiSanService.findAll());
+            taiSanList = taiSanService.findAll();
         }
+        
+        // Tạo Map để tra cứu hộ gia đình theo maCanHo
+        java.util.Map<Integer, String> hoGiaDinhMap = new java.util.HashMap<>();
+        hoGiaDinhService.findAll().forEach(ho -> {
+            if (ho.getMaCanHo() != null) {
+                hoGiaDinhMap.put(ho.getMaCanHo(), ho.getMaHo());
+            }
+        });
+        
+        model.addAttribute("taiSanList", taiSanList);
+        model.addAttribute("hoGiaDinhMap", hoGiaDinhMap);
         model.addAttribute("loai", loai);
         return "admin/tai-san/list";
     }
@@ -52,13 +68,28 @@ public class TaiSanChungCuController {
     public String save(@ModelAttribute TaiSanChungCu taiSan, RedirectAttributes redirectAttributes) {
         try {
             logger.info("Saving tai san: {}", taiSan);
+            boolean isEdit = taiSan.getMaTaiSan() != null;
             
-            // Đảm bảo maHo là null nếu rỗng
+        
             if (taiSan.getMaHo() != null && taiSan.getMaHo().trim().isEmpty()) {
                 taiSan.setMaHo(null);
             }
+
+       
+            if (taiSan.getTenTaiSan() != null) {
+                taiSan.setTenTaiSan(taiSan.getTenTaiSan().trim());
+            }
+
+            if ("can_ho".equalsIgnoreCase(taiSan.getLoaiTaiSan()) && taiSan.getTenTaiSan() != null && !taiSan.getTenTaiSan().isEmpty()) {
+                taiSanService.findCanHoByTen(taiSan.getTenTaiSan())
+                        .ifPresent(existing -> {
+                            if (taiSan.getMaTaiSan() == null || !existing.getMaTaiSan().equals(taiSan.getMaTaiSan())) {
+                                throw new IllegalArgumentException("Căn hộ '" + taiSan.getTenTaiSan() + "' đã tồn tại. Vui lòng chọn tên khác.");
+                            }
+                        });
+            }
             
-            // Đảm bảo trangThai có giá trị mặc định
+            
             if (taiSan.getTrangThai() == null || taiSan.getTrangThai().trim().isEmpty()) {
                 taiSan.setTrangThai("hoat_dong");
             }
@@ -71,6 +102,10 @@ public class TaiSanChungCuController {
         } catch (Exception e) {
             logger.error("Error saving tai san", e);
             redirectAttributes.addFlashAttribute("error", "Có lỗi xảy ra: " + e.getMessage());
+            if (taiSan.getMaTaiSan() != null) {
+                return "redirect:/admin/tai-san/edit/" + taiSan.getMaTaiSan();
+            }
+            return "redirect:/admin/tai-san/create";
         }
         return "redirect:/admin/tai-san";
     }

@@ -27,6 +27,10 @@ public class TaiSanChungCuService {
         return taiSanRepository.findAllCanHo();
     }
     
+    public List<TaiSanChungCu> findAllCanHoActive() {
+        return taiSanRepository.findAllCanHoActive();
+    }
+    
     public List<TaiSanChungCu> findByLoaiTaiSan(String loaiTaiSan) {
         return taiSanRepository.findByLoaiTaiSan(loaiTaiSan);
     }
@@ -37,6 +41,10 @@ public class TaiSanChungCuService {
     
     public List<TaiSanChungCu> findByMaHo(String maHo) {
         return taiSanRepository.findByMaHo(maHo);
+    }
+    
+    public Optional<TaiSanChungCu> findCanHoByTen(String tenCanHo) {
+        return taiSanRepository.findByLoaiTaiSanAndTenTaiSanIgnoreCase("can_ho", tenCanHo);
     }
     
     @Transactional

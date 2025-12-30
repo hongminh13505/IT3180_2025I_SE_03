@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface TaiSanChungCuRepository extends JpaRepository<TaiSanChungCu, Integer> {
@@ -18,8 +19,13 @@ public interface TaiSanChungCuRepository extends JpaRepository<TaiSanChungCu, In
     @Query("SELECT ts FROM TaiSanChungCu ts WHERE ts.loaiTaiSan = 'can_ho'")
     List<TaiSanChungCu> findAllCanHo();
     
+    @Query("SELECT ts FROM TaiSanChungCu ts WHERE ts.loaiTaiSan = 'can_ho' AND ts.trangThai = 'hoat_dong'")
+    List<TaiSanChungCu> findAllCanHoActive();
+    
     @Query("SELECT COUNT(ts) FROM TaiSanChungCu ts WHERE ts.loaiTaiSan = 'can_ho'")
     Long countCanHo();
+
+    Optional<TaiSanChungCu> findByLoaiTaiSanAndTenTaiSanIgnoreCase(String loaiTaiSan, String tenTaiSan);
 }
 
 

@@ -22,6 +22,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.apartment.entity.DoiTuong;
 import com.apartment.entity.HoGiaDinh;
+import com.apartment.entity.TaiSanChungCu;
 import com.apartment.entity.ThanhVienHo;
 import com.apartment.repository.DoiTuongRepository;
 import com.apartment.repository.ThanhVienHoRepository;
@@ -75,7 +76,8 @@ public class HoGiaDinhController {
         model.addAttribute("hoGiaDinh", new HoGiaDinh());
         model.addAttribute("isEdit", false);
         
-        model.addAttribute("canHoList", taiSanChungCuService.findAllCanHo());
+        // Chỉ hiển thị căn hộ có trạng thái "hoạt động" khi tạo mới
+        model.addAttribute("canHoList", taiSanChungCuService.findAllCanHoActive());
      
         model.addAttribute("thanhVienList", java.util.Collections.emptyList());
         if (error != null) {
@@ -131,6 +133,13 @@ public class HoGiaDinhController {
             @RequestParam String quanHe,
             @RequestParam(defaultValue = "false") boolean laChuHo) {
         try {
+            if (laChuHo) {
+                List<ThanhVienHo> chuHoHienTai = thanhVienHoRepository.findChuHoByMaHo(maHo);
+                if (!chuHoHienTai.isEmpty()) {
+                    return ResponseEntity.badRequest().body("Hộ này đã có chủ hộ đang hoạt động. Vui lòng kết thúc/chuyển chủ hộ trước khi thêm mới.");
+                }
+            }
+
             ThanhVienHo thanhVien = new ThanhVienHo();
             thanhVien.setMaHo(maHo);
             thanhVien.setCccd(cccd);
@@ -166,18 +175,56 @@ public class HoGiaDinhController {
                       RedirectAttributes redirectAttributes,
                       Authentication authentication) {
         try {
-            // Lấy thông tin hộ gia đình cũ để so sánh
+          
             boolean isNew = hoGiaDinhService.findByMaHo(hoGiaDinh.getMaHo()).isEmpty();
             HoGiaDinh existingHoGiaDinh = isNew ? null : hoGiaDinhService.findByMaHo(hoGiaDinh.getMaHo()).orElse(null);
+            boolean isEditFlag = isEdit != null && isEdit.equalsIgnoreCase("true");
+
+    
+            if (!isNew && !isEditFlag) {
+                redirectAttributes.addFlashAttribute("error", "Mã hộ đã tồn tại. Vui lòng nhập mã khác hoặc chỉnh sửa hộ gia đình hiện có.");
+                return "redirect:/admin/ho-gia-dinh/create";
+            }
           
             if (hoGiaDinh.getMaCanHo() != null) {
-                HoGiaDinh existingHo = hoGiaDinhService.findByMaCanHo(hoGiaDinh.getMaCanHo()).orElse(null);
+                // Kiểm tra căn hộ có tồn tại và hợp lệ không
+                TaiSanChungCu canHo = taiSanChungCuService.findById(hoGiaDinh.getMaCanHo()).orElse(null);
                 
-               
+                if (canHo == null) {
+                    String errorMsg = "Không thể chỉnh sửa vì căn hộ bạn thêm không hợp lệ";
+                    redirectAttributes.addFlashAttribute("error", errorMsg);
+                    if (isNew) {
+                        return "redirect:/admin/ho-gia-dinh";
+                    } else {
+                        return "redirect:/admin/ho-gia-dinh/edit/" + hoGiaDinh.getMaHo();
+                    }
+                }
+                
+                // Kiểm tra căn hộ có phải loại "can_ho" không
+                if (!"can_ho".equals(canHo.getLoaiTaiSan())) {
+                    String errorMsg = "Không thể chỉnh sửa vì căn hộ bạn thêm không hợp lệ";
+                    redirectAttributes.addFlashAttribute("error", errorMsg);
+                    if (isNew) {
+                        return "redirect:/admin/ho-gia-dinh";
+                    } else {
+                        return "redirect:/admin/ho-gia-dinh/edit/" + hoGiaDinh.getMaHo();
+                    }
+                }
+                
+                // Nếu đang edit và thay đổi căn hộ, kiểm tra căn hộ mới phải có trạng thái "hoat_dong"
+                if (!isNew && existingHoGiaDinh != null && 
+                    !hoGiaDinh.getMaCanHo().equals(existingHoGiaDinh.getMaCanHo()) &&
+                    !"hoat_dong".equals(canHo.getTrangThai())) {
+                    String errorMsg = "Không thể chỉnh sửa vì căn hộ bạn thêm không hợp lệ";
+                    redirectAttributes.addFlashAttribute("error", errorMsg);
+                    return "redirect:/admin/ho-gia-dinh/edit/" + hoGiaDinh.getMaHo();
+                }
+                
+                // Kiểm tra căn hộ đã được gán cho hộ gia đình khác chưa
+                HoGiaDinh existingHo = hoGiaDinhService.findByMaCanHo(hoGiaDinh.getMaCanHo()).orElse(null);
                 if (existingHo != null && !existingHo.getMaHo().equals(hoGiaDinh.getMaHo())) {
                     String errorMsg = "⚠️ Căn hộ này đã được gán cho hộ gia đình " + existingHo.getMaHo() + " (Tên: " + existingHo.getTenHo() + ")! Vui lòng chọn căn hộ khác.";
                     redirectAttributes.addFlashAttribute("error", errorMsg);
-                    System.out.println("=== DEBUG: " + errorMsg + " ===");
                     if (isNew) {
                         return "redirect:/admin/ho-gia-dinh";
                     } else {
@@ -189,7 +236,7 @@ public class HoGiaDinhController {
          
             hoGiaDinhService.save(hoGiaDinh);
             
-            // Ghi lại lịch sử chỉnh sửa
+        
             if (!isNew && existingHoGiaDinh != null) {
                 Map<String, LichSuChinhSuaService.ChangeInfo> thayDoi = new HashMap<>();
                 
@@ -225,7 +272,7 @@ public class HoGiaDinhController {
                     );
                 }
             } else if (isNew) {
-                // Tạo mới
+           
                 Map<String, LichSuChinhSuaService.ChangeInfo> thayDoi = new HashMap<>();
                 thayDoi.put("Tạo mới", new LichSuChinhSuaService.ChangeInfo("", "Tạo hộ gia đình mới"));
                 
@@ -243,13 +290,17 @@ public class HoGiaDinhController {
             }
            
             if (cccdChuHo != null && !cccdChuHo.trim().isEmpty()) {
-              
+                List<ThanhVienHo> chuHoHienTai = thanhVienHoRepository.findChuHoByMaHo(hoGiaDinh.getMaHo());
+                if (!chuHoHienTai.isEmpty() && !cccdChuHo.equals(chuHoHienTai.get(0).getCccd())) {
+                    redirectAttributes.addFlashAttribute("error", "Hộ này đã có chủ hộ: " + chuHoHienTai.get(0).getCccd() + ". Vui lòng kết thúc/chuyển chủ hộ trước.");
+                    return isNew ? "redirect:/admin/ho-gia-dinh" : "redirect:/admin/ho-gia-dinh/edit/" + hoGiaDinh.getMaHo();
+                }
+
                 List<ThanhVienHo> existingMembers = thanhVienHoRepository.findActiveByCccd(cccdChuHo);
                 boolean alreadyExists = existingMembers.stream()
                     .anyMatch(m -> m.getMaHo().equals(hoGiaDinh.getMaHo()) && m.getLaChuHo());
                 
                 if (!alreadyExists) {
-                    
                     ThanhVienHo chuHo = new ThanhVienHo();
                     chuHo.setCccd(cccdChuHo);
                     chuHo.setMaHo(hoGiaDinh.getMaHo());

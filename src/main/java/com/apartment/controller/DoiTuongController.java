@@ -73,18 +73,24 @@ public class DoiTuongController {
                       RedirectAttributes redirectAttributes,
                       Authentication authentication) {
         try {
-            // Lấy thông tin đối tượng cũ để so sánh
+           
             DoiTuong existingDoiTuong = doiTuongService.findByCccd(doiTuong.getCccd()).orElse(null);
             boolean isNew = existingDoiTuong == null;
+
+            // Validate giới tính để tránh lỗi constraint
+            if (doiTuong.getGioiTinh() == null || doiTuong.getGioiTinh().trim().isEmpty()) {
+                redirectAttributes.addFlashAttribute("error", "Vui lòng chọn giới tính.");
+                return isNew ? "redirect:/admin/doi-tuong/create" : "redirect:/admin/doi-tuong/edit/" + doiTuong.getCccd();
+            }
             
-            // Lưu đối tượng
+          
             doiTuongService.save(doiTuong);
             
-            // Ghi lại lịch sử chỉnh sửa
+          
             if (!isNew) {
                 Map<String, LichSuChinhSuaService.ChangeInfo> thayDoi = new HashMap<>();
                 
-                // So sánh các trường đã thay đổi
+        
                 if (!equalsValue(existingDoiTuong.getHoVaTen(), doiTuong.getHoVaTen())) {
                     thayDoi.put("Họ và tên", new LichSuChinhSuaService.ChangeInfo(
                         existingDoiTuong.getHoVaTen(), doiTuong.getHoVaTen()));
@@ -137,7 +143,7 @@ public class DoiTuongController {
                     );
                 }
             } else {
-                // Tạo mới
+               
                 Map<String, LichSuChinhSuaService.ChangeInfo> thayDoi = new HashMap<>();
                 thayDoi.put("Tạo mới", new LichSuChinhSuaService.ChangeInfo("", "Tạo tài khoản mới"));
                 
@@ -178,9 +184,7 @@ public class DoiTuongController {
         return "redirect:/admin/doi-tuong";
     }
     
-    /**
-     * Export danh sách cư dân ra file Excel
-     */
+    
     @GetMapping("/export/excel")
     public ResponseEntity<byte[]> exportToExcel(@RequestParam(required = false) String search) {
         try {
@@ -210,9 +214,6 @@ public class DoiTuongController {
         }
     }
     
-    /**
-     * Export danh sách cư dân ra file PDF
-     */
     @GetMapping("/export/pdf")
     public ResponseEntity<byte[]> exportToPdf(@RequestParam(required = false) String search) {
         try {
@@ -242,9 +243,7 @@ public class DoiTuongController {
         }
     }
     
-    /**
-     * Download template Excel để import
-     */
+  
     @GetMapping("/import/template")
     public ResponseEntity<byte[]> downloadImportTemplate() {
         try {
@@ -265,9 +264,7 @@ public class DoiTuongController {
         }
     }
     
-    /**
-     * Import cư dân từ file Excel
-     */
+   
     @PostMapping("/import")
     public String importFromExcel(@RequestParam("file") MultipartFile file, RedirectAttributes ra) {
         try {

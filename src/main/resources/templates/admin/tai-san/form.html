@@ -194,6 +194,9 @@
             </header>
             
             <main class="page-content">
+                <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+                <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
                 <div class="form-container">
                     <form th:action="@{/admin/tai-san/save}" method="post" th:object="${taiSan}">
                         <!-- Hidden field chỉ hiển thị khi edit -->

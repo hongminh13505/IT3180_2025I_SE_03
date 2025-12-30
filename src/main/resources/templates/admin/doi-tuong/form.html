@@ -120,9 +120,9 @@
                             </div>
                             
                             <div class="form-group">
-                                <label for="gioiTinh">Giới tính:</label>
-                                <select id="gioiTinh" th:field="*{gioiTinh}" class="form-control">
-                                    <option value="">-- Chọn --</option>
+                                <label for="gioiTinh">Giới tính: <span class="required">*</span></label>
+                                <select id="gioiTinh" th:field="*{gioiTinh}" class="form-control" required>
+                                    <option value="" disabled th:selected="${doiTuong.gioiTinh == null or doiTuong.gioiTinh.isEmpty()}">-- Chọn --</option>
                                     <option value="nam">Nam</option>
                                     <option value="nu">Nữ</option>
                                 </select>
