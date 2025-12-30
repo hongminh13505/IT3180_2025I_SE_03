@@ -37,30 +37,32 @@ public interface HoaDonRepository extends JpaRepository<HoaDon, Integer> {
            "LOWER(hd.loaiHoaDon) LIKE LOWER(CONCAT('%', :keyword, '%'))")
     Page<HoaDon> searchByKeyword(String keyword, Pageable pageable);
     
-    @Query("SELECT hd FROM HoaDon hd WHERE " +
-           "(:loaiHoaDon IS NULL OR hd.loaiHoaDon = :loaiHoaDon) AND " +
-           "(:trangThai IS NULL OR hd.trangThai = :trangThai) AND " +
-           "(:tuNgay IS NULL OR hd.hanThanhToan >= :tuNgay) AND " +
-           "(:denNgay IS NULL OR hd.hanThanhToan <= :denNgay)")
+    @Query(value = "SELECT * FROM hoa_don hd WHERE " +
+           "(:loaiHoaDon IS NULL OR hd.loai_hoa_don = :loaiHoaDon) AND " +
+           "(:trangThai IS NULL OR hd.trang_thai = :trangThai) AND " +
+           "(:tuNgay IS NULL OR hd.han_thanh_toan >= :tuNgay) AND " +
+           "(:denNgay IS NULL OR hd.han_thanh_toan <= :denNgay)",
+           nativeQuery = true)
     Page<HoaDon> filter(@Param("loaiHoaDon") String loaiHoaDon,
                         @Param("trangThai") String trangThai,
-                        @Param("tuNgay") LocalDate tuNgay,
-                        @Param("denNgay") LocalDate denNgay,
+                        @Param("tuNgay") java.sql.Date tuNgay,
+                        @Param("denNgay") java.sql.Date denNgay,
                         Pageable pageable);
     
-    @Query("SELECT hd FROM HoaDon hd WHERE " +
+    @Query(value = "SELECT * FROM hoa_don hd WHERE " +
            "(:keyword IS NULL OR :keyword = '' OR " +
-           "LOWER(hd.maHo) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
-           "LOWER(hd.loaiHoaDon) LIKE LOWER(CONCAT('%', :keyword, '%'))) AND " +
-           "(:loaiHoaDon IS NULL OR hd.loaiHoaDon = :loaiHoaDon) AND " +
-           "(:trangThai IS NULL OR hd.trangThai = :trangThai) AND " +
-           "(:tuNgay IS NULL OR hd.hanThanhToan >= :tuNgay) AND " +
-           "(:denNgay IS NULL OR hd.hanThanhToan <= :denNgay)")
+           "LOWER(hd.ma_ho) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+           "LOWER(hd.loai_hoa_don) LIKE LOWER(CONCAT('%', :keyword, '%'))) AND " +
+           "(:loaiHoaDon IS NULL OR hd.loai_hoa_don = :loaiHoaDon) AND " +
+           "(:trangThai IS NULL OR hd.trang_thai = :trangThai) AND " +
+           "(:tuNgay IS NULL OR hd.han_thanh_toan >= :tuNgay) AND " +
+           "(:denNgay IS NULL OR hd.han_thanh_toan <= :denNgay)",
+           nativeQuery = true)
     Page<HoaDon> searchAndFilter(@Param("keyword") String keyword,
                                  @Param("loaiHoaDon") String loaiHoaDon,
                                  @Param("trangThai") String trangThai,
-                                 @Param("tuNgay") LocalDate tuNgay,
-                                 @Param("denNgay") LocalDate denNgay,
+                                 @Param("tuNgay") java.sql.Date tuNgay,
+                                 @Param("denNgay") java.sql.Date denNgay,
                                  Pageable pageable);
 }
 

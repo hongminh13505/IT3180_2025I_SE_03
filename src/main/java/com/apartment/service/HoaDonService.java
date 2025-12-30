@@ -34,24 +34,114 @@ public class HoaDonService {
     }
     
     public Page<HoaDon> filter(String loaiHoaDon, String trangThai, LocalDate tuNgay, LocalDate denNgay, Pageable pageable) {
-        return hoaDonRepository.filter(
-            (loaiHoaDon != null && !loaiHoaDon.trim().isEmpty()) ? loaiHoaDon : null,
-            (trangThai != null && !trangThai.trim().isEmpty()) ? trangThai : null,
-            tuNgay,
-            denNgay,
-            pageable
+        String finalLoaiHoaDon = (loaiHoaDon != null && !loaiHoaDon.trim().isEmpty()) ? loaiHoaDon : null;
+        String finalTrangThai = (trangThai != null && !trangThai.trim().isEmpty()) ? trangThai : null;
+        
+        boolean hasLoai = finalLoaiHoaDon != null;
+        boolean hasTrangThai = finalTrangThai != null;
+        boolean hasTuNgay = tuNgay != null;
+        boolean hasDenNgay = denNgay != null;
+        
+        if (!hasLoai && !hasTrangThai && !hasTuNgay && !hasDenNgay) {
+            return findAll(pageable);
+        }
+        
+        java.util.List<HoaDon> allHoaDon = hoaDonRepository.findAll();
+        java.util.stream.Stream<HoaDon> stream = allHoaDon.stream();
+        
+        if (hasLoai) {
+            stream = stream.filter(hd -> finalLoaiHoaDon.equals(hd.getLoaiHoaDon()));
+        }
+        
+        if (hasTrangThai) {
+            stream = stream.filter(hd -> finalTrangThai.equals(hd.getTrangThai()));
+        }
+        
+        if (hasTuNgay) {
+            stream = stream.filter(hd -> hd.getHanThanhToan() != null && 
+                !hd.getHanThanhToan().isBefore(tuNgay));
+        }
+        
+        if (hasDenNgay) {
+            stream = stream.filter(hd -> hd.getHanThanhToan() != null && 
+                !hd.getHanThanhToan().isAfter(denNgay));
+        }
+        
+        java.util.List<HoaDon> filteredList = stream.collect(java.util.stream.Collectors.toList());
+        
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), filteredList.size());
+        java.util.List<HoaDon> pageContent = start < filteredList.size() 
+            ? filteredList.subList(start, end) 
+            : java.util.Collections.emptyList();
+        
+        return new org.springframework.data.domain.PageImpl<>(
+            pageContent, 
+            pageable, 
+            filteredList.size()
         );
     }
     
     public Page<HoaDon> searchAndFilter(String keyword, String loaiHoaDon, String trangThai, LocalDate tuNgay, LocalDate denNgay, Pageable pageable) {
         String trimmedKeyword = (keyword != null && !keyword.trim().isEmpty()) ? keyword.trim() : null;
-        return hoaDonRepository.searchAndFilter(
-            trimmedKeyword,
-            (loaiHoaDon != null && !loaiHoaDon.trim().isEmpty()) ? loaiHoaDon : null,
-            (trangThai != null && !trangThai.trim().isEmpty()) ? trangThai : null,
-            tuNgay,
-            denNgay,
-            pageable
+        String finalLoaiHoaDon = (loaiHoaDon != null && !loaiHoaDon.trim().isEmpty()) ? loaiHoaDon : null;
+        String finalTrangThai = (trangThai != null && !trangThai.trim().isEmpty()) ? trangThai : null;
+        
+        boolean hasKeyword = trimmedKeyword != null;
+        boolean hasLoai = finalLoaiHoaDon != null;
+        boolean hasTrangThai = finalTrangThai != null;
+        boolean hasTuNgay = tuNgay != null;
+        boolean hasDenNgay = denNgay != null;
+        
+        if (!hasKeyword && !hasLoai && !hasTrangThai && !hasTuNgay && !hasDenNgay) {
+            return findAll(pageable);
+        }
+        
+        if (hasKeyword && !hasLoai && !hasTrangThai && !hasTuNgay && !hasDenNgay) {
+            return searchByKeyword(trimmedKeyword, pageable);
+        }
+        
+        java.util.List<HoaDon> allHoaDon = hoaDonRepository.findAll();
+        java.util.stream.Stream<HoaDon> stream = allHoaDon.stream();
+        
+        if (hasKeyword) {
+            String lowerKeyword = trimmedKeyword.toLowerCase();
+            stream = stream.filter(hd -> 
+                (hd.getMaHo() != null && hd.getMaHo().toLowerCase().contains(lowerKeyword)) ||
+                (hd.getLoaiHoaDon() != null && hd.getLoaiHoaDon().toLowerCase().contains(lowerKeyword))
+            );
+        }
+        
+        if (hasLoai) {
+            stream = stream.filter(hd -> finalLoaiHoaDon.equals(hd.getLoaiHoaDon()));
+        }
+        
+        if (hasTrangThai) {
+            stream = stream.filter(hd -> finalTrangThai.equals(hd.getTrangThai()));
+        }
+        
+        if (hasTuNgay) {
+            stream = stream.filter(hd -> hd.getHanThanhToan() != null && 
+                !hd.getHanThanhToan().isBefore(tuNgay));
+        }
+        
+        if (hasDenNgay) {
+            stream = stream.filter(hd -> hd.getHanThanhToan() != null && 
+                !hd.getHanThanhToan().isAfter(denNgay));
+        }
+        
+        java.util.List<HoaDon> filteredList = stream.collect(java.util.stream.Collectors.toList());
+        
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), filteredList.size());
+        java.util.List<HoaDon> pageContent = start < filteredList.size() 
+            ? filteredList.subList(start, end) 
+            : java.util.Collections.emptyList();
+        
+        return new org.springframework.data.domain.PageImpl<>(
+            pageContent, 
+            pageable, 
+            filteredList.size()
         );
     }
     
