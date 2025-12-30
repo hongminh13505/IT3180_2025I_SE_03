@@ -49,7 +49,8 @@ public interface HoaDonRepository extends JpaRepository<HoaDon, Integer> {
                         Pageable pageable);
     
     @Query("SELECT hd FROM HoaDon hd WHERE " +
-           "(LOWER(hd.maHo) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+           "(:keyword IS NULL OR :keyword = '' OR " +
+           "LOWER(hd.maHo) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
            "LOWER(hd.loaiHoaDon) LIKE LOWER(CONCAT('%', :keyword, '%'))) AND " +
            "(:loaiHoaDon IS NULL OR hd.loaiHoaDon = :loaiHoaDon) AND " +
            "(:trangThai IS NULL OR hd.trangThai = :trangThai) AND " +
@@ -61,35 +62,6 @@ public interface HoaDonRepository extends JpaRepository<HoaDon, Integer> {
                                  @Param("tuNgay") LocalDate tuNgay,
                                  @Param("denNgay") LocalDate denNgay,
                                  Pageable pageable);
-    
-    @Query(value = "SELECT YEAR(hd.ngay_tao) as year, MONTH(hd.ngay_tao) as month, " +
-           "SUM(CASE WHEN hd.trang_thai = 'da_thanh_toan' THEN hd.so_tien ELSE 0 END) as tongThu, " +
-           "SUM(CASE WHEN hd.trang_thai = 'chua_thanh_toan' THEN hd.so_tien ELSE 0 END) as tongNo, " +
-           "COUNT(hd.ma_hoa_don) as soLuong " +
-           "FROM hoa_don hd " +
-           "WHERE YEAR(hd.ngay_tao) = :year " +
-           "GROUP BY YEAR(hd.ngay_tao), MONTH(hd.ngay_tao) " +
-           "ORDER BY month", nativeQuery = true)
-    List<Object[]> thongKeTheoThang(@Param("year") int year);
-    
-    @Query(value = "SELECT YEAR(hd.ngay_tao) as year, " +
-           "SUM(CASE WHEN hd.trang_thai = 'da_thanh_toan' THEN hd.so_tien ELSE 0 END) as tongThu, " +
-           "SUM(CASE WHEN hd.trang_thai = 'chua_thanh_toan' THEN hd.so_tien ELSE 0 END) as tongNo, " +
-           "COUNT(hd.ma_hoa_don) as soLuong " +
-           "FROM hoa_don hd " +
-           "GROUP BY YEAR(hd.ngay_tao) " +
-           "ORDER BY year", nativeQuery = true)
-    List<Object[]> thongKeTheoNam();
-    
-    @Query(value = "SELECT hd.loai_hoa_don, " +
-           "SUM(CASE WHEN hd.trang_thai = 'da_thanh_toan' THEN hd.so_tien ELSE 0 END) as tongThu, " +
-           "SUM(CASE WHEN hd.trang_thai = 'chua_thanh_toan' THEN hd.so_tien ELSE 0 END) as tongNo, " +
-           "COUNT(hd.ma_hoa_don) as soLuong " +
-           "FROM hoa_don hd " +
-           "WHERE YEAR(hd.ngay_tao) = :year " +
-           "AND (:month IS NULL OR MONTH(hd.ngay_tao) = :month) " +
-           "GROUP BY hd.loai_hoa_don", nativeQuery = true)
-    List<Object[]> thongKeTheoLoai(@Param("year") int year, @Param("month") Integer month);
 }
 
 

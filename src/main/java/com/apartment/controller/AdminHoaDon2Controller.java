@@ -42,44 +42,62 @@ public class AdminHoaDon2Controller {
                       @RequestParam(defaultValue = "0") int page,
                       @RequestParam(defaultValue = "20") int size,
                       Model model) {
-        Pageable pageable = PageRequest.of(page, size);
-        Page<HoaDon> hoaDonPage;
-        
-        java.time.LocalDate tuNgayDate = null;
-        java.time.LocalDate denNgayDate = null;
-        
         try {
-            if (tuNgay != null && !tuNgay.trim().isEmpty()) {
-                tuNgayDate = java.time.LocalDate.parse(tuNgay);
+            Pageable pageable = PageRequest.of(page, size);
+            Page<HoaDon> hoaDonPage;
+            
+            java.time.LocalDate tuNgayDate = null;
+            java.time.LocalDate denNgayDate = null;
+            
+            try {
+                if (tuNgay != null && !tuNgay.trim().isEmpty()) {
+                    tuNgayDate = java.time.LocalDate.parse(tuNgay);
+                }
+                if (denNgay != null && !denNgay.trim().isEmpty()) {
+                    denNgayDate = java.time.LocalDate.parse(denNgay);
+                }
+            } catch (Exception e) {
+                System.err.println("Lỗi parse ngày: " + e.getMessage());
             }
-            if (denNgay != null && !denNgay.trim().isEmpty()) {
-                denNgayDate = java.time.LocalDate.parse(denNgay);
+
+            boolean hasSearch = search != null && !search.trim().isEmpty();
+            boolean hasFilter = (loaiHoaDon != null && !loaiHoaDon.trim().isEmpty()) ||
+                               (trangThai != null && !trangThai.trim().isEmpty()) ||
+                               tuNgayDate != null || denNgayDate != null;
+
+            if (hasSearch || hasFilter) {
+                hoaDonPage = hoaDonService.searchAndFilter(search, loaiHoaDon, trangThai, tuNgayDate, denNgayDate, pageable);
+            } else {
+                hoaDonPage = hoaDonService.findAll(pageable);
             }
+            
+            model.addAttribute("hoaDonList", hoaDonPage.getContent());
+            model.addAttribute("hoaDonPage", hoaDonPage);
+            model.addAttribute("search", search);
+            model.addAttribute("loaiHoaDon", loaiHoaDon);
+            model.addAttribute("trangThai", trangThai);
+            model.addAttribute("tuNgay", tuNgay);
+            model.addAttribute("denNgay", denNgay);
+            model.addAttribute("currentPage", page);
+            model.addAttribute("totalPages", hoaDonPage.getTotalPages());
+            model.addAttribute("totalElements", hoaDonPage.getTotalElements());
+            return "admin/hoa-don-2/list";
         } catch (Exception e) {
+            System.err.println("Lỗi trong AdminHoaDon2Controller.list: " + e.getMessage());
+            e.printStackTrace();
+            model.addAttribute("error", "Có lỗi xảy ra khi tải danh sách hóa đơn: " + e.getMessage());
+            model.addAttribute("hoaDonList", java.util.Collections.emptyList());
+            model.addAttribute("hoaDonPage", null);
+            model.addAttribute("search", search);
+            model.addAttribute("loaiHoaDon", loaiHoaDon);
+            model.addAttribute("trangThai", trangThai);
+            model.addAttribute("tuNgay", tuNgay);
+            model.addAttribute("denNgay", denNgay);
+            model.addAttribute("currentPage", 0);
+            model.addAttribute("totalPages", 0);
+            model.addAttribute("totalElements", 0);
+            return "admin/hoa-don-2/list";
         }
-
-        boolean hasSearch = search != null && !search.trim().isEmpty();
-        boolean hasFilter = (loaiHoaDon != null && !loaiHoaDon.trim().isEmpty()) ||
-                           (trangThai != null && !trangThai.trim().isEmpty()) ||
-                           tuNgayDate != null || denNgayDate != null;
-
-        if (hasSearch || hasFilter) {
-            hoaDonPage = hoaDonService.searchAndFilter(search, loaiHoaDon, trangThai, tuNgayDate, denNgayDate, pageable);
-        } else {
-            hoaDonPage = hoaDonService.findAll(pageable);
-        }
-
-        model.addAttribute("hoaDonList", hoaDonPage.getContent());
-        model.addAttribute("hoaDonPage", hoaDonPage);
-        model.addAttribute("search", search);
-        model.addAttribute("loaiHoaDon", loaiHoaDon);
-        model.addAttribute("trangThai", trangThai);
-        model.addAttribute("tuNgay", tuNgay);
-        model.addAttribute("denNgay", denNgay);
-        model.addAttribute("currentPage", page);
-        model.addAttribute("totalPages", hoaDonPage.getTotalPages());
-        model.addAttribute("totalElements", hoaDonPage.getTotalElements());
-        return "admin/hoa-don-2/list";
     }
 
     @GetMapping("/tao-hoa-don")

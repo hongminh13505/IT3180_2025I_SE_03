@@ -118,22 +118,22 @@
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; align-items: end;">
                         <div>
                             <label style="display: block; margin-bottom: 6px; font-size: 13px; font-weight: 500; color: #475569;">Loại hóa đơn</label>
-                            <select name="loaiHoaDon" th:value="${loaiHoaDon}" class="form-control" style="width: 100%;">
+                            <select name="loaiHoaDon" class="form-control" style="width: 100%;">
                                 <option value="">Tất cả</option>
-                                <option value="dien_nuoc">Điện nước</option>
-                                <option value="dich_vu">Dịch vụ</option>
-                                <option value="sua_chua">Sửa chữa</option>
-                                <option value="phat">Phạt</option>
-                                <option value="khac">Khác</option>
+                                <option value="dien_nuoc" th:selected="${loaiHoaDon == 'dien_nuoc'}">Điện nước</option>
+                                <option value="dich_vu" th:selected="${loaiHoaDon == 'dich_vu'}">Dịch vụ</option>
+                                <option value="sua_chua" th:selected="${loaiHoaDon == 'sua_chua'}">Sửa chữa</option>
+                                <option value="phat" th:selected="${loaiHoaDon == 'phat'}">Phạt</option>
+                                <option value="khac" th:selected="${loaiHoaDon == 'khac'}">Khác</option>
                             </select>
                         </div>
                         <div>
                             <label style="display: block; margin-bottom: 6px; font-size: 13px; font-weight: 500; color: #475569;">Trạng thái</label>
-                            <select name="trangThai" th:value="${trangThai}" class="form-control" style="width: 100%;">
+                            <select name="trangThai" class="form-control" style="width: 100%;">
                                 <option value="">Tất cả</option>
-                                <option value="da_thanh_toan">Đã thanh toán</option>
-                                <option value="chua_thanh_toan">Chưa thanh toán</option>
-                                <option value="qua_han">Quá hạn</option>
+                                <option value="da_thanh_toan" th:selected="${trangThai == 'da_thanh_toan'}">Đã thanh toán</option>
+                                <option value="chua_thanh_toan" th:selected="${trangThai == 'chua_thanh_toan'}">Chưa thanh toán</option>
+                                <option value="qua_han" th:selected="${trangThai == 'qua_han'}">Quá hạn</option>
                             </select>
                         </div>
                         <div>
@@ -275,26 +275,6 @@
 </div>
 
 <script th:src="@{/js/script.js}"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const loaiHoaDon = /*[[${loaiHoaDon}]]*/ null;
-        const trangThai = /*[[${trangThai}]]*/ null;
-        
-        if (loaiHoaDon) {
-            const select = document.querySelector('select[name="loaiHoaDon"]');
-            if (select) {
-                select.value = loaiHoaDon;
-            }
-        }
-        
-        if (trangThai) {
-            const select = document.querySelector('select[name="trangThai"]');
-            if (select) {
-                select.value = trangThai;
-            }
-        }
-    });
-</script>
 <style>
     .pagination-container {
         display: flex;
