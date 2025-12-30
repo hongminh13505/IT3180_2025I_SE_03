@@ -100,12 +100,58 @@
 
             <div class="content-header">
                 <div class="search-bar">
-                    <form th:action="@{/admin/hoa-don-2}" method="get">
+                    <form th:action="@{/admin/hoa-don-2}" method="get" id="searchForm">
                         <input type="text" name="search" th:value="${search}" placeholder="Tìm kiếm..." class="form-control">
                         <input type="hidden" name="page" value="0">
+                        <input type="hidden" name="loaiHoaDon" th:value="${loaiHoaDon}" id="loaiHoaDonInput">
+                        <input type="hidden" name="trangThai" th:value="${trangThai}" id="trangThaiInput">
+                        <input type="hidden" name="tuNgay" th:value="${tuNgay}" id="tuNgayInput">
+                        <input type="hidden" name="denNgay" th:value="${denNgay}" id="denNgayInput">
                         <button type="submit" class="btn btn-primary">Tìm kiếm</button>
                     </form>
                 </div>
+            </div>
+            
+            <div class="filter-section" style="background: white; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);">
+                <h3 style="margin: 0 0 16px 0; font-size: 16px; font-weight: 600; color: #1e293b;">Bộ lọc</h3>
+                <form th:action="@{/admin/hoa-don-2}" method="get" id="filterForm">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; align-items: end;">
+                        <div>
+                            <label style="display: block; margin-bottom: 6px; font-size: 13px; font-weight: 500; color: #475569;">Loại hóa đơn</label>
+                            <select name="loaiHoaDon" th:value="${loaiHoaDon}" class="form-control" style="width: 100%;">
+                                <option value="">Tất cả</option>
+                                <option value="dien_nuoc">Điện nước</option>
+                                <option value="dich_vu">Dịch vụ</option>
+                                <option value="sua_chua">Sửa chữa</option>
+                                <option value="phat">Phạt</option>
+                                <option value="khac">Khác</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 6px; font-size: 13px; font-weight: 500; color: #475569;">Trạng thái</label>
+                            <select name="trangThai" th:value="${trangThai}" class="form-control" style="width: 100%;">
+                                <option value="">Tất cả</option>
+                                <option value="da_thanh_toan">Đã thanh toán</option>
+                                <option value="chua_thanh_toan">Chưa thanh toán</option>
+                                <option value="qua_han">Quá hạn</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 6px; font-size: 13px; font-weight: 500; color: #475569;">Từ ngày</label>
+                            <input type="date" name="tuNgay" th:value="${tuNgay}" class="form-control" style="width: 100%;">
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 6px; font-size: 13px; font-weight: 500; color: #475569;">Đến ngày</label>
+                            <input type="date" name="denNgay" th:value="${denNgay}" class="form-control" style="width: 100%;">
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <button type="submit" class="btn btn-primary" style="flex: 1;">Lọc</button>
+                            <a th:href="@{/admin/hoa-don-2}" class="btn btn-secondary" style="flex: 1; text-align: center; text-decoration: none; display: flex; align-items: center; justify-content: center;">Xóa lọc</a>
+                        </div>
+                    </div>
+                    <input type="hidden" name="search" th:value="${search}">
+                    <input type="hidden" name="page" value="0">
+                </form>
             </div>
 
             <div class="table-responsive">
@@ -148,7 +194,7 @@
                                 <span class="badge" th:classappend="${hoaDon.trangThai == 'da_thanh_toan'} ? 'badge-success' : (${hoaDon.trangThai == 'qua_han'} ? 'badge-danger' : 'badge-warning')">
                                     <span th:switch="${hoaDon.trangThai}">
                                         <span th:case="'da_thanh_toan'">✓ Đã thanh toán</span>
-                                        <span th:case="'chua_thanh_toan'">⏳ Chưa thanh toán</span>
+                                        <span th:case="'chua_thanh_toan'">Chưa thanh toán</span>
                                         <span th:case="'qua_han'">⚠️ Quá hạn</span>
                                         <span th:case="*">Chưa thanh toán</span>
                                     </span>
@@ -167,58 +213,58 @@
                     trong tổng số <strong th:text="${totalElements}">0</strong> hóa đơn
                 </div>
                 <div class="pagination" th:if="${totalPages > 1}">
-                    <a th:href="@{/admin/hoa-don-2(page=0, search=${search})}" 
+                    <a th:href="@{/admin/hoa-don-2(page=0, search=${search}, loaiHoaDon=${loaiHoaDon}, trangThai=${trangThai}, tuNgay=${tuNgay}, denNgay=${denNgay})}" 
                        class="pagination-btn"
                        th:classappend="${currentPage == 0} ? 'disabled' : ''"
                        th:onclick="${currentPage == 0} ? 'return false;' : ''">« Đầu</a>
-                    <a th:href="@{/admin/hoa-don-2(page=${currentPage - 1}, search=${search})}" 
+                    <a th:href="@{/admin/hoa-don-2(page=${currentPage - 1}, search=${search}, loaiHoaDon=${loaiHoaDon}, trangThai=${trangThai}, tuNgay=${tuNgay}, denNgay=${denNgay})}" 
                        class="pagination-btn"
                        th:classappend="${currentPage == 0} ? 'disabled' : ''"
                        th:onclick="${currentPage == 0} ? 'return false;' : ''">‹</a>
                     <span th:if="${totalPages <= 10}">
                         <a th:each="pageNum : ${#numbers.sequence(0, totalPages - 1)}"
-                           th:href="@{/admin/hoa-don-2(page=${pageNum}, search=${search})}" 
+                           th:href="@{/admin/hoa-don-2(page=${pageNum}, search=${search}, loaiHoaDon=${loaiHoaDon}, trangThai=${trangThai}, tuNgay=${tuNgay}, denNgay=${denNgay})}" 
                            class="pagination-btn"
                            th:classappend="${pageNum == currentPage} ? 'active' : ''"
                            th:text="${pageNum + 1}">1</a>
                     </span>
                     <span th:if="${totalPages > 10}">
-                        <a th:href="@{/admin/hoa-don-2(page=0, search=${search})}" 
+                        <a th:href="@{/admin/hoa-don-2(page=0, search=${search}, loaiHoaDon=${loaiHoaDon}, trangThai=${trangThai}, tuNgay=${tuNgay}, denNgay=${denNgay})}" 
                            class="pagination-btn"
                            th:classappend="${currentPage == 0} ? 'active' : ''">1</a>
                         <span th:if="${currentPage > 3}"><span class="pagination-ellipsis">...</span></span>
                         <span th:if="${currentPage > 2 and currentPage < totalPages - 3}">
                             <a th:each="pageNum : ${#numbers.sequence(currentPage - 1, currentPage + 1)}"
-                               th:href="@{/admin/hoa-don-2(page=${pageNum}, search=${search})}" 
+                               th:href="@{/admin/hoa-don-2(page=${pageNum}, search=${search}, loaiHoaDon=${loaiHoaDon}, trangThai=${trangThai}, tuNgay=${tuNgay}, denNgay=${denNgay})}" 
                                class="pagination-btn"
                                th:classappend="${pageNum == currentPage} ? 'active' : ''"
                                th:text="${pageNum + 1}">5</a>
                         </span>
                         <span th:if="${currentPage <= 2}">
                             <a th:each="pageNum : ${#numbers.sequence(1, 3)}"
-                               th:href="@{/admin/hoa-don-2(page=${pageNum}, search=${search})}" 
+                               th:href="@{/admin/hoa-don-2(page=${pageNum}, search=${search}, loaiHoaDon=${loaiHoaDon}, trangThai=${trangThai}, tuNgay=${tuNgay}, denNgay=${denNgay})}" 
                                class="pagination-btn"
                                th:classappend="${pageNum == currentPage} ? 'active' : ''"
                                th:text="${pageNum + 1}">2</a>
                         </span>
                         <span th:if="${currentPage >= totalPages - 3}">
                             <a th:each="pageNum : ${#numbers.sequence(totalPages - 4, totalPages - 2)}"
-                               th:href="@{/admin/hoa-don-2(page=${pageNum}, search=${search})}" 
+                               th:href="@{/admin/hoa-don-2(page=${pageNum}, search=${search}, loaiHoaDon=${loaiHoaDon}, trangThai=${trangThai}, tuNgay=${tuNgay}, denNgay=${denNgay})}" 
                                class="pagination-btn"
                                th:classappend="${pageNum == currentPage} ? 'active' : ''"
                                th:text="${pageNum + 1}">10</a>
                         </span>
                         <span th:if="${currentPage < totalPages - 4}"><span class="pagination-ellipsis">...</span></span>
-                        <a th:href="@{/admin/hoa-don-2(page=${totalPages - 1}, search=${search})}" 
+                        <a th:href="@{/admin/hoa-don-2(page=${totalPages - 1}, search=${search}, loaiHoaDon=${loaiHoaDon}, trangThai=${trangThai}, tuNgay=${tuNgay}, denNgay=${denNgay})}" 
                            class="pagination-btn"
                            th:classappend="${currentPage == totalPages - 1} ? 'active' : ''"
                            th:text="${totalPages}">10</a>
                     </span>
-                    <a th:href="@{/admin/hoa-don-2(page=${currentPage + 1}, search=${search})}" 
+                    <a th:href="@{/admin/hoa-don-2(page=${currentPage + 1}, search=${search}, loaiHoaDon=${loaiHoaDon}, trangThai=${trangThai}, tuNgay=${tuNgay}, denNgay=${denNgay})}" 
                        class="pagination-btn"
                        th:classappend="${currentPage >= totalPages - 1} ? 'disabled' : ''"
                        th:onclick="${currentPage >= totalPages - 1} ? 'return false;' : ''">›</a>
-                    <a th:href="@{/admin/hoa-don-2(page=${totalPages - 1}, search=${search})}" 
+                    <a th:href="@{/admin/hoa-don-2(page=${totalPages - 1}, search=${search}, loaiHoaDon=${loaiHoaDon}, trangThai=${trangThai}, tuNgay=${tuNgay}, denNgay=${denNgay})}" 
                        class="pagination-btn"
                        th:classappend="${currentPage >= totalPages - 1} ? 'disabled' : ''"
                        th:onclick="${currentPage >= totalPages - 1} ? 'return false;' : ''">Cuối »</a>
@@ -229,6 +275,26 @@
 </div>
 
 <script th:src="@{/js/script.js}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const loaiHoaDon = /*[[${loaiHoaDon}]]*/ null;
+        const trangThai = /*[[${trangThai}]]*/ null;
+        
+        if (loaiHoaDon) {
+            const select = document.querySelector('select[name="loaiHoaDon"]');
+            if (select) {
+                select.value = loaiHoaDon;
+            }
+        }
+        
+        if (trangThai) {
+            const select = document.querySelector('select[name="trangThai"]');
+            if (select) {
+                select.value = trangThai;
+            }
+        }
+    });
+</script>
 <style>
     .pagination-container {
         display: flex;

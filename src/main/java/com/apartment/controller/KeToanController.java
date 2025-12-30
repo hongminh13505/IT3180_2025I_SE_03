@@ -107,6 +107,10 @@ public class KeToanController {
     
     @GetMapping("/quan-ly-hoa-don")
     public String quanLyHoaDon(@RequestParam(required = false) String search,
+                               @RequestParam(required = false) String loaiHoaDon,
+                               @RequestParam(required = false) String trangThai,
+                               @RequestParam(required = false) String tuNgay,
+                               @RequestParam(required = false) String denNgay,
                                @RequestParam(defaultValue = "0") int page,
                                @RequestParam(defaultValue = "20") int size,
                                Model model,
@@ -115,8 +119,26 @@ public class KeToanController {
             Pageable pageable = PageRequest.of(page, size);
             Page<HoaDon> hoaDonPage;
             
-            if (search != null && !search.trim().isEmpty()) {
-                hoaDonPage = hoaDonService.searchByKeyword(search, pageable);
+            java.time.LocalDate tuNgayDate = null;
+            java.time.LocalDate denNgayDate = null;
+            
+            try {
+                if (tuNgay != null && !tuNgay.trim().isEmpty()) {
+                    tuNgayDate = java.time.LocalDate.parse(tuNgay);
+                }
+                if (denNgay != null && !denNgay.trim().isEmpty()) {
+                    denNgayDate = java.time.LocalDate.parse(denNgay);
+                }
+            } catch (Exception e) {
+            }
+
+            boolean hasSearch = search != null && !search.trim().isEmpty();
+            boolean hasFilter = (loaiHoaDon != null && !loaiHoaDon.trim().isEmpty()) ||
+                               (trangThai != null && !trangThai.trim().isEmpty()) ||
+                               tuNgayDate != null || denNgayDate != null;
+
+            if (hasSearch || hasFilter) {
+                hoaDonPage = hoaDonService.searchAndFilter(search, loaiHoaDon, trangThai, tuNgayDate, denNgayDate, pageable);
             } else {
                 hoaDonPage = hoaDonService.findAll(pageable);
             }
@@ -124,6 +146,10 @@ public class KeToanController {
             model.addAttribute("hoaDonList", hoaDonPage.getContent());
             model.addAttribute("hoaDonPage", hoaDonPage);
             model.addAttribute("search", search);
+            model.addAttribute("loaiHoaDon", loaiHoaDon);
+            model.addAttribute("trangThai", trangThai);
+            model.addAttribute("tuNgay", tuNgay);
+            model.addAttribute("denNgay", denNgay);
             model.addAttribute("currentPage", page);
             model.addAttribute("totalPages", hoaDonPage.getTotalPages());
             model.addAttribute("totalElements", hoaDonPage.getTotalElements());
@@ -274,17 +300,6 @@ public class KeToanController {
         return "redirect:/ke-toan/quan-ly-hoa-don";
     }
     
-    private String getLoaiHoaDonName(String loaiHoaDon) {
-        switch (loaiHoaDon) {
-            case "dien_nuoc": return "điện nước";
-            case "dich_vu": return "dịch vụ";
-            case "sua_chua": return "sửa chữa";
-            case "phat": return "phạt";
-            case "khac": return "khác";
-            default: return loaiHoaDon;
-        }
-    }
-    
     @PostMapping("/quan-ly-hoa-don/xoa/{id}")
     public String xoaHoaDon(@PathVariable Integer id, RedirectAttributes ra) {
         try {
@@ -313,11 +328,34 @@ public class KeToanController {
      * Export danh sách hóa đơn ra file Excel
      */
     @GetMapping("/quan-ly-hoa-don/export/excel")
-    public ResponseEntity<byte[]> exportToExcel(@RequestParam(required = false) String search) {
+    public ResponseEntity<byte[]> exportToExcel(@RequestParam(required = false) String search,
+                                                @RequestParam(required = false) String loaiHoaDon,
+                                                @RequestParam(required = false) String trangThai,
+                                                @RequestParam(required = false) String tuNgay,
+                                                @RequestParam(required = false) String denNgay) {
         try {
             java.util.List<HoaDon> hoaDonList;
-            if (search != null && !search.trim().isEmpty()) {
-                hoaDonList = hoaDonService.searchByKeyword(search, org.springframework.data.domain.Pageable.unpaged()).getContent();
+            
+            java.time.LocalDate tuNgayDate = null;
+            java.time.LocalDate denNgayDate = null;
+            
+            try {
+                if (tuNgay != null && !tuNgay.trim().isEmpty()) {
+                    tuNgayDate = java.time.LocalDate.parse(tuNgay);
+                }
+                if (denNgay != null && !denNgay.trim().isEmpty()) {
+                    denNgayDate = java.time.LocalDate.parse(denNgay);
+                }
+            } catch (Exception e) {
+            }
+
+            boolean hasSearch = search != null && !search.trim().isEmpty();
+            boolean hasFilter = (loaiHoaDon != null && !loaiHoaDon.trim().isEmpty()) ||
+                               (trangThai != null && !trangThai.trim().isEmpty()) ||
+                               tuNgayDate != null || denNgayDate != null;
+
+            if (hasSearch || hasFilter) {
+                hoaDonList = hoaDonService.searchAndFilter(search, loaiHoaDon, trangThai, tuNgayDate, denNgayDate, org.springframework.data.domain.Pageable.unpaged()).getContent();
             } else {
                 hoaDonList = hoaDonService.findAll(org.springframework.data.domain.Pageable.unpaged()).getContent();
             }
@@ -345,11 +383,34 @@ public class KeToanController {
      * Export danh sách hóa đơn ra file PDF
      */
     @GetMapping("/quan-ly-hoa-don/export/pdf")
-    public ResponseEntity<byte[]> exportToPdf(@RequestParam(required = false) String search) {
+    public ResponseEntity<byte[]> exportToPdf(@RequestParam(required = false) String search,
+                                              @RequestParam(required = false) String loaiHoaDon,
+                                              @RequestParam(required = false) String trangThai,
+                                              @RequestParam(required = false) String tuNgay,
+                                              @RequestParam(required = false) String denNgay) {
         try {
             java.util.List<HoaDon> hoaDonList;
-            if (search != null && !search.trim().isEmpty()) {
-                hoaDonList = hoaDonService.searchByKeyword(search, org.springframework.data.domain.Pageable.unpaged()).getContent();
+            
+            java.time.LocalDate tuNgayDate = null;
+            java.time.LocalDate denNgayDate = null;
+            
+            try {
+                if (tuNgay != null && !tuNgay.trim().isEmpty()) {
+                    tuNgayDate = java.time.LocalDate.parse(tuNgay);
+                }
+                if (denNgay != null && !denNgay.trim().isEmpty()) {
+                    denNgayDate = java.time.LocalDate.parse(denNgay);
+                }
+            } catch (Exception e) {
+            }
+
+            boolean hasSearch = search != null && !search.trim().isEmpty();
+            boolean hasFilter = (loaiHoaDon != null && !loaiHoaDon.trim().isEmpty()) ||
+                               (trangThai != null && !trangThai.trim().isEmpty()) ||
+                               tuNgayDate != null || denNgayDate != null;
+
+            if (hasSearch || hasFilter) {
+                hoaDonList = hoaDonService.searchAndFilter(search, loaiHoaDon, trangThai, tuNgayDate, denNgayDate, org.springframework.data.domain.Pageable.unpaged()).getContent();
             } else {
                 hoaDonList = hoaDonService.findAll(org.springframework.data.domain.Pageable.unpaged()).getContent();
             }
@@ -432,6 +493,117 @@ public class KeToanController {
         }
         
         return "redirect:/ke-toan/quan-ly-hoa-don";
+    }
+    
+    @GetMapping("/thong-ke")
+    public String thongKe(@RequestParam(required = false) Integer year,
+                          @RequestParam(required = false) Integer month,
+                          @RequestParam(defaultValue = "thang") String viewType,
+                          Model model,
+                          Authentication authentication) {
+        try {
+            if (year == null) {
+                year = java.time.LocalDate.now().getYear();
+            }
+            
+            model.addAttribute("year", year);
+            model.addAttribute("month", month);
+            model.addAttribute("viewType", viewType);
+            model.addAttribute("username", authentication.getName());
+            
+            if ("thang".equals(viewType)) {
+                java.util.List<com.apartment.dto.ThongKeDTO> thongKeThang = hoaDonService.thongKeTheoThang(year);
+                model.addAttribute("thongKeData", thongKeThang);
+                
+                java.util.List<String> labels = new java.util.ArrayList<>();
+                java.util.List<Double> tongThuData = new java.util.ArrayList<>();
+                java.util.List<Double> tongNoData = new java.util.ArrayList<>();
+                java.util.List<Long> soLuongData = new java.util.ArrayList<>();
+                
+                for (int i = 1; i <= 12; i++) {
+                    labels.add("Tháng " + i);
+                    boolean found = false;
+                    for (com.apartment.dto.ThongKeDTO tk : thongKeThang) {
+                        if (tk.getMonth() != null && tk.getMonth() == i) {
+                            tongThuData.add(tk.getTongThu().doubleValue());
+                            tongNoData.add(tk.getTongNo().doubleValue());
+                            soLuongData.add(tk.getSoLuong());
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found) {
+                        tongThuData.add(0.0);
+                        tongNoData.add(0.0);
+                        soLuongData.add(0L);
+                    }
+                }
+                
+                model.addAttribute("labels", labels);
+                model.addAttribute("tongThuData", tongThuData);
+                model.addAttribute("tongNoData", tongNoData);
+                model.addAttribute("soLuongData", soLuongData);
+            } else if ("nam".equals(viewType)) {
+                java.util.List<com.apartment.dto.ThongKeDTO> thongKeNam = hoaDonService.thongKeTheoNam();
+                model.addAttribute("thongKeData", thongKeNam);
+                
+                java.util.List<String> labels = new java.util.ArrayList<>();
+                java.util.List<Double> tongThuData = new java.util.ArrayList<>();
+                java.util.List<Double> tongNoData = new java.util.ArrayList<>();
+                java.util.List<Long> soLuongData = new java.util.ArrayList<>();
+                
+                for (com.apartment.dto.ThongKeDTO tk : thongKeNam) {
+                    labels.add("Năm " + tk.getYear());
+                    tongThuData.add(tk.getTongThu().doubleValue());
+                    tongNoData.add(tk.getTongNo().doubleValue());
+                    soLuongData.add(tk.getSoLuong());
+                }
+                
+                model.addAttribute("labels", labels);
+                model.addAttribute("tongThuData", tongThuData);
+                model.addAttribute("tongNoData", tongNoData);
+                model.addAttribute("soLuongData", soLuongData);
+            }
+            
+            if (month != null) {
+                java.util.List<com.apartment.dto.ThongKeDTO> thongKeLoai = hoaDonService.thongKeTheoLoai(year, month);
+                model.addAttribute("thongKeLoai", thongKeLoai);
+                
+                java.util.List<String> loaiLabels = new java.util.ArrayList<>();
+                java.util.List<Double> loaiTongThuData = new java.util.ArrayList<>();
+                java.util.List<Double> loaiTongNoData = new java.util.ArrayList<>();
+                
+                for (com.apartment.dto.ThongKeDTO tk : thongKeLoai) {
+                    String loaiName = getLoaiHoaDonName(tk.getLoaiHoaDon());
+                    loaiLabels.add(loaiName);
+                    loaiTongThuData.add(tk.getTongThu().doubleValue());
+                    loaiTongNoData.add(tk.getTongNo().doubleValue());
+                }
+                
+                model.addAttribute("loaiLabels", loaiLabels);
+                model.addAttribute("loaiTongThuData", loaiTongThuData);
+                model.addAttribute("loaiTongNoData", loaiTongNoData);
+            }
+            
+            return "ke-toan/thong-ke";
+        } catch (Exception e) {
+            System.err.println("Lỗi khi tải thống kê: " + e.getMessage());
+            e.printStackTrace();
+            model.addAttribute("error", "Lỗi khi tải dữ liệu thống kê");
+            return "ke-toan/thong-ke";
+        }
+    }
+    
+    private String getLoaiHoaDonName(String loaiHoaDon) {
+        if (loaiHoaDon == null) return "Khác";
+        switch (loaiHoaDon) {
+            case "dien_nuoc": return "Điện nước";
+            case "dich_vu": return "Dịch vụ";
+            case "sua_chua": return "Sửa chữa";
+            case "phat": return "Phạt";
+            case "khac": return "Khác";
+            default: return loaiHoaDon;
+        }
     }
     
 }

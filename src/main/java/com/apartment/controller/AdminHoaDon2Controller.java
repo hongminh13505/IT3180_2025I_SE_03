@@ -35,21 +35,47 @@ public class AdminHoaDon2Controller {
 
     @GetMapping
     public String list(@RequestParam(required = false) String search,
+                      @RequestParam(required = false) String loaiHoaDon,
+                      @RequestParam(required = false) String trangThai,
+                      @RequestParam(required = false) String tuNgay,
+                      @RequestParam(required = false) String denNgay,
                       @RequestParam(defaultValue = "0") int page,
                       @RequestParam(defaultValue = "20") int size,
                       Model model) {
         Pageable pageable = PageRequest.of(page, size);
         Page<HoaDon> hoaDonPage;
+        
+        java.time.LocalDate tuNgayDate = null;
+        java.time.LocalDate denNgayDate = null;
+        
+        try {
+            if (tuNgay != null && !tuNgay.trim().isEmpty()) {
+                tuNgayDate = java.time.LocalDate.parse(tuNgay);
+            }
+            if (denNgay != null && !denNgay.trim().isEmpty()) {
+                denNgayDate = java.time.LocalDate.parse(denNgay);
+            }
+        } catch (Exception e) {
+        }
 
-        if (search != null && !search.trim().isEmpty()) {
-            hoaDonPage = hoaDonService.searchByKeyword(search, pageable);
+        boolean hasSearch = search != null && !search.trim().isEmpty();
+        boolean hasFilter = (loaiHoaDon != null && !loaiHoaDon.trim().isEmpty()) ||
+                           (trangThai != null && !trangThai.trim().isEmpty()) ||
+                           tuNgayDate != null || denNgayDate != null;
+
+        if (hasSearch || hasFilter) {
+            hoaDonPage = hoaDonService.searchAndFilter(search, loaiHoaDon, trangThai, tuNgayDate, denNgayDate, pageable);
         } else {
             hoaDonPage = hoaDonService.findAll(pageable);
         }
-        
+
         model.addAttribute("hoaDonList", hoaDonPage.getContent());
         model.addAttribute("hoaDonPage", hoaDonPage);
         model.addAttribute("search", search);
+        model.addAttribute("loaiHoaDon", loaiHoaDon);
+        model.addAttribute("trangThai", trangThai);
+        model.addAttribute("tuNgay", tuNgay);
+        model.addAttribute("denNgay", denNgay);
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPages", hoaDonPage.getTotalPages());
         model.addAttribute("totalElements", hoaDonPage.getTotalElements());

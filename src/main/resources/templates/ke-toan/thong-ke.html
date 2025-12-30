@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" 
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thống kê - Quản lý chung cư</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+</head>
+<body>
+    <div class="wrapper">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h3>BLUE MOON</h3>
+                <p class="role-badge">Kế toán</p>
+            </div>
+            
+            <nav class="sidebar-menu">
+                <ul>
+                    <li>
+                        <a href="/ke-toan/dashboard">
+                            <img src="/images/img4.png" alt="Dashboard" style="width: 18px; height: 18px; margin-right: 12px;"> Dashboard
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/ke-toan/quan-ly-hoa-don">
+                            <img src="/images/hoa-don.png" alt="Quản lý hóa đơn" style="width: 18px; height: 18px; margin-right: 12px;"> Quản lý hóa đơn
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/ke-toan/thong-ke" class="active">
+                            <img src="/images/img4.png" alt="Thống kê" style="width: 18px; height: 18px; margin-right: 12px;"> Thống kê
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+        
+        <div class="main-content">
+            <header class="header">
+                <div class="header-left">
+                    <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+                    <h2>Thống kê hóa đơn</h2>
+                </div>
+                
+                <div class="header-right">
+                    <div class="user-info">
+                        <span>Xin chào, <strong th:text="${username}">Kế toán</strong></span>
+                        <form th:action="@{/logout}" method="post" style="display: inline;">
+                            <button type="submit" class="btn btn-sm btn-danger">Đăng xuất</button>
+                        </form>
+                    </div>
+                </div>
+            </header>
+            
+            <main class="page-content">
+                <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+                
+                <div class="filter-section" style="background: white; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);">
+                    <form th:action="@{/ke-toan/thong-ke}" method="get" id="filterForm">
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; align-items: end;">
+                            <div>
+                                <label style="display: block; margin-bottom: 6px; font-size: 13px; font-weight: 500; color: #475569;">Loại xem</label>
+                                <select name="viewType" class="form-control" style="width: 100%;" onchange="this.form.submit()">
+                                    <option value="thang" th:selected="${viewType == 'thang'}">Theo tháng</option>
+                                    <option value="nam" th:selected="${viewType == 'nam'}">Theo năm</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 6px; font-size: 13px; font-weight: 500; color: #475569;">Năm</label>
+                                <input type="number" name="year" th:value="${year}" min="2000" max="2100" class="form-control" style="width: 100%;" onchange="this.form.submit()">
+                            </div>
+                            <div th:if="${viewType == 'thang'}">
+                                <label style="display: block; margin-bottom: 6px; font-size: 13px; font-weight: 500; color: #475569;">Tháng (tùy chọn)</label>
+                                <select name="month" class="form-control" style="width: 100%;" onchange="this.form.submit()">
+                                    <option value="">Tất cả</option>
+                                    <option th:each="i : ${#numbers.sequence(1, 12)}" 
+                                            th:value="${i}" 
+                                            th:text="'Tháng ' + ${i}"
+                                            th:selected="${month != null and month == i}"></option>
+                                </select>
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                <button type="button" class="btn btn-primary" onclick="exportChart()" style="flex: 1;">Xuất biểu đồ</button>
+                            </div>
+                        </div>
+                        <input type="hidden" name="viewType" th:value="${viewType}">
+                    </form>
+                </div>
+                
+                <div id="chartContainer">
+                    <div class="content-section" style="margin-bottom: 24px;">
+                        <div class="section-header">
+                            <h3 th:text="${viewType == 'thang'} ? 'Thống kê theo tháng năm ' + ${year} : 'Thống kê theo năm'">Thống kê</h3>
+                            <button type="button" class="btn btn-sm btn-primary" onclick="exportChart()">Xuất biểu đồ</button>
+                        </div>
+                        
+                        <div class="chart-container" style="position: relative; height: 400px; margin-bottom: 20px;">
+                            <canvas id="mainChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div th:if="${month != null and viewType == 'thang'}" class="content-section">
+                        <div class="section-header">
+                            <h3>Thống kê theo loại hóa đơn - Tháng <span th:text="${month}"></span>/<span th:text="${year}"></span></h3>
+                        </div>
+                        
+                        <div class="chart-container" style="position: relative; height: 350px;">
+                            <canvas id="loaiChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    
+    <script th:src="@{/js/script.js}"></script>
+    <script th:inline="javascript">
+        document.addEventListener('DOMContentLoaded', function() {
+            const labels = /*[[${labels}]]*/ [];
+            const tongThuData = /*[[${tongThuData}]]*/ [];
+            const tongNoData = /*[[${tongNoData}]]*/ [];
+            const soLuongData = /*[[${soLuongData}]]*/ [];
+            
+            const ctx = document.getElementById('mainChart');
+            if (ctx && labels.length > 0) {
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'Tổng thu (VNĐ)',
+                                data: tongThuData,
+                                backgroundColor: 'rgba(16, 185, 129, 0.8)',
+                                borderColor: 'rgba(16, 185, 129, 1)',
+                                borderWidth: 2,
+                                yAxisID: 'y'
+                            },
+                            {
+                                label: 'Tổng nợ (VNĐ)',
+                                data: tongNoData,
+                                backgroundColor: 'rgba(239, 68, 68, 0.8)',
+                                borderColor: 'rgba(239, 68, 68, 1)',
+                                borderWidth: 2,
+                                yAxisID: 'y'
+                            },
+                            {
+                                label: 'Số lượng hóa đơn',
+                                data: soLuongData,
+                                type: 'line',
+                                borderColor: 'rgba(59, 130, 246, 1)',
+                                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                                borderWidth: 3,
+                                fill: false,
+                                yAxisID: 'y1',
+                                tension: 0.4
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'top'
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.dataset.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        if (context.datasetIndex < 2) {
+                                            label += new Intl.NumberFormat('vi-VN').format(context.parsed.y) + ' VNĐ';
+                                        } else {
+                                            label += context.parsed.y;
+                                        }
+                                        return label;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                type: 'linear',
+                                display: true,
+                                position: 'left',
+                                title: {
+                                    display: true,
+                                    text: 'Số tiền (VNĐ)'
+                                },
+                                ticks: {
+                                    callback: function(value) {
+                                        return new Intl.NumberFormat('vi-VN').format(value);
+                                    }
+                                }
+                            },
+                            y1: {
+                                type: 'linear',
+                                display: true,
+                                position: 'right',
+                                title: {
+                                    display: true,
+                                    text: 'Số lượng'
+                                },
+                                grid: {
+                                    drawOnChartArea: false
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            
+            const loaiLabels = /*[[${loaiLabels}]]*/ [];
+            const loaiTongThuData = /*[[${loaiTongThuData}]]*/ [];
+            const loaiTongNoData = /*[[${loaiTongNoData}]]*/ [];
+            
+            const loaiCtx = document.getElementById('loaiChart');
+            if (loaiCtx && loaiLabels.length > 0) {
+                new Chart(loaiCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: loaiLabels,
+                        datasets: [
+                            {
+                                label: 'Tổng thu (VNĐ)',
+                                data: loaiTongThuData,
+                                backgroundColor: 'rgba(16, 185, 129, 0.8)',
+                                borderColor: 'rgba(16, 185, 129, 1)',
+                                borderWidth: 2
+                            },
+                            {
+                                label: 'Tổng nợ (VNĐ)',
+                                data: loaiTongNoData,
+                                backgroundColor: 'rgba(239, 68, 68, 0.8)',
+                                borderColor: 'rgba(239, 68, 68, 1)',
+                                borderWidth: 2
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'top'
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.dataset.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        label += new Intl.NumberFormat('vi-VN').format(context.parsed.y) + ' VNĐ';
+                                        return label;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return new Intl.NumberFormat('vi-VN').format(value);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        });
+        
+        function exportChart() {
+            const container = document.getElementById('chartContainer');
+            if (!container) return;
+            
+            html2canvas(container, {
+                backgroundColor: '#ffffff',
+                scale: 2,
+                logging: false,
+                useCORS: true
+            }).then(function(canvas) {
+                const link = document.createElement('a');
+                link.download = 'thong-ke-' + new Date().getTime() + '.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            }).catch(function(error) {
+                console.error('Lỗi khi xuất biểu đồ:', error);
+                alert('Có lỗi khi xuất biểu đồ. Vui lòng thử lại.');
+            });
+        }
+    </script>
+</body>
+</html>
+
