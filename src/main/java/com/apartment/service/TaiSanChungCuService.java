@@ -3,6 +3,8 @@ package com.apartment.service;
 import com.apartment.entity.TaiSanChungCu;
 import com.apartment.repository.TaiSanChungCuRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,6 +21,10 @@ public class TaiSanChungCuService {
         return taiSanRepository.findAll();
     }
     
+    public Page<TaiSanChungCu> findAll(Pageable pageable) {
+        return taiSanRepository.findAll(pageable);
+    }
+    
     public Optional<TaiSanChungCu> findById(Integer maTaiSan) {
         return taiSanRepository.findById(maTaiSan);
     }
@@ -33,6 +39,13 @@ public class TaiSanChungCuService {
     
     public List<TaiSanChungCu> findByLoaiTaiSan(String loaiTaiSan) {
         return taiSanRepository.findByLoaiTaiSan(loaiTaiSan);
+    }
+    
+    public Page<TaiSanChungCu> findByLoaiTaiSan(String loaiTaiSan, Pageable pageable) {
+        if (loaiTaiSan == null || loaiTaiSan.isEmpty()) {
+            return findAll(pageable);
+        }
+        return taiSanRepository.findByLoaiTaiSan(loaiTaiSan, pageable);
     }
     
     public List<TaiSanChungCu> findByTrangThai(String trangThai) {

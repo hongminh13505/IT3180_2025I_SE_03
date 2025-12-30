@@ -3,6 +3,8 @@ package com.apartment.service;
 import com.apartment.entity.BaoCaoSuCo;
 import com.apartment.repository.BaoCaoSuCoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
@@ -16,6 +18,10 @@ public class BaoCaoSuCoService {
     
     public List<BaoCaoSuCo> findAll() {
         return baoCaoSuCoRepository.findAll();
+    }
+    
+    public Page<BaoCaoSuCo> findAll(Pageable pageable) {
+        return baoCaoSuCoRepository.findAll(pageable);
     }
     
     public Optional<BaoCaoSuCo> findById(Integer id) {
@@ -32,6 +38,13 @@ public class BaoCaoSuCoService {
     
     public List<BaoCaoSuCo> findByTrangThai(String trangThai) {
         return baoCaoSuCoRepository.findByTrangThai(trangThai);
+    }
+    
+    public Page<BaoCaoSuCo> findByTrangThai(String trangThai, Pageable pageable) {
+        if (trangThai == null || trangThai.isEmpty()) {
+            return findAll(pageable);
+        }
+        return baoCaoSuCoRepository.findByTrangThai(trangThai, pageable);
     }
     
     @Transactional

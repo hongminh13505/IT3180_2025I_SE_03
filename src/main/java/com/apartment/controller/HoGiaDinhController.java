@@ -6,6 +6,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -55,17 +58,26 @@ public class HoGiaDinhController {
     private LichSuChinhSuaService lichSuChinhSuaService;
     
     @GetMapping
-    public String list(@RequestParam(required = false) String search, Model model) {
-        List<HoGiaDinh> hoGiaDinhList;
-        if (search != null && !search.isEmpty()) {
-            hoGiaDinhList = hoGiaDinhService.searchByName(search);
-        } else {
-            hoGiaDinhList = hoGiaDinhService.findAll();
-        }
-        model.addAttribute("hoGiaDinhList", hoGiaDinhList);
-        model.addAttribute("search", search);
+    public String list(@RequestParam(required = false) String search,
+                      @RequestParam(defaultValue = "0") int page,
+                      @RequestParam(defaultValue = "20") int size,
+                      Model model) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<HoGiaDinh> hoGiaDinhPage;
         
-     
+        if (search != null && !search.isEmpty()) {
+            hoGiaDinhPage = hoGiaDinhService.searchByName(search, pageable);
+        } else {
+            hoGiaDinhPage = hoGiaDinhService.findAll(pageable);
+        }
+        
+        model.addAttribute("hoGiaDinhList", hoGiaDinhPage.getContent());
+        model.addAttribute("hoGiaDinhPage", hoGiaDinhPage);
+        model.addAttribute("search", search);
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", hoGiaDinhPage.getTotalPages());
+        model.addAttribute("totalElements", hoGiaDinhPage.getTotalElements());
+        
         model.addAttribute("allCanHo", taiSanChungCuService.findAll());
         
         return "admin/ho-gia-dinh/list";

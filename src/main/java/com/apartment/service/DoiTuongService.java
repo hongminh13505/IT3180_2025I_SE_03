@@ -3,6 +3,8 @@ package com.apartment.service;
 import com.apartment.entity.DoiTuong;
 import com.apartment.repository.DoiTuongRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +25,10 @@ public class DoiTuongService {
         return doiTuongRepository.findAll();
     }
     
+    public Page<DoiTuong> findAll(Pageable pageable) {
+        return doiTuongRepository.findAll(pageable);
+    }
+    
     public Optional<DoiTuong> findByCccd(String cccd) {
         return doiTuongRepository.findByCccd(cccd);
     }
@@ -40,6 +46,13 @@ public class DoiTuongService {
             return findAll();
         }
          return doiTuongRepository.searchAllByKeyword(keyword.trim());
+    }
+    
+    public Page<DoiTuong> searchByKeyword(String keyword, Pageable pageable) {
+        if (keyword == null || keyword.isBlank()) {
+            return findAll(pageable);
+        }
+        return doiTuongRepository.searchAllByKeyword(keyword.trim(), pageable);
     }
     
     @Transactional

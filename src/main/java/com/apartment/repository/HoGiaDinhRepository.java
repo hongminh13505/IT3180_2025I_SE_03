@@ -1,6 +1,8 @@
 package com.apartment.repository;
 
 import com.apartment.entity.HoGiaDinh;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -17,6 +19,10 @@ public interface HoGiaDinhRepository extends JpaRepository<HoGiaDinh, String> {
     List<HoGiaDinh> findByTrangThai(String trangThai);
     
     List<HoGiaDinh> findByTenHoContainingIgnoreCase(String tenHo);
+    
+    Page<HoGiaDinh> findByTenHoContainingIgnoreCase(String tenHo, Pageable pageable);
+    
+    Page<HoGiaDinh> findAll(Pageable pageable);
     
     @Query("SELECT COUNT(h) FROM HoGiaDinh h WHERE h.trangThai = 'hoat_dong'")
     Long countActiveHo();

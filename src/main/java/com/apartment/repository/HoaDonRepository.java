@@ -1,6 +1,8 @@
 package com.apartment.repository;
 
 import com.apartment.entity.HoaDon;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -25,6 +27,13 @@ public interface HoaDonRepository extends JpaRepository<HoaDon, Integer> {
     
     @Query("SELECT hd FROM HoaDon hd ORDER BY hd.ngayTao DESC LIMIT 10")
     List<HoaDon> findRecentInvoices();
+    
+    Page<HoaDon> findAll(Pageable pageable);
+    
+    @Query("SELECT hd FROM HoaDon hd WHERE " +
+           "LOWER(hd.maHo) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+           "LOWER(hd.loaiHoaDon) LIKE LOWER(CONCAT('%', :keyword, '%'))")
+    Page<HoaDon> searchByKeyword(String keyword, Pageable pageable);
 }
 
 

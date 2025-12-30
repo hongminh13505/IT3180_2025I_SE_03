@@ -6,6 +6,9 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -104,38 +107,26 @@ public class KeToanController {
     
     @GetMapping("/quan-ly-hoa-don")
     public String quanLyHoaDon(@RequestParam(required = false) String search,
+                               @RequestParam(defaultValue = "0") int page,
+                               @RequestParam(defaultValue = "20") int size,
                                Model model,
                                Authentication authentication) {
         try {
-            System.out.println("=== Truy cập /ke-toan/quan-ly-hoa-don ===");
+            Pageable pageable = PageRequest.of(page, size);
+            Page<HoaDon> hoaDonPage;
             
-            java.util.List<HoaDon> hoaDonList = hoaDonService.findAll();
-            boolean hasUpdates = false;
-            for (HoaDon hoaDon : hoaDonList) {
-                System.out.println("=== DEBUG: Hóa đơn " + hoaDon.getMaHoaDon() + " - loaiHoaDon: '" + hoaDon.getLoaiHoaDon() + "'");
-                if (hoaDon.getLoaiHoaDon() == null || hoaDon.getLoaiHoaDon().trim().isEmpty()) {
-                    System.out.println("=== DEBUG: Cập nhật hóa đơn " + hoaDon.getMaHoaDon() + " thành 'khac'");
-                    hoaDon.setLoaiHoaDon("khac");
-                    hoaDonService.save(hoaDon);
-                    hasUpdates = true;
-                }
-            }
-            if (hasUpdates) {
-                hoaDonList = hoaDonService.findAll();
-            }
             if (search != null && !search.trim().isEmpty()) {
-                String searchLower = search.trim().toLowerCase();
-                hoaDonList = hoaDonList.stream()
-                    .filter(hd -> 
-                        (hd.getMaHo() != null && hd.getMaHo().toLowerCase().contains(searchLower)) ||
-                        (hd.getLoaiHoaDon() != null && hd.getLoaiHoaDon().toLowerCase().contains(searchLower)) ||
-                        (hd.getMaHoaDon() != null && hd.getMaHoaDon().toString().contains(searchLower))
-                    )
-                    .collect(java.util.stream.Collectors.toList());
+                hoaDonPage = hoaDonService.searchByKeyword(search, pageable);
+            } else {
+                hoaDonPage = hoaDonService.findAll(pageable);
             }
             
-            model.addAttribute("hoaDonList", hoaDonList);
+            model.addAttribute("hoaDonList", hoaDonPage.getContent());
+            model.addAttribute("hoaDonPage", hoaDonPage);
             model.addAttribute("search", search);
+            model.addAttribute("currentPage", page);
+            model.addAttribute("totalPages", hoaDonPage.getTotalPages());
+            model.addAttribute("totalElements", hoaDonPage.getTotalElements());
             model.addAttribute("username", authentication.getName());
             
             return "ke-toan/quan-ly-hoa-don";
@@ -324,18 +315,11 @@ public class KeToanController {
     @GetMapping("/quan-ly-hoa-don/export/excel")
     public ResponseEntity<byte[]> exportToExcel(@RequestParam(required = false) String search) {
         try {
-            java.util.List<HoaDon> hoaDonList = hoaDonService.findAll();
-            
-            // Apply search filter if provided
+            java.util.List<HoaDon> hoaDonList;
             if (search != null && !search.trim().isEmpty()) {
-                String searchLower = search.trim().toLowerCase();
-                hoaDonList = hoaDonList.stream()
-                    .filter(hd -> 
-                        (hd.getMaHo() != null && hd.getMaHo().toLowerCase().contains(searchLower)) ||
-                        (hd.getLoaiHoaDon() != null && hd.getLoaiHoaDon().toLowerCase().contains(searchLower)) ||
-                        (hd.getMaHoaDon() != null && hd.getMaHoaDon().toString().contains(searchLower))
-                    )
-                    .collect(java.util.stream.Collectors.toList());
+                hoaDonList = hoaDonService.searchByKeyword(search, org.springframework.data.domain.Pageable.unpaged()).getContent();
+            } else {
+                hoaDonList = hoaDonService.findAll(org.springframework.data.domain.Pageable.unpaged()).getContent();
             }
             
             byte[] excelBytes = hoaDonExportService.exportToExcel(hoaDonList);
@@ -363,18 +347,11 @@ public class KeToanController {
     @GetMapping("/quan-ly-hoa-don/export/pdf")
     public ResponseEntity<byte[]> exportToPdf(@RequestParam(required = false) String search) {
         try {
-            java.util.List<HoaDon> hoaDonList = hoaDonService.findAll();
-            
-            // Apply search filter if provided
+            java.util.List<HoaDon> hoaDonList;
             if (search != null && !search.trim().isEmpty()) {
-                String searchLower = search.trim().toLowerCase();
-                hoaDonList = hoaDonList.stream()
-                    .filter(hd -> 
-                        (hd.getMaHo() != null && hd.getMaHo().toLowerCase().contains(searchLower)) ||
-                        (hd.getLoaiHoaDon() != null && hd.getLoaiHoaDon().toLowerCase().contains(searchLower)) ||
-                        (hd.getMaHoaDon() != null && hd.getMaHoaDon().toString().contains(searchLower))
-                    )
-                    .collect(java.util.stream.Collectors.toList());
+                hoaDonList = hoaDonService.searchByKeyword(search, org.springframework.data.domain.Pageable.unpaged()).getContent();
+            } else {
+                hoaDonList = hoaDonService.findAll(org.springframework.data.domain.Pageable.unpaged()).getContent();
             }
             
             byte[] pdfBytes = hoaDonExportService.exportToPdf(hoaDonList);

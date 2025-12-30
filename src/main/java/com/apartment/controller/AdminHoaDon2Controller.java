@@ -6,6 +6,9 @@ import com.apartment.service.HoaDonService;
 import com.apartment.service.HoGiaDinhService;
 import com.apartment.service.ChiSoDienNuocService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -31,22 +34,25 @@ public class AdminHoaDon2Controller {
     private ChiSoDienNuocService chiSoService;
 
     @GetMapping
-    public String list(@RequestParam(required = false) String search, Model model) {
-        List<HoaDon> hoaDonList = hoaDonService.findAll();
-
+    public String list(@RequestParam(required = false) String search,
+                      @RequestParam(defaultValue = "0") int page,
+                      @RequestParam(defaultValue = "20") int size,
+                      Model model) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<HoaDon> hoaDonPage;
+        
         if (search != null && !search.trim().isEmpty()) {
-            String searchLower = search.trim().toLowerCase();
-            hoaDonList = hoaDonList.stream()
-                .filter(hd ->
-                    (hd.getMaHo() != null && hd.getMaHo().toLowerCase().contains(searchLower)) ||
-                    (hd.getLoaiHoaDon() != null && hd.getLoaiHoaDon().toLowerCase().contains(searchLower)) ||
-                    (hd.getMaHoaDon() != null && hd.getMaHoaDon().toString().contains(searchLower))
-                )
-                .collect(java.util.stream.Collectors.toList());
+            hoaDonPage = hoaDonService.searchByKeyword(search, pageable);
+        } else {
+            hoaDonPage = hoaDonService.findAll(pageable);
         }
-
-        model.addAttribute("hoaDonList", hoaDonList);
+        
+        model.addAttribute("hoaDonList", hoaDonPage.getContent());
+        model.addAttribute("hoaDonPage", hoaDonPage);
         model.addAttribute("search", search);
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", hoaDonPage.getTotalPages());
+        model.addAttribute("totalElements", hoaDonPage.getTotalElements());
         return "admin/hoa-don-2/list";
     }
 

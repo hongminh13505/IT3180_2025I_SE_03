@@ -4,6 +4,9 @@ import com.apartment.entity.TaiSanChungCu;
 import com.apartment.service.TaiSanChungCuService;
 import com.apartment.service.HoGiaDinhService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -26,15 +29,19 @@ public class TaiSanChungCuController {
     private HoGiaDinhService hoGiaDinhService;
     
     @GetMapping
-    public String list(@RequestParam(required = false) String loai, Model model) {
-        java.util.List<TaiSanChungCu> taiSanList;
+    public String list(@RequestParam(required = false) String loai,
+                      @RequestParam(defaultValue = "0") int page,
+                      @RequestParam(defaultValue = "20") int size,
+                      Model model) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<TaiSanChungCu> taiSanPage;
+        
         if (loai != null && !loai.isEmpty()) {
-            taiSanList = taiSanService.findByLoaiTaiSan(loai);
+            taiSanPage = taiSanService.findByLoaiTaiSan(loai, pageable);
         } else {
-            taiSanList = taiSanService.findAll();
+            taiSanPage = taiSanService.findAll(pageable);
         }
         
-        // Tạo Map để tra cứu hộ gia đình theo maCanHo
         java.util.Map<Integer, String> hoGiaDinhMap = new java.util.HashMap<>();
         hoGiaDinhService.findAll().forEach(ho -> {
             if (ho.getMaCanHo() != null) {
@@ -42,9 +49,13 @@ public class TaiSanChungCuController {
             }
         });
         
-        model.addAttribute("taiSanList", taiSanList);
+        model.addAttribute("taiSanList", taiSanPage.getContent());
+        model.addAttribute("taiSanPage", taiSanPage);
         model.addAttribute("hoGiaDinhMap", hoGiaDinhMap);
         model.addAttribute("loai", loai);
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", taiSanPage.getTotalPages());
+        model.addAttribute("totalElements", taiSanPage.getTotalElements());
         return "admin/tai-san/list";
     }
     

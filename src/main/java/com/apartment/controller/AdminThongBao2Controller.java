@@ -7,6 +7,9 @@ import com.apartment.service.ThongBaoService;
 import com.apartment.service.HoGiaDinhService;
 import com.apartment.repository.ThongBaoHoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -34,24 +37,26 @@ public class AdminThongBao2Controller {
     private ThongBaoHoRepository thongBaoHoRepository;
 
     @GetMapping
-    public String list(@RequestParam(required = false) String search, Model model) {
+    public String list(@RequestParam(required = false) String search,
+                      @RequestParam(defaultValue = "0") int page,
+                      @RequestParam(defaultValue = "20") int size,
+                      Model model) {
         try {
-            List<ThongBao> thongBaoList = thongBaoService.findAll();
-
+            Pageable pageable = PageRequest.of(page, size);
+            Page<ThongBao> thongBaoPage;
+            
             if (search != null && !search.trim().isEmpty()) {
-                String searchLower = search.trim().toLowerCase();
-                thongBaoList = thongBaoList.stream()
-                    .filter(tb ->
-                        (tb.getTieuDe() != null && tb.getTieuDe().toLowerCase().contains(searchLower)) ||
-                        (tb.getNoiDungThongBao() != null && tb.getNoiDungThongBao().toLowerCase().contains(searchLower)) ||
-                        (tb.getLoaiThongBao() != null && tb.getLoaiThongBao().toLowerCase().contains(searchLower)) ||
-                        (tb.getMaThongBao() != null && tb.getMaThongBao().toString().contains(searchLower))
-                    )
-                    .collect(Collectors.toList());
+                thongBaoPage = thongBaoService.searchByKeyword(search, pageable);
+            } else {
+                thongBaoPage = thongBaoService.findAll(pageable);
             }
-
-            model.addAttribute("thongBaoList", thongBaoList);
+            
+            model.addAttribute("thongBaoList", thongBaoPage.getContent());
+            model.addAttribute("thongBaoPage", thongBaoPage);
             model.addAttribute("search", search);
+            model.addAttribute("currentPage", page);
+            model.addAttribute("totalPages", thongBaoPage.getTotalPages());
+            model.addAttribute("totalElements", thongBaoPage.getTotalElements());
         } catch (Exception e) {
             model.addAttribute("error", "Có lỗi khi tải danh sách thông báo: " + e.getMessage());
             model.addAttribute("thongBaoList", Collections.emptyList());

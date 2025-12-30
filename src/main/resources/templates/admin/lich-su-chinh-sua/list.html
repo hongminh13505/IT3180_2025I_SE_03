@@ -120,6 +120,8 @@
                             <input type="text" name="maDoiTuong" th:value="${maDoiTuong}" 
                                    placeholder="Mã đối tượng (CCCD/Mã hộ)" class="form-control" style="width: 200px;">
                             
+                            <input type="hidden" name="page" value="0">
+                            
                             <button type="submit" class="btn btn-primary">Lọc</button>
                             <a th:href="@{/admin/lich-su-chinh-sua}" class="btn btn-secondary">Xóa bộ lọc</a>
                         </form>
@@ -206,11 +208,158 @@
                         </tbody>
                     </table>
                 </div>
+                
+                <div th:if="${lichSuPage != null and lichSuPage.totalElements > 0}" class="pagination-container">
+                    <div class="pagination-info">
+                        Hiển thị <strong th:text="${(currentPage * 20) + 1}">1</strong> - 
+                        <strong th:text="${(currentPage * 20) + lichSuList.size()}">20</strong> 
+                        trong tổng số <strong th:text="${totalElements}">0</strong> bản ghi
+                    </div>
+                    <div class="pagination" th:if="${totalPages > 1}">
+                        <a th:href="@{/admin/lich-su-chinh-sua(page=0, loaiDoiTuong=${loaiDoiTuong}, maDoiTuong=${maDoiTuong}, nguon=${nguon})}" 
+                           class="pagination-btn"
+                           th:classappend="${currentPage == 0} ? 'disabled' : ''"
+                           th:onclick="${currentPage == 0} ? 'return false;' : ''">« Đầu</a>
+                        <a th:href="@{/admin/lich-su-chinh-sua(page=${currentPage - 1}, loaiDoiTuong=${loaiDoiTuong}, maDoiTuong=${maDoiTuong}, nguon=${nguon})}" 
+                           class="pagination-btn"
+                           th:classappend="${currentPage == 0} ? 'disabled' : ''"
+                           th:onclick="${currentPage == 0} ? 'return false;' : ''">‹</a>
+                        <span th:if="${totalPages <= 10}">
+                            <a th:each="pageNum : ${#numbers.sequence(0, totalPages - 1)}"
+                               th:href="@{/admin/lich-su-chinh-sua(page=${pageNum}, loaiDoiTuong=${loaiDoiTuong}, maDoiTuong=${maDoiTuong}, nguon=${nguon})}" 
+                               class="pagination-btn"
+                               th:classappend="${pageNum == currentPage} ? 'active' : ''"
+                               th:text="${pageNum + 1}">1</a>
+                        </span>
+                        <span th:if="${totalPages > 10}">
+                            <a th:href="@{/admin/lich-su-chinh-sua(page=0, loaiDoiTuong=${loaiDoiTuong}, maDoiTuong=${maDoiTuong}, nguon=${nguon})}" 
+                               class="pagination-btn"
+                               th:classappend="${currentPage == 0} ? 'active' : ''">1</a>
+                            <span th:if="${currentPage > 3}"><span class="pagination-ellipsis">...</span></span>
+                            <span th:if="${currentPage > 2 and currentPage < totalPages - 3}">
+                                <a th:each="pageNum : ${#numbers.sequence(currentPage - 1, currentPage + 1)}"
+                                   th:href="@{/admin/lich-su-chinh-sua(page=${pageNum}, loaiDoiTuong=${loaiDoiTuong}, maDoiTuong=${maDoiTuong}, nguon=${nguon})}" 
+                                   class="pagination-btn"
+                                   th:classappend="${pageNum == currentPage} ? 'active' : ''"
+                                   th:text="${pageNum + 1}">5</a>
+                            </span>
+                            <span th:if="${currentPage <= 2}">
+                                <a th:each="pageNum : ${#numbers.sequence(1, 3)}"
+                                   th:href="@{/admin/lich-su-chinh-sua(page=${pageNum}, loaiDoiTuong=${loaiDoiTuong}, maDoiTuong=${maDoiTuong}, nguon=${nguon})}" 
+                                   class="pagination-btn"
+                                   th:classappend="${pageNum == currentPage} ? 'active' : ''"
+                                   th:text="${pageNum + 1}">2</a>
+                            </span>
+                            <span th:if="${currentPage >= totalPages - 3}">
+                                <a th:each="pageNum : ${#numbers.sequence(totalPages - 4, totalPages - 2)}"
+                                   th:href="@{/admin/lich-su-chinh-sua(page=${pageNum}, loaiDoiTuong=${loaiDoiTuong}, maDoiTuong=${maDoiTuong}, nguon=${nguon})}" 
+                                   class="pagination-btn"
+                                   th:classappend="${pageNum == currentPage} ? 'active' : ''"
+                                   th:text="${pageNum + 1}">10</a>
+                            </span>
+                            <span th:if="${currentPage < totalPages - 4}"><span class="pagination-ellipsis">...</span></span>
+                            <a th:href="@{/admin/lich-su-chinh-sua(page=${totalPages - 1}, loaiDoiTuong=${loaiDoiTuong}, maDoiTuong=${maDoiTuong}, nguon=${nguon})}" 
+                               class="pagination-btn"
+                               th:classappend="${currentPage == totalPages - 1} ? 'active' : ''"
+                               th:text="${totalPages}">10</a>
+                        </span>
+                        <a th:href="@{/admin/lich-su-chinh-sua(page=${currentPage + 1}, loaiDoiTuong=${loaiDoiTuong}, maDoiTuong=${maDoiTuong}, nguon=${nguon})}" 
+                           class="pagination-btn"
+                           th:classappend="${currentPage >= totalPages - 1} ? 'disabled' : ''"
+                           th:onclick="${currentPage >= totalPages - 1} ? 'return false;' : ''">›</a>
+                        <a th:href="@{/admin/lich-su-chinh-sua(page=${totalPages - 1}, loaiDoiTuong=${loaiDoiTuong}, maDoiTuong=${maDoiTuong}, nguon=${nguon})}" 
+                           class="pagination-btn"
+                           th:classappend="${currentPage >= totalPages - 1} ? 'disabled' : ''"
+                           th:onclick="${currentPage >= totalPages - 1} ? 'return false;' : ''">Cuối »</a>
+                    </div>
+                </div>
             </main>
         </div>
     </div>
     
     <script th:src="@{/js/script.js}"></script>
+    <style>
+        .pagination-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 24px;
+            padding: 20px 24px;
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
+            flex-wrap: wrap;
+            gap: 20px;
+            border: 1px solid rgba(226, 232, 240, 0.8);
+        }
+        .pagination-info {
+            color: #475569;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .pagination-info strong {
+            color: #1e293b;
+            font-weight: 600;
+        }
+        .pagination {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .pagination-btn {
+            padding: 10px 14px;
+            text-decoration: none;
+            border-radius: 8px;
+            background: white;
+            border: 1.5px solid #e2e8f0;
+            color: #475569;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            min-width: 42px;
+            height: 42px;
+            text-align: center;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        }
+        .pagination-btn:hover:not(.disabled):not(.active) {
+            background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+            border-color: #cbd5e1;
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+            color: #1e293b;
+        }
+        .pagination-btn.active {
+            background: linear-gradient(135deg, #0ea5e9, #0284c7);
+            color: white;
+            border-color: #0284c7;
+            font-weight: 600;
+            box-shadow: 0 4px 14px rgba(14, 165, 233, 0.35), 0 2px 4px rgba(14, 165, 233, 0.2);
+            transform: translateY(-1px) scale(1.05);
+        }
+        .pagination-btn.active:hover {
+            background: linear-gradient(135deg, #0284c7, #0369a1);
+            box-shadow: 0 6px 18px rgba(14, 165, 233, 0.45), 0 3px 6px rgba(14, 165, 233, 0.25);
+            transform: translateY(-2px) scale(1.06);
+        }
+        .pagination-btn.disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            pointer-events: none;
+            background: #f8fafc;
+            border-color: #e2e8f0;
+        }
+        .pagination-ellipsis {
+            padding: 10px 6px;
+            color: #94a3b8;
+            font-size: 14px;
+            font-weight: 500;
+            user-select: none;
+        }
+    </style>
 </body>
 </html>
 

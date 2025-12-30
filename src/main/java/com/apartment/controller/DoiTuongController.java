@@ -6,6 +6,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -42,13 +45,25 @@ public class DoiTuongController {
     private DoiTuongExportService doiTuongExportService;
     
     @GetMapping
-    public String list(@RequestParam(required = false) String search, Model model) {
+    public String list(@RequestParam(required = false) String search,
+                      @RequestParam(defaultValue = "0") int page,
+                      @RequestParam(defaultValue = "20") int size,
+                      Model model) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<DoiTuong> doiTuongPage;
+        
         if (search != null && !search.isEmpty()) {
-            model.addAttribute("doiTuongList", doiTuongService.searchByKeyword(search));
+            doiTuongPage = doiTuongService.searchByKeyword(search, pageable);
         } else {
-            model.addAttribute("doiTuongList", doiTuongService.findAll());
+            doiTuongPage = doiTuongService.findAll(pageable);
         }
+        
+        model.addAttribute("doiTuongList", doiTuongPage.getContent());
+        model.addAttribute("doiTuongPage", doiTuongPage);
         model.addAttribute("search", search);
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", doiTuongPage.getTotalPages());
+        model.addAttribute("totalElements", doiTuongPage.getTotalElements());
         return "admin/doi-tuong/list";
     }
     

@@ -3,6 +3,9 @@ package com.apartment.controller;
 import com.apartment.entity.PhanAnh;
 import com.apartment.service.PhanAnhService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -21,30 +24,20 @@ public class AdminPhanAnhController {
     @GetMapping
     public String list(@RequestParam(required = false) String search,
                       @RequestParam(required = false) String trangThai,
+                      @RequestParam(defaultValue = "0") int page,
+                      @RequestParam(defaultValue = "20") int size,
                       Model model) {
         try {
-            java.util.List<PhanAnh> phanAnhList;
+            Pageable pageable = PageRequest.of(page, size);
+            Page<PhanAnh> phanAnhPage = phanAnhService.searchByKeyword(search, trangThai, pageable);
             
-            if (trangThai != null && !trangThai.isEmpty()) {
-                phanAnhList = phanAnhService.findByTrangThai(trangThai);
-            } else {
-                phanAnhList = phanAnhService.findAll();
-            }
-            
-            if (search != null && !search.trim().isEmpty()) {
-                String searchLower = search.trim().toLowerCase();
-                phanAnhList = phanAnhList.stream()
-                    .filter(pa -> 
-                        (pa.getTieuDe() != null && pa.getTieuDe().toLowerCase().contains(searchLower)) ||
-                        (pa.getNoiDung() != null && pa.getNoiDung().toLowerCase().contains(searchLower)) ||
-                        (pa.getCccdNguoiPhanAnh() != null && pa.getCccdNguoiPhanAnh().contains(searchLower))
-                    )
-                    .collect(java.util.stream.Collectors.toList());
-            }
-            
-            model.addAttribute("phanAnhList", phanAnhList);
+            model.addAttribute("phanAnhList", phanAnhPage.getContent());
+            model.addAttribute("phanAnhPage", phanAnhPage);
             model.addAttribute("search", search);
             model.addAttribute("trangThai", trangThai);
+            model.addAttribute("currentPage", page);
+            model.addAttribute("totalPages", phanAnhPage.getTotalPages());
+            model.addAttribute("totalElements", phanAnhPage.getTotalElements());
             model.addAttribute("phanAnhMoi", phanAnhService.countMoi());
             
         } catch (Exception e) {

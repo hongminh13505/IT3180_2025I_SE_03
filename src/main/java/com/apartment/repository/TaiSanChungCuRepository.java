@@ -1,6 +1,8 @@
 package com.apartment.repository;
 
 import com.apartment.entity.TaiSanChungCu;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -11,6 +13,10 @@ import java.util.Optional;
 public interface TaiSanChungCuRepository extends JpaRepository<TaiSanChungCu, Integer> {
     
     List<TaiSanChungCu> findByLoaiTaiSan(String loaiTaiSan);
+    
+    Page<TaiSanChungCu> findByLoaiTaiSan(String loaiTaiSan, Pageable pageable);
+    
+    Page<TaiSanChungCu> findAll(Pageable pageable);
     
     List<TaiSanChungCu> findByMaHo(String maHo);
     
