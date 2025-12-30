@@ -77,7 +77,7 @@ public class HoGiaDinhController {
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPages", hoGiaDinhPage.getTotalPages());
         model.addAttribute("totalElements", hoGiaDinhPage.getTotalElements());
-        
+     
         model.addAttribute("allCanHo", taiSanChungCuService.findAll());
         
         return "admin/ho-gia-dinh/list";

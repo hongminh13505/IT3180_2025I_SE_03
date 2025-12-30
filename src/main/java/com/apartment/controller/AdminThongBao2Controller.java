@@ -44,7 +44,7 @@ public class AdminThongBao2Controller {
         try {
             Pageable pageable = PageRequest.of(page, size);
             Page<ThongBao> thongBaoPage;
-            
+
             if (search != null && !search.trim().isEmpty()) {
                 thongBaoPage = thongBaoService.searchByKeyword(search, pageable);
             } else {

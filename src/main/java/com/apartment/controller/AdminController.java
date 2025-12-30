@@ -41,19 +41,31 @@ public class AdminController {
         model.addAttribute("tongThuNhap", hoaDonService.sumPaidAmount());
         model.addAttribute("congNoConLai", hoaDonService.sumUnpaidAmount());
         
-        // Báo cáo sự cố mới nhất
-        model.addAttribute("baoCaoSuCoList", baoCaoSuCoService.findPendingReports());
+        // Báo cáo sự cố mới nhất (giới hạn 7 dòng)
+        java.util.List<com.apartment.entity.BaoCaoSuCo> allBaoCao = baoCaoSuCoService.findPendingReports();
+        java.util.List<com.apartment.entity.BaoCaoSuCo> recentBaoCao = allBaoCao.stream()
+            .limit(7)
+            .collect(java.util.stream.Collectors.toList());
+        model.addAttribute("baoCaoSuCoList", recentBaoCao);
         
         // Hóa đơn - chart data
         model.addAttribute("hoaDonDaThanhToan", hoaDonService.countPaidInvoices());
         model.addAttribute("hoaDonChuaThanhToan", hoaDonService.countUnpaidInvoices());
         
-        // Thông báo mới nhất
-        model.addAttribute("thongBaoList", thongBaoService.findAllVisible());
+        // Thông báo mới nhất (giới hạn 7 dòng)
+        java.util.List<com.apartment.entity.ThongBao> allThongBao = thongBaoService.findAllVisible();
+        java.util.List<com.apartment.entity.ThongBao> recentThongBao = allThongBao.stream()
+            .limit(7)
+            .collect(java.util.stream.Collectors.toList());
+        model.addAttribute("thongBaoList", recentThongBao);
         
-        // Phản ánh mới nhất
+        // Phản ánh mới nhất (giới hạn 7 dòng)
         model.addAttribute("phanAnhMoi", phanAnhService.countMoi());
-        model.addAttribute("phanAnhList", phanAnhService.findMoi());
+        java.util.List<com.apartment.entity.PhanAnh> allPhanAnh = phanAnhService.findMoi();
+        java.util.List<com.apartment.entity.PhanAnh> recentPhanAnh = allPhanAnh.stream()
+            .limit(7)
+            .collect(java.util.stream.Collectors.toList());
+        model.addAttribute("phanAnhList", recentPhanAnh);
         
         model.addAttribute("username", authentication.getName());
         return "admin/dashboard";

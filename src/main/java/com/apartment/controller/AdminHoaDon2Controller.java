@@ -40,7 +40,7 @@ public class AdminHoaDon2Controller {
                       Model model) {
         Pageable pageable = PageRequest.of(page, size);
         Page<HoaDon> hoaDonPage;
-        
+
         if (search != null && !search.trim().isEmpty()) {
             hoaDonPage = hoaDonService.searchByKeyword(search, pageable);
         } else {

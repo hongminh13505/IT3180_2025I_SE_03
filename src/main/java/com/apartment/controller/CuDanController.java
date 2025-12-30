@@ -83,9 +83,19 @@ public class CuDanController {
     
     @GetMapping("/dashboard")
     public String dashboard(Model model, Authentication authentication) {
-       
-        model.addAttribute("thongBaoList", thongBaoService.findAllVisible());
-        model.addAttribute("baoCaoSuCoList", baoCaoSuCoService.findAll());
+        // Thông báo mới nhất (giới hạn 7 dòng)
+        java.util.List<com.apartment.entity.ThongBao> allThongBao = thongBaoService.findAllVisible();
+        java.util.List<com.apartment.entity.ThongBao> recentThongBao = allThongBao.stream()
+            .limit(7)
+            .collect(java.util.stream.Collectors.toList());
+        model.addAttribute("thongBaoList", recentThongBao);
+        
+        // Báo cáo sự cố mới nhất (giới hạn 7 dòng)
+        java.util.List<com.apartment.entity.BaoCaoSuCo> allBaoCao = baoCaoSuCoService.findAll();
+        java.util.List<com.apartment.entity.BaoCaoSuCo> recentBaoCao = allBaoCao.stream()
+            .limit(7)
+            .collect(java.util.stream.Collectors.toList());
+        model.addAttribute("baoCaoSuCoList", recentBaoCao);
         
         model.addAttribute("username", authentication.getName());
         model.addAttribute("role", "Cư dân");

@@ -56,8 +56,8 @@ public class KeToanController {
         model.addAttribute("tongHoGiaDinh", hoGiaDinhService.countActiveHo());
 
         java.util.List<com.apartment.entity.HoaDon> recent = hoaDonService.findRecentInvoices();
-        if (recent.size() > 6) {
-            recent = recent.subList(0, 6);
+        if (recent.size() > 7) {
+            recent = recent.subList(0, 7);
         }
         model.addAttribute("recentInvoices", recent);
         model.addAttribute("hoaDonDaThanhToan", hoaDonService.countPaidInvoices());

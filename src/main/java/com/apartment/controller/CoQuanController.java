@@ -33,17 +33,17 @@ public class CoQuanController {
         model.addAttribute("tongHoGiaDinh", hoGiaDinhService.countActiveHo());
         model.addAttribute("baoCaoMoi", baoCaoSuCoService.countNewReports());
         
-        // Báo cáo sự cố gần đây (lấy 5 cái mới nhất)
+        // Báo cáo sự cố gần đây (giới hạn 7 dòng mới nhất)
         java.util.List<com.apartment.entity.BaoCaoSuCo> allReports = baoCaoSuCoService.findPendingReports();
         java.util.List<com.apartment.entity.BaoCaoSuCo> recentReports = allReports.stream()
-            .limit(5)
+            .limit(7)
             .collect(java.util.stream.Collectors.toList());
         model.addAttribute("baoCaoSuCoList", recentReports);
         
-        // Thông báo gần đây (lấy 5 cái mới nhất)
+        // Thông báo gần đây (giới hạn 7 dòng mới nhất)
         java.util.List<com.apartment.entity.ThongBao> allNotifications = thongBaoService.findAll();
         java.util.List<com.apartment.entity.ThongBao> recentNotifications = allNotifications.stream()
-            .limit(5)
+            .limit(7)
             .collect(java.util.stream.Collectors.toList());
         model.addAttribute("thongBaoList", recentNotifications);
         
