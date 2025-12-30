@@ -88,6 +88,10 @@ public class DoiTuongService {
     public Long countCuDan() {
         return doiTuongRepository.countCuDan();
     }
+    
+    public boolean existsByCccd(String cccd) {
+        return doiTuongRepository.existsById(cccd);
+    }
 }
 
 
