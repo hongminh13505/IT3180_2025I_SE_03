@@ -88,7 +88,7 @@ public class AdminHoaDon2Controller {
             model.addAttribute("error", "Có lỗi xảy ra khi tải danh sách hóa đơn: " + e.getMessage());
             model.addAttribute("hoaDonList", java.util.Collections.emptyList());
             model.addAttribute("hoaDonPage", null);
-            model.addAttribute("search", search);
+        model.addAttribute("search", search);
             model.addAttribute("loaiHoaDon", loaiHoaDon);
             model.addAttribute("trangThai", trangThai);
             model.addAttribute("tuNgay", tuNgay);
@@ -96,7 +96,7 @@ public class AdminHoaDon2Controller {
             model.addAttribute("currentPage", 0);
             model.addAttribute("totalPages", 0);
             model.addAttribute("totalElements", 0);
-            return "admin/hoa-don-2/list";
+        return "admin/hoa-don-2/list";
         }
     }
 

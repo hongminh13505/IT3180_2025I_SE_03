@@ -195,44 +195,6 @@ public class HoaDonService {
     public long countUnpaidInvoices() {
         return hoaDonRepository.findByTrangThai("chua_thanh_toan").size();
     }
-    
-    public List<com.apartment.dto.ThongKeDTO> thongKeTheoThang(int year) {
-        List<Object[]> results = hoaDonRepository.thongKeTheoThang(year);
-        return results.stream().map(row -> {
-            Integer y = ((Number) row[0]).intValue();
-            Integer m = ((Number) row[1]).intValue();
-            BigDecimal tongThu = row[2] != null ? (BigDecimal) row[2] : BigDecimal.ZERO;
-            BigDecimal tongNo = row[3] != null ? (BigDecimal) row[3] : BigDecimal.ZERO;
-            Long soLuong = row[4] != null ? ((Number) row[4]).longValue() : 0L;
-            return new com.apartment.dto.ThongKeDTO(y, m, null, tongThu, tongNo, soLuong);
-        }).collect(java.util.stream.Collectors.toList());
-    }
-    
-    public List<com.apartment.dto.ThongKeDTO> thongKeTheoNam() {
-        List<Object[]> results = hoaDonRepository.thongKeTheoNam();
-        return results.stream().map(row -> {
-            Integer y = ((Number) row[0]).intValue();
-            BigDecimal tongThu = row[1] != null ? (BigDecimal) row[1] : BigDecimal.ZERO;
-            BigDecimal tongNo = row[2] != null ? (BigDecimal) row[2] : BigDecimal.ZERO;
-            Long soLuong = row[3] != null ? ((Number) row[3]).longValue() : 0L;
-            return new com.apartment.dto.ThongKeDTO(y, null, null, tongThu, tongNo, soLuong);
-        }).collect(java.util.stream.Collectors.toList());
-    }
-    
-    public List<com.apartment.dto.ThongKeDTO> thongKeTheoLoai(int year, Integer month) {
-        List<Object[]> results = hoaDonRepository.thongKeTheoLoai(year, month);
-        return results.stream().map(row -> {
-            String loai = (String) row[0];
-            BigDecimal tongThu = row[1] != null ? (BigDecimal) row[1] : BigDecimal.ZERO;
-            BigDecimal tongNo = row[2] != null ? (BigDecimal) row[2] : BigDecimal.ZERO;
-            Long soLuong = row[3] != null ? ((Number) row[3]).longValue() : 0L;
-            return new com.apartment.dto.ThongKeDTO(year, month, loai, tongThu, tongNo, soLuong);
-        }).collect(java.util.stream.Collectors.toList());
-    }
-    
-    public List<HoaDon> findByDateRange(LocalDate tuNgay, LocalDate denNgay) {
-        return hoaDonRepository.findByDateRange(tuNgay, denNgay);
-    }
 }
 
 
