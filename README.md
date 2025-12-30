@@ -121,37 +121,37 @@ Hệ thống hỗ trợ các vai trò sau:
 
 ## 8. Chức năng chính
 
-### 8.1. Quản lý cư dân
+### 8.1. Quản lý cư dân và căn hộ
+- Quản lý thông tin cư dân, nhân khẩu, hộ khẩu
+- Quản lý thông tin căn hộ (diện tích, tình trạng sử dụng)
+- Theo dõi mối quan hệ giữa cư dân và căn hộ
+- Gán cư dân vào hộ gia đình/căn hộ
+- Theo dõi lịch sử thay đổi cư trú
 
-1. Thêm, sửa, xóa thông tin cư dân
-2. Tìm kiếm cư dân
-3. Quản lý trạng thái tài khoản
+### 8.2. Quản lý cơ sở vật chất
+- Quản lý các khu chức năng, tiện ích chung (thang máy, bãi xe, khu sinh hoạt chung, …)
+- Theo dõi tình trạng sử dụng cơ sở vật chất
+- Quản lý lịch bảo trì, bảo dưỡng
+- Ghi nhận thông tin hư hỏng, xuống cấp của cơ sở vật chất
 
-### 8.2. Quản lý hộ gia đình
+### 8.3. Thông báo và xử lý sự cố
+- Cư dân gửi báo cáo sự cố
+- Ban quản trị tiếp nhận và phân loại sự cố
+- Phân công nhân sự xử lý
+- Theo dõi tiến độ xử lý sự cố
+- Thông báo kết quả xử lý đến cư dân
 
-1. Quản lý thông tin hộ gia đình
-2. Gán căn hộ cho hộ gia đình
-3. Theo dõi thành viên hộ
+### 8.4. Quản lý các khoản thu
+- Quản lý các loại phí dịch vụ và khoản đóng góp
+- Lập danh sách thu phí theo từng kỳ (tháng/quý/năm)
+- Theo dõi tình trạng thanh toán của từng căn hộ
+- Quản lý công nợ và lịch sử thanh toán
 
-### 8.3. Quản lý hóa đơn
-
-1. Tạo hóa đơn dịch vụ
-2. Theo dõi thanh toán
-3. Thống kê thu chi
-4. Quản lý công nợ
-
-### 8.4. Quản lý báo cáo sự cố
-
-1. Tiếp nhận báo cáo sự cố
-2. Phân loại mức độ ưu tiên
-3. Theo dõi xử lý
-4. Lưu kết quả xử lý
-
-### 8.5. Quản lý thông báo
-
-1. Gửi thông báo cho cư dân
-2. Phân loại thông báo
-3. Quản lý đối tượng nhận
+### 8.5. Báo cáo và thống kê
+- Thống kê tình hình thu phí theo thời gian
+- Báo cáo tài chính theo tháng/quý/năm
+- Hỗ trợ tra cứu và kiểm tra dữ liệu khi cần
+- Cung cấp số liệu tổng quan phục vụ công tác quản lý
 
 ### 8.6. Dashboard
 
