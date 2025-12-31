@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" 
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi tiết thông báo - Cư dân</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+    <div class="wrapper">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h3>BLUE MOON</h3>
+                <p class="role-badge">Cư dân</p>
+            </div>
+            
+            <nav class="sidebar-menu">
+                <ul>
+                    <li>
+                        <a th:href="@{/cu-dan/dashboard}">
+                            <img src="/images/ho-gia-dinh.png" alt="Dashboard" style="width: 18px; height: 18px; margin-right: 12px;"> Dashboard
+                        </a>
+                    </li>
+                    <li>
+                        <a th:href="@{/cu-dan/thong-tin-ca-nhan}">
+                            <img src="/images/quan-ly-cu-dan.png" alt="Quản lý cư dân" style="width: 18px; height: 18px; margin-right: 12px;"> Thông tin cá nhân
+                        </a>
+                    </li>
+                    <li>
+                        <a th:href="@{/cu-dan/thong-bao}" class="active">
+                            <img src="/images/thong-bao.png" alt="Thông báo" style="width: 18px; height: 18px; margin-right: 12px;"> Thông báo
+                        </a>
+                    </li>
+                    <li>
+                        <a th:href="@{/cu-dan/hoa-don}">
+                            <img src="/images/hoa-don.png" alt="Hóa đơn" style="width: 18px; height: 18px; margin-right: 12px;"> Hóa đơn
+                        </a>
+                    </li>
+                    <li>
+                        <a th:href="@{/cu-dan/bao-cao-su-co}">
+                            <img src="/images/bao-cao-su-co.png" alt="Báo cáo sự cố" style="width: 18px; height: 18px; margin-right: 12px;"> Báo cáo sự cố
+                        </a>
+                    </li>
+                    <li>
+                        <a th:href="@{/cu-dan/phan-anh}">
+                            <img src="/images/phan-anh.png" alt="Phản ánh" style="width: 18px; height: 18px; margin-right: 12px;"> Phản ánh
+                        </a>
+                    </li>
+                    <li>
+                        <a th:href="@{/cu-dan/gui-xe}">
+                            <img src="/images/tai-san-chung-cu.png" alt="Gửi xe" style="width: 18px; height: 18px; margin-right: 12px;"> Gửi xe
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Header -->
+            <header class="header">
+                <div class="header-left">
+                    <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+                    <h2>Chi tiết thông báo</h2>
+                </div>
+                
+                <div class="header-right">
+                    <div class="user-info">
+                        <span>Xin chào, <strong th:text="${username}">Cư dân</strong></span>
+                        <form th:action="@{/logout}" method="post" style="display: inline;">
+                            <button type="submit" class="btn btn-sm btn-danger">Đăng xuất</button>
+                        </form>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Page Content -->
+            <main class="page-content">
+                <!-- Messages -->
+                <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+                <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+                <div th:if="${thongBao == null}" class="alert alert-error">
+                    Không tìm thấy thông báo. <a th:href="@{/cu-dan/thong-bao}">Quay lại danh sách</a>
+                </div>
+                
+                <div class="form-container" th:if="${thongBao != null}">
+                    <!-- Thông tin thông báo -->
+                    <div class="card" style="margin-bottom: 24px;">
+                        <div class="card-header" style="background: linear-gradient(135deg, #f0f9ff, #e0f2fe); padding: 20px; border-bottom: 2px solid #0ea5e9;">
+                            <h3 style="margin: 0; color: #0369a1;">
+                                <img src="/images/thong-bao.png" alt="Thông báo" style="width: 24px; height: 24px; margin-right: 8px; vertical-align: middle;">
+                                Thông báo từ ban quản trị
+                            </h3>
+                        </div>
+                        <div class="card-body" style="padding: 24px;">
+                            <div class="form-group" th:if="${thongBao.maThongBao != null}">
+                                <label style="font-weight: 600; color: #64748b;">Mã thông báo:</label>
+                                <p style="margin: 8px 0 0 0; font-size: 16px;" th:text="${thongBao.maThongBao}">1</p>
+                            </div>
+                            
+                            <div class="form-group" th:if="${thongBao.loaiThongBao != null}">
+                                <label style="font-weight: 600; color: #64748b;">Loại thông báo:</label>
+                                <p style="margin: 8px 0 0 0;">
+                                    <span class="badge badge-info" 
+                                          th:text="${thongBao.loaiThongBao == 'quan_trong'} ? 'Quan trọng' : 
+                                                    (${thongBao.loaiThongBao == 'khan_cap'} ? 'Khẩn cấp' : 
+                                                    (${thongBao.loaiThongBao == 'binh_thuong'} ? 'Bình thường' : 'Khác'))">Bình thường</span>
+                                </p>
+                            </div>
+                            
+                            <div class="form-group" th:if="${thongBao.tieuDe != null}">
+                                <label style="font-weight: 600; color: #64748b;">Tiêu đề:</label>
+                                <p style="margin: 8px 0 0 0; font-size: 18px; font-weight: 600; color: #1e293b;" th:text="${thongBao.tieuDe}">Tiêu đề thông báo</p>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label style="font-weight: 600; color: #64748b;">Nội dung:</label>
+                                <div style="margin: 8px 0 0 0; padding: 20px; background: #f8fafc; border-radius: 8px; border-left: 4px solid #0ea5e9; white-space: pre-wrap; font-size: 15px; line-height: 1.8; color: #334155; word-wrap: break-word; overflow-wrap: break-word; max-width: 100%; min-height: 100px;" th:text="${thongBao.noiDungThongBao != null ? thongBao.noiDungThongBao : 'Không có nội dung'}">Nội dung thông báo...</div>
+                            </div>
+                            
+                            <div class="form-group" th:if="${thongBao.ngayTaoThongBao != null}">
+                                <label style="font-weight: 600; color: #64748b;">Ngày đăng:</label>
+                                <p style="margin: 8px 0 0 0; font-size: 15px; color: #64748b;" th:text="${#temporals.format(thongBao.ngayTaoThongBao, 'dd/MM/yyyy HH:mm')}">01/01/2025 10:00</p>
+                            </div>
+                            
+                            <div class="form-group" th:if="${thongBao.cccdBanQuanTri != null}">
+                                <label style="font-weight: 600; color: #64748b;">Người đăng:</label>
+                                <p style="margin: 8px 0 0 0;" th:text="${thongBao.cccdBanQuanTri}">Ban quản trị</p>
+                            </div>
+                            
+                            <div class="form-group" th:if="${thongBao.doiTuongNhan != null}">
+                                <label style="font-weight: 600; color: #64748b;">Đối tượng nhận:</label>
+                                <p style="margin: 8px 0 0 0;">
+                                    <span class="badge badge-success" 
+                                          th:text="${thongBao.doiTuongNhan == 'tat_ca'} ? 'Tất cả cư dân' : 
+                                                    (${thongBao.doiTuongNhan == 'chu_ho'} ? 'Chủ hộ' : 
+                                                    (${thongBao.doiTuongNhan == 'cu_dan'} ? 'Cư dân' : 'Khác'))">Tất cả cư dân</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Nút quay lại -->
+                    <div style="margin-top: 24px;">
+                        <a th:href="@{/cu-dan/thong-bao}" class="btn btn-secondary">Quay lại danh sách</a>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    
+    <script th:src="@{/js/script.js}"></script>
+</body>
+</html>
+

@@ -3,9 +3,9 @@ spring:
     name: apartment-management
     
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/apartment_db13}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/apartment_db2}
     username: ${SPRING_DATASOURCE_USERNAME:postgres}
-    password: ${SPRING_DATASOURCE_PASSWORD:gygygyg67}
+    password: ${SPRING_DATASOURCE_PASSWORD:ancutkhong1235}
     driver-class-name: org.postgresql.Driver
     
   jpa:

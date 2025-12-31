@@ -244,6 +244,36 @@ public class CuDanController {
         }
     }
     
+    @GetMapping("/thong-bao/{id}")
+    public String chiTietThongBao(@PathVariable Integer id,
+                                  Model model,
+                                  Authentication authentication,
+                                  RedirectAttributes redirectAttributes) {
+        try {
+            ThongBao thongBao = thongBaoService.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy thông báo"));
+            
+            // Kiểm tra thông báo có hiển thị không
+            if (thongBao.getTrangThai() == null || !"hien".equals(thongBao.getTrangThai())) {
+                redirectAttributes.addFlashAttribute("error", "Thông báo không tồn tại hoặc đã bị ẩn");
+                return "redirect:/cu-dan/thong-bao";
+            }
+            
+            // Tránh lazy loading exception - không truy cập banQuanTri trong template
+            // Chỉ cần thông tin cơ bản của thông báo
+            
+            model.addAttribute("thongBao", thongBao);
+            model.addAttribute("username", authentication.getName());
+            return "cu-dan/thong-bao/detail";
+        } catch (RuntimeException e) {
+            redirectAttributes.addFlashAttribute("error", "Không tìm thấy thông báo");
+            return "redirect:/cu-dan/thong-bao";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Có lỗi khi tải chi tiết thông báo: " + e.getMessage());
+            return "redirect:/cu-dan/thong-bao";
+        }
+    }
+    
 
     @GetMapping("/bao-cao-su-co")
     public String baoCaoSuCo(@RequestParam(required = false) String search,

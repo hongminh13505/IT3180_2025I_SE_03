@@ -103,11 +103,12 @@
                                 <th>TIÊU ĐỀ</th>
                                 <th>NỘI DUNG</th>
                                 <th>NGÀY ĐĂNG</th>
+                                <th>THAO TÁC</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr th:if="${thongBaoList.isEmpty()}">
-                                <td colspan="3" style="text-align: center; color: #94a3b8;">Không có thông báo nào</td>
+                                <td colspan="4" style="text-align: center; color: #94a3b8;">Không có thông báo nào</td>
                             </tr>
                             <tr th:each="tb : ${thongBaoList}">
                                 <td th:text="${tb.tieuDe}">Thông báo quan trọng</td>
@@ -117,6 +118,13 @@
                                     </span>
                                 </td>
                                 <td th:text="${tb.ngayTaoThongBao != null ? #temporals.format(tb.ngayTaoThongBao, 'dd/MM/yyyy') : 'N/A'}">01/01/2024</td>
+                                <td>
+                                    <a th:href="@{/cu-dan/thong-bao/{id}(id=${tb.maThongBao})}" 
+                                       class="btn btn-sm btn-primary" 
+                                       style="padding: 6px 12px; font-size: 13px;">
+                                        Xem chi tiết
+                                    </a>
+                                </td>
                             </tr>
                         </tbody>
                     </table>
