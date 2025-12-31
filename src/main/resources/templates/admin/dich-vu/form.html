@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" 
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${isEdit} ? 'Chỉnh sửa dịch vụ' : 'Thêm dịch vụ mới'">Form dịch vụ</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+    <style>
+        .form-container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        .form-group label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #1e293b;
+        }
+        .form-control {
+            padding: 10px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e2e8f0;
+        }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h3>BLUE MOON</h3>
+            </div>
+            <nav class="sidebar-menu">
+                <ul>
+                    <li><a th:href="@{/admin/dashboard}"><img src="/images/img4.png" alt="Dashboard" style="width: 18px; height: 18px; margin-right: 12px;"> Dashboard</a></li>
+                    <li><a th:href="@{/admin/doi-tuong}"><img src="/images/quan-ly-cu-dan.png" alt="Quản lý cư dân" style="width: 18px; height: 18px; margin-right: 12px;"> Quản lý cư dân</a></li>
+                    <li><a th:href="@{/admin/ho-gia-dinh}"><img src="/images/ho-gia-dinh.png" alt="Hộ gia đình" style="width: 18px; height: 18px; margin-right: 12px;"> Hộ gia đình</a></li>
+                    <li><a th:href="@{/admin/tai-san}"><img src="/images/tai-san-chung-cu.png" alt="Tài sản chung cư" style="width: 18px; height: 18px; margin-right: 12px;"> Tài sản chung cư</a></li>
+                    <li><a th:href="@{/admin/dich-vu}" class="active"><img src="/images/money.png" alt="Dịch vụ" style="width: 18px; height: 18px; margin-right: 12px;"> Dịch vụ</a></li>
+                    <li><a th:href="@{/admin/hoa-don-2}"><img src="/images/hoa-don.png" alt="Hóa đơn" style="width: 18px; height: 18px; margin-right: 12px;"> Hóa đơn</a></li>
+                    <li><a th:href="@{/admin/bao-cao-su-co}"><img src="/images/bao-cao-su-co.png" alt="Báo cáo sự cố" style="width: 18px; height: 18px; margin-right: 12px;"> Báo cáo sự cố</a></li>
+                    <li><a th:href="@{/admin/thong-bao-2}"><img src="/images/thong-bao.png" alt="Thông báo" style="width: 18px; height: 18px; margin-right: 12px;"> Thông báo</a></li>
+                    <li><a th:href="@{/admin/gui-xe}"><img src="/images/tai-san-chung-cu.png" alt="Gửi xe" style="width: 18px; height: 18px; margin-right: 12px;"> Gửi xe</a></li>
+                    <li><a th:href="@{/admin/phan-anh}"><img src="/images/phan-anh.png" alt="Phản ánh" style="width: 18px; height: 18px; margin-right: 12px;"> Phản ánh</a></li>
+                    <li><a th:href="@{/admin/lich-su-chinh-sua}"><img src="/images/lichsu.png" alt="Lịch sử chỉnh sửa" style="width: 18px; height: 18px; margin-right: 12px; filter: brightness(0) invert(1);"> Lịch sử chỉnh sửa</a></li>
+                </ul>
+            </nav>
+        </aside>
+        
+        <div class="main-content">
+            <header class="header">
+                <div class="header-left">
+                    <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+                    <h2 th:text="${isEdit} ? 'Chỉnh sửa dịch vụ' : 'Thêm dịch vụ mới'">Form dịch vụ</h2>
+                </div>
+                <div class="header-right">
+                    <div class="user-info">
+                        <span>Xin chào, <strong sec:authentication="name">Admin</strong></span>
+                        <form th:action="@{/logout}" method="post" style="display: inline;">
+                            <button type="submit" class="btn btn-sm btn-danger">Đăng xuất</button>
+                        </form>
+                    </div>
+                </div>
+            </header>
+            
+            <main class="page-content">
+                <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+                <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+                <div class="form-container">
+                    <form th:action="@{/admin/dich-vu/save}" method="post" th:object="${dichVu}">
+                        <input type="hidden" th:field="*{maDichVu}" th:if="${isEdit}">
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="tenDichVu">Tên dịch vụ: <span style="color: red;">*</span></label>
+                                <input type="text" id="tenDichVu" th:field="*{tenDichVu}" class="form-control" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="loaiDichVu">Loại dịch vụ:</label>
+                                <input type="text" id="loaiDichVu" th:field="*{loaiDichVu}" class="form-control" 
+                                       placeholder="Ví dụ: Internet, Điện, Nước">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="giaThanh">Giá thành: <span style="color: red;">*</span></label>
+                            <input type="number" id="giaThanh" th:field="*{giaThanh}" class="form-control" 
+                                   step="0.01" min="0" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="moTa">Mô tả:</label>
+                            <textarea id="moTa" th:field="*{moTa}" class="form-control" rows="4" 
+                                      placeholder="Mô tả chi tiết về dịch vụ..."></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="trangThai">Trạng thái: <span style="color: red;">*</span></label>
+                            <select id="trangThai" th:field="*{trangThai}" class="form-control" required>
+                                <option value="hoat_dong">Hoạt động</option>
+                                <option value="ngung_hoat_dong">Ngừng hoạt động</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-success">Lưu</button>
+                            <a th:href="@{/admin/dich-vu}" class="btn btn-secondary">Hủy</a>
+                        </div>
+                    </form>
+                </div>
+            </main>
+        </div>
+    </div>
+    
+    <script th:src="@{/js/script.js}"></script>
+</body>
+</html>
+

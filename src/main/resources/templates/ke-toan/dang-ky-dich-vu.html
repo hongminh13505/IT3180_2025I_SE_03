@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" 
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng ký dịch vụ - Kế toán</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+    <style>
+        .pagination-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 24px;
+            padding: 20px 24px;
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
+            flex-wrap: wrap;
+            gap: 20px;
+            border: 1px solid rgba(226, 232, 240, 0.8);
+        }
+        .pagination-info {
+            color: #475569;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .pagination-info strong {
+            color: #1e293b;
+            font-weight: 600;
+        }
+        .pagination {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .pagination-btn {
+            padding: 10px 14px;
+            text-decoration: none;
+            border-radius: 8px;
+            background: white;
+            border: 1.5px solid #e2e8f0;
+            color: #475569;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            min-width: 42px;
+            height: 42px;
+            text-align: center;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        }
+        .pagination-btn:hover:not(.disabled):not(.active) {
+            background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+            border-color: #cbd5e1;
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+            color: #1e293b;
+        }
+        .pagination-btn.active {
+            background: linear-gradient(135deg, #0ea5e9, #0284c7);
+            color: white;
+            border-color: #0284c7;
+            font-weight: 600;
+            box-shadow: 0 4px 14px rgba(14, 165, 233, 0.35), 0 2px 4px rgba(14, 165, 233, 0.2);
+            transform: translateY(-1px) scale(1.05);
+        }
+        .pagination-btn.active:hover {
+            background: linear-gradient(135deg, #0284c7, #0369a1);
+            box-shadow: 0 6px 18px rgba(14, 165, 233, 0.45), 0 3px 6px rgba(14, 165, 233, 0.25);
+            transform: translateY(-2px) scale(1.06);
+        }
+        .pagination-btn.disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            pointer-events: none;
+            background: #f8fafc;
+            border-color: #e2e8f0;
+        }
+        .pagination-ellipsis {
+            padding: 10px 6px;
+            color: #94a3b8;
+            font-size: 14px;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h3>BLUE MOON</h3>
+                <p class="role-badge">Kế toán</p>
+            </div>
+            
+            <nav class="sidebar-menu">
+                <ul>
+                    <li>
+                        <a href="/ke-toan/dashboard">
+                            <img src="/images/img4.png" alt="Dashboard" style="width: 18px; height: 18px; margin-right: 12px;"> Dashboard
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/ke-toan/quan-ly-hoa-don">
+                            <img src="/images/hoa-don.png" alt="Quản lý hóa đơn" style="width: 18px; height: 18px; margin-right: 12px;"> Quản lý hóa đơn
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/ke-toan/dang-ky-dich-vu" class="active">
+                            <img src="/images/money.png" alt="Đăng ký dịch vụ" style="width: 18px; height: 18px; margin-right: 12px;"> Đăng ký dịch vụ
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+        
+        <div class="main-content">
+            <header class="header">
+                <div class="header-left">
+                    <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+                    <h2>Quản lý đăng ký dịch vụ</h2>
+                </div>
+                
+                <div class="header-right">
+                    <div class="user-info">
+                        <span>Xin chào, <strong th:text="${username}">Kế toán</strong></span>
+                        <form th:action="@{/logout}" method="post" style="display: inline;">
+                            <button type="submit" class="btn btn-sm btn-danger">Đăng xuất</button>
+                        </form>
+                    </div>
+                </div>
+            </header>
+            
+            <main class="page-content">
+                <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+                <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+                <div th:if="${warning}" class="alert alert-warning" th:text="${warning}"></div>
+                
+                <!-- Filter -->
+                <div class="content-header" style="margin-bottom: 20px;">
+                    <div class="search-bar" style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+                        <form th:action="@{/ke-toan/dang-ky-dich-vu}" method="get" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                            <input type="text" name="search" th:value="${search}" placeholder="Tìm theo tên cư dân, CCCD..." class="form-control" style="width: 250px;">
+                            <select name="trangThai" class="form-control" style="width: 200px;">
+                                <option value="">Tất cả trạng thái</option>
+                                <option value="cho_duyet" th:selected="${trangThai == 'cho_duyet'}">Chờ duyệt</option>
+                                <option value="da_duyet" th:selected="${trangThai == 'da_duyet'}">Đã duyệt</option>
+                                <option value="da_tu_choi" th:selected="${trangThai == 'da_tu_choi'}">Đã từ chối</option>
+                            </select>
+                            <input type="hidden" name="page" value="0">
+                            <button type="submit" class="btn btn-primary">Tìm kiếm</button>
+                            <a th:href="@{/ke-toan/dang-ky-dich-vu}" class="btn btn-secondary">Xóa bộ lọc</a>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Table -->
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th style="width: 80px;">MÃ ĐK</th>
+                                <th>TÊN DỊCH VỤ</th>
+                                <th style="width: 150px;">CƯ DÂN</th>
+                                <th style="width: 120px;">CCCD</th>
+                                <th style="width: 150px;">NGÀY ĐĂNG KÝ</th>
+                                <th style="width: 150px;">NGÀY BẮT ĐẦU</th>
+                                <th style="width: 150px;">NGÀY KẾT THÚC</th>
+                                <th style="width: 120px;">TRẠNG THÁI</th>
+                                <th style="width: 200px;">THAO TÁC</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:if="${dangKyList.isEmpty()}">
+                                <td colspan="9" style="text-align: center; color: #94a3b8; padding: 40px;">Không có đăng ký nào</td>
+                            </tr>
+                            <tr th:each="dk : ${dangKyList}">
+                                <td th:text="${dk.maDangKy}">DK001</td>
+                                <td>
+                                    <span th:if="${dichVuMap != null and dichVuMap.containsKey(dk.maDichVu)}" 
+                                          th:text="${dichVuMap.get(dk.maDichVu).tenDichVu}">Tên dịch vụ</span>
+                                    <span th:if="${dichVuMap == null or !dichVuMap.containsKey(dk.maDichVu)}" 
+                                          th:text="'DV' + ${dk.maDichVu}">DV001</span>
+                                </td>
+                                <td>
+                                    <span th:if="${nguoiDungMap != null and nguoiDungMap.containsKey(dk.cccdNguoiDung)}" 
+                                          th:text="${nguoiDungMap.get(dk.cccdNguoiDung).hoVaTen}">Tên cư dân</span>
+                                    <span th:if="${nguoiDungMap == null or !nguoiDungMap.containsKey(dk.cccdNguoiDung)}" 
+                                          style="color: #94a3b8;">Chưa có thông tin</span>
+                                </td>
+                                <td th:text="${dk.cccdNguoiDung}">CCCD</td>
+                                <td style="text-align: center;" 
+                                    th:text="${dk.ngayDangKy != null ? #temporals.format(dk.ngayDangKy, 'dd/MM/yyyy HH:mm') : 'N/A'}">01/01/2024</td>
+                                <td style="text-align: center;" 
+                                    th:text="${dk.ngayBatDauSuDung != null ? #temporals.format(dk.ngayBatDauSuDung, 'dd/MM/yyyy') : 'N/A'}">01/01/2024</td>
+                                <td style="text-align: center;" 
+                                    th:text="${dk.ngayKetThucSuDung != null ? #temporals.format(dk.ngayKetThucSuDung, 'dd/MM/yyyy') : 'Chưa xác định'}">Chưa xác định</td>
+                                <td style="text-align: center;">
+                                    <span class="badge" 
+                                          th:classappend="${dk.trangThai == 'da_duyet'} ? 'badge-success' : (${dk.trangThai == 'da_tu_choi'} ? 'badge-danger' : 'badge-warning')">
+                                        <span th:switch="${dk.trangThai}">
+                                            <span th:case="'da_duyet'">Đã duyệt</span>
+                                            <span th:case="'da_tu_choi'">Đã từ chối</span>
+                                            <span th:case="'cho_duyet'">Chờ duyệt</span>
+                                            <span th:case="*" th:text="${dk.trangThai}">Chờ duyệt</span>
+                                        </span>
+                                    </span>
+                                </td>
+                                <td class="actions" style="justify-content: center;">
+                                    <span th:if="${dk.trangThai == 'cho_duyet'}">
+                                        <button type="button" class="btn btn-sm btn-success" 
+                                                th:onclick="'showApproveModal(' + ${dk.maDangKy} + ')'">
+                                            Duyệt
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-danger" 
+                                                th:onclick="'showRejectModal(' + ${dk.maDangKy} + ')'">
+                                            Từ chối
+                                        </button>
+                                    </span>
+                                    <span th:if="${dk.trangThai != 'cho_duyet'}" style="color: #94a3b8;">
+                                        Đã xử lý
+                                    </span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Pagination Info and Controls -->
+                <div th:if="${dangKyPage != null and dangKyPage.totalElements > 0}" class="pagination-container">
+                    <div class="pagination-info">
+                        Hiển thị <strong th:text="${(currentPage * 20) + 1}">1</strong> - 
+                        <strong th:text="${(currentPage * 20) + dangKyList.size()}">20</strong> 
+                        trong tổng số <strong th:text="${totalElements}">0</strong> đăng ký
+                    </div>
+                    <div class="pagination" th:if="${totalPages > 1}">
+                        <a th:href="@{/ke-toan/dang-ky-dich-vu(page=0, trangThai=${trangThai}, search=${search})}" 
+                           class="pagination-btn"
+                           th:classappend="${currentPage == 0} ? 'disabled' : ''"
+                           th:onclick="${currentPage == 0} ? 'return false;' : ''">
+                            « Đầu
+                        </a>
+                        <a th:href="@{/ke-toan/dang-ky-dich-vu(page=${currentPage - 1}, trangThai=${trangThai}, search=${search})}" 
+                           class="pagination-btn"
+                           th:classappend="${currentPage == 0} ? 'disabled' : ''"
+                           th:onclick="${currentPage == 0} ? 'return false;' : ''">
+                            ‹
+                        </a>
+                        
+                        <!-- Page numbers -->
+                        <span th:if="${totalPages <= 10}">
+                            <a th:each="pageNum : ${#numbers.sequence(0, totalPages - 1)}"
+                               th:href="@{/ke-toan/dang-ky-dich-vu(page=${pageNum}, trangThai=${trangThai}, search=${search})}" 
+                               class="pagination-btn"
+                               th:classappend="${pageNum == currentPage} ? 'active' : ''"
+                               th:text="${pageNum + 1}">1</a>
+                        </span>
+                        <span th:if="${totalPages > 10}">
+                            <!-- Show first page -->
+                            <a th:href="@{/ke-toan/dang-ky-dich-vu(page=0, trangThai=${trangThai}, search=${search})}" 
+                               class="pagination-btn"
+                               th:classappend="${currentPage == 0} ? 'active' : ''">1</a>
+                            
+                            <!-- Show ellipsis if current page is far from start -->
+                            <span th:if="${currentPage > 3}">
+                                <span class="pagination-ellipsis">...</span>
+                            </span>
+                            
+                            <!-- Show pages around current page -->
+                            <span th:if="${currentPage > 2 and currentPage < totalPages - 3}">
+                                <a th:each="pageNum : ${#numbers.sequence(currentPage - 1, currentPage + 1)}"
+                                   th:href="@{/ke-toan/dang-ky-dich-vu(page=${pageNum}, trangThai=${trangThai}, search=${search})}" 
+                                   class="pagination-btn"
+                                   th:classappend="${pageNum == currentPage} ? 'active' : ''"
+                                   th:text="${pageNum + 1}">5</a>
+                            </span>
+                            <span th:if="${currentPage <= 2}">
+                                <a th:each="pageNum : ${#numbers.sequence(1, 3)}"
+                                   th:href="@{/ke-toan/dang-ky-dich-vu(page=${pageNum}, trangThai=${trangThai}, search=${search})}" 
+                                   class="pagination-btn"
+                                   th:classappend="${pageNum == currentPage} ? 'active' : ''"
+                                   th:text="${pageNum + 1}">2</a>
+                            </span>
+                            <span th:if="${currentPage >= totalPages - 3}">
+                                <a th:each="pageNum : ${#numbers.sequence(totalPages - 4, totalPages - 2)}"
+                                   th:href="@{/ke-toan/dang-ky-dich-vu(page=${pageNum}, trangThai=${trangThai}, search=${search})}" 
+                                   class="pagination-btn"
+                                   th:classappend="${pageNum == currentPage} ? 'active' : ''"
+                                   th:text="${pageNum + 1}">10</a>
+                            </span>
+                            
+                            <!-- Show ellipsis if current page is far from end -->
+                            <span th:if="${currentPage < totalPages - 4}">
+                                <span class="pagination-ellipsis">...</span>
+                            </span>
+                            
+                            <!-- Show last page -->
+                            <a th:href="@{/ke-toan/dang-ky-dich-vu(page=${totalPages - 1}, trangThai=${trangThai}, search=${search})}" 
+                               class="pagination-btn"
+                               th:classappend="${currentPage == totalPages - 1} ? 'active' : ''"
+                               th:text="${totalPages}">10</a>
+                        </span>
+                        
+                        <a th:href="@{/ke-toan/dang-ky-dich-vu(page=${currentPage + 1}, trangThai=${trangThai}, search=${search})}" 
+                           class="pagination-btn"
+                           th:classappend="${currentPage >= totalPages - 1} ? 'disabled' : ''"
+                           th:onclick="${currentPage >= totalPages - 1} ? 'return false;' : ''">
+                            ›
+                        </a>
+                        <a th:href="@{/ke-toan/dang-ky-dich-vu(page=${totalPages - 1}, trangThai=${trangThai}, search=${search})}" 
+                           class="pagination-btn"
+                           th:classappend="${currentPage >= totalPages - 1} ? 'disabled' : ''"
+                           th:onclick="${currentPage >= totalPages - 1} ? 'return false;' : ''">
+                            Cuối »
+                        </a>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    
+    <!-- Approve Modal -->
+    <div id="approveModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3>Xác nhận duyệt đăng ký</h3>
+                <button type="button" class="modal-close" onclick="closeApproveModal()">&times;</button>
+            </div>
+            <form id="approveForm" method="post" th:action="@{/ke-toan/dang-ky-dich-vu/duyet/{id}(id=0)}">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <div class="modal-body">
+                    <p>Bạn có chắc chắn muốn duyệt đăng ký này? Hệ thống sẽ tự động tạo hóa đơn dịch vụ.</p>
+                    <div class="form-group">
+                        <label for="approveGhiChu">Ghi chú (tùy chọn):</label>
+                        <textarea id="approveGhiChu" name="ghiChu" class="form-control" rows="3" placeholder="Nhập ghi chú nếu có..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-success">Xác nhận duyệt</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeApproveModal()">Hủy</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Reject Modal -->
+    <div id="rejectModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3>Xác nhận từ chối đăng ký</h3>
+                <button type="button" class="modal-close" onclick="closeRejectModal()">&times;</button>
+            </div>
+            <form id="rejectForm" method="post" th:action="@{/ke-toan/dang-ky-dich-vu/tu-choi/{id}(id=0)}">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <div class="modal-body">
+                    <p>Bạn có chắc chắn muốn từ chối đăng ký này?</p>
+                    <div class="form-group">
+                        <label for="rejectGhiChu">Lý do từ chối (tùy chọn):</label>
+                        <textarea id="rejectGhiChu" name="ghiChu" class="form-control" rows="3" placeholder="Nhập lý do từ chối..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-danger">Xác nhận từ chối</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeRejectModal()">Hủy</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <style>
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            max-width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-header h3 {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 600;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            color: #64748b;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background 0.2s;
+        }
+        
+        .modal-close:hover {
+            background: #f1f5f9;
+            color: #1e293b;
+        }
+        
+        .modal-body {
+            padding: 20px;
+        }
+        
+        .modal-footer {
+            padding: 20px;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #1e293b;
+        }
+    </style>
+    
+    <script th:src="@{/js/script.js}"></script>
+    <script>
+        function showApproveModal(id) {
+            var form = document.getElementById('approveForm');
+            form.action = '/ke-toan/dang-ky-dich-vu/duyet/' + id;
+            document.getElementById('approveModal').style.display = 'flex';
+        }
+        
+        function closeApproveModal() {
+            document.getElementById('approveModal').style.display = 'none';
+            document.getElementById('approveGhiChu').value = '';
+        }
+        
+        function showRejectModal(id) {
+            var form = document.getElementById('rejectForm');
+            form.action = '/ke-toan/dang-ky-dich-vu/tu-choi/' + id;
+            document.getElementById('rejectModal').style.display = 'flex';
+        }
+        
+        function closeRejectModal() {
+            document.getElementById('rejectModal').style.display = 'none';
+            document.getElementById('rejectGhiChu').value = '';
+        }
+        
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            var approveModal = document.getElementById('approveModal');
+            var rejectModal = document.getElementById('rejectModal');
+            if (event.target == approveModal) {
+                closeApproveModal();
+            }
+            if (event.target == rejectModal) {
+                closeRejectModal();
+            }
+        }
+    </script>
+</body>
+</html>
+

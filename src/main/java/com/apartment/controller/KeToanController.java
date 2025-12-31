@@ -4,6 +4,9 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -31,6 +34,14 @@ import com.apartment.service.HoGiaDinhService;
 import com.apartment.service.HoaDonExportService;
 import com.apartment.service.HoaDonExportService.ImportResult;
 import com.apartment.service.HoaDonService;
+import com.apartment.service.DangKyDichVuService;
+import com.apartment.service.DichVuService;
+import com.apartment.service.DoiTuongService;
+import com.apartment.entity.DangKyDichVu;
+import com.apartment.entity.DichVu;
+import com.apartment.entity.DoiTuong;
+import com.apartment.repository.ThanhVienHoRepository;
+import com.apartment.entity.ThanhVienHo;
 
 @Controller
 @RequestMapping("/ke-toan")
@@ -48,6 +59,18 @@ public class KeToanController {
     
     @Autowired
     private HoaDonExportService hoaDonExportService;
+    
+    @Autowired
+    private DangKyDichVuService dangKyDichVuService;
+    
+    @Autowired
+    private DichVuService dichVuService;
+    
+    @Autowired
+    private ThanhVienHoRepository thanhVienHoRepository;
+    
+    @Autowired
+    private DoiTuongService doiTuongService;
     
     @GetMapping("/dashboard")
     public String dashboard(Model model, Authentication authentication) {
@@ -504,6 +527,181 @@ public class KeToanController {
         }
         
         return "redirect:/ke-toan/quan-ly-hoa-don";
+    }
+    
+    @GetMapping("/dang-ky-dich-vu")
+    public String danhSachDangKyDichVu(@RequestParam(required = false) String trangThai,
+                                       @RequestParam(required = false) String search,
+                                       @RequestParam(defaultValue = "0") int page,
+                                       @RequestParam(defaultValue = "20") int size,
+                                       Model model,
+                                       Authentication authentication) {
+        try {
+            List<DangKyDichVu> allDangKy;
+            
+            if (trangThai != null && !trangThai.trim().isEmpty()) {
+                allDangKy = dangKyDichVuService.findByTrangThai(trangThai);
+            } else {
+                allDangKy = dangKyDichVuService.findAll();
+            }
+            
+            // Load thông tin dịch vụ và cư dân trước khi filter
+            Map<Integer, DichVu> dichVuMap = new HashMap<>();
+            Map<String, DoiTuong> nguoiDungMap = new HashMap<>();
+            for (DangKyDichVu dk : allDangKy) {
+                if (dk.getMaDichVu() != null && !dichVuMap.containsKey(dk.getMaDichVu())) {
+                    dichVuService.findById(dk.getMaDichVu()).ifPresent(dv -> dichVuMap.put(dk.getMaDichVu(), dv));
+                }
+                if (dk.getCccdNguoiDung() != null && !nguoiDungMap.containsKey(dk.getCccdNguoiDung())) {
+                    doiTuongService.findByCccd(dk.getCccdNguoiDung()).ifPresent(dt -> nguoiDungMap.put(dk.getCccdNguoiDung(), dt));
+                }
+            }
+            
+            // Filter theo search nếu có
+            if (search != null && !search.trim().isEmpty()) {
+                String searchLower = search.trim().toLowerCase();
+                allDangKy = allDangKy.stream()
+                    .filter(dk -> {
+                        // Tìm theo CCCD
+                        if (dk.getCccdNguoiDung() != null && dk.getCccdNguoiDung().toLowerCase().contains(searchLower)) {
+                            return true;
+                        }
+                        // Tìm theo tên cư dân
+                        if (nguoiDungMap.containsKey(dk.getCccdNguoiDung())) {
+                            DoiTuong dt = nguoiDungMap.get(dk.getCccdNguoiDung());
+                            if (dt.getHoVaTen() != null && dt.getHoVaTen().toLowerCase().contains(searchLower)) {
+                                return true;
+                            }
+                        }
+                        // Tìm theo tên dịch vụ
+                        if (dichVuMap.containsKey(dk.getMaDichVu())) {
+                            DichVu dv = dichVuMap.get(dk.getMaDichVu());
+                            if (dv.getTenDichVu() != null && dv.getTenDichVu().toLowerCase().contains(searchLower)) {
+                                return true;
+                            }
+                        }
+                        return false;
+                    })
+                    .collect(java.util.stream.Collectors.toList());
+            }
+            
+            model.addAttribute("dichVuMap", dichVuMap);
+            model.addAttribute("nguoiDungMap", nguoiDungMap);
+            
+            Pageable pageable = PageRequest.of(page, size);
+            int start = (int) pageable.getOffset();
+            int end = Math.min((start + pageable.getPageSize()), allDangKy.size());
+            List<DangKyDichVu> pageContent = start < allDangKy.size() 
+                ? allDangKy.subList(start, end) 
+                : java.util.Collections.emptyList();
+            
+            Page<DangKyDichVu> dangKyPage = new org.springframework.data.domain.PageImpl<>(
+                pageContent, pageable, allDangKy.size());
+            
+            model.addAttribute("dangKyList", dangKyPage.getContent());
+            model.addAttribute("dangKyPage", dangKyPage);
+            model.addAttribute("trangThai", trangThai);
+            model.addAttribute("search", search);
+            model.addAttribute("currentPage", page);
+            model.addAttribute("totalPages", dangKyPage.getTotalPages());
+            model.addAttribute("totalElements", dangKyPage.getTotalElements());
+            model.addAttribute("username", authentication.getName());
+            return "ke-toan/dang-ky-dich-vu";
+        } catch (Exception e) {
+            model.addAttribute("error", "Có lỗi khi tải danh sách đăng ký dịch vụ");
+            model.addAttribute("dangKyList", new java.util.ArrayList<>());
+            return "ke-toan/dang-ky-dich-vu";
+        }
+    }
+    
+    @PostMapping("/dang-ky-dich-vu/duyet/{id}")
+    public String duyetDangKyDichVu(@PathVariable Integer id,
+                                    @RequestParam(required = false) String ghiChu,
+                                    RedirectAttributes redirectAttributes,
+                                    Authentication authentication) {
+        try {
+            DangKyDichVu dangKy = dangKyDichVuService.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy đăng ký dịch vụ"));
+            
+            if (!"cho_duyet".equals(dangKy.getTrangThai())) {
+                redirectAttributes.addFlashAttribute("error", "Đăng ký này đã được xử lý");
+                return "redirect:/ke-toan/dang-ky-dich-vu";
+            }
+            
+            // Duyệt đăng ký
+            dangKy.setTrangThai("da_duyet");
+            dangKy.setCccdNguoiDuyet(authentication.getName());
+            dangKy.setNgayDuyet(LocalDateTime.now());
+            if (ghiChu != null && !ghiChu.trim().isEmpty()) {
+                dangKy.setGhiChu(ghiChu);
+            }
+            dangKyDichVuService.save(dangKy);
+            
+            // Tạo hóa đơn dịch vụ
+            try {
+                DichVu dichVu = dichVuService.findById(dangKy.getMaDichVu())
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy dịch vụ"));
+                
+                // Lấy mã hộ từ cư dân
+                String maHo = getMaHoByCccd(dangKy.getCccdNguoiDung());
+                if (maHo == null) {
+                    redirectAttributes.addFlashAttribute("error", "Cư dân chưa được gán vào hộ gia đình");
+                    return "redirect:/ke-toan/dang-ky-dich-vu";
+                }
+                
+                HoaDon hoaDon = new HoaDon();
+                hoaDon.setMaHo(maHo);
+                hoaDon.setLoaiHoaDon("dich_vu"); // Đảm bảo loại hóa đơn là "dịch vụ"
+                hoaDon.setMaDichVu(dangKy.getMaDichVu()); // Liên kết với dịch vụ
+                hoaDon.setSoTien(dichVu.getGiaThanh());
+                hoaDon.setHanThanhToan(LocalDate.now().plusDays(30));
+                hoaDon.setTrangThai("chua_thanh_toan");
+                hoaDon.setGhiChu("Hóa đơn dịch vụ: " + dichVu.getTenDichVu() + 
+                    (dangKy.getMoTaYeuCau() != null && !dangKy.getMoTaYeuCau().equals("1") ? " - " + dangKy.getMoTaYeuCau() : ""));
+                hoaDonService.save(hoaDon);
+                
+                redirectAttributes.addFlashAttribute("success", 
+                    "Duyệt đăng ký thành công và đã tạo hóa đơn dịch vụ!");
+            } catch (Exception e) {
+                redirectAttributes.addFlashAttribute("warning", 
+                    "Đã duyệt đăng ký nhưng có lỗi khi tạo hóa đơn: " + e.getMessage());
+            }
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Có lỗi khi duyệt đăng ký: " + e.getMessage());
+        }
+        return "redirect:/ke-toan/dang-ky-dich-vu";
+    }
+    
+    @PostMapping("/dang-ky-dich-vu/tu-choi/{id}")
+    public String tuChoiDangKyDichVu(@PathVariable Integer id,
+                                     @RequestParam(required = false) String ghiChu,
+                                     RedirectAttributes redirectAttributes,
+                                     Authentication authentication) {
+        try {
+            DangKyDichVu dangKy = dangKyDichVuService.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy đăng ký dịch vụ"));
+            
+            dangKy.setTrangThai("da_tu_choi");
+            dangKy.setCccdNguoiDuyet(authentication.getName());
+            dangKy.setNgayDuyet(LocalDateTime.now());
+            if (ghiChu != null && !ghiChu.trim().isEmpty()) {
+                dangKy.setGhiChu(ghiChu);
+            }
+            dangKyDichVuService.save(dangKy);
+            
+            redirectAttributes.addFlashAttribute("success", "Từ chối đăng ký thành công!");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Có lỗi khi từ chối đăng ký: " + e.getMessage());
+        }
+        return "redirect:/ke-toan/dang-ky-dich-vu";
+    }
+    
+    private String getMaHoByCccd(String cccd) {
+        List<ThanhVienHo> thanhVienList = thanhVienHoRepository.findActiveByCccd(cccd);
+        if (thanhVienList.isEmpty()) {
+            return null;
+        }
+        return thanhVienList.get(0).getMaHo();
     }
     
 }

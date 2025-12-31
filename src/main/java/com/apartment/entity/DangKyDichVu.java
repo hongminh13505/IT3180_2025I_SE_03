@@ -21,8 +21,8 @@ public class DangKyDichVu {
     @Column(name = "cccd_nguoi_dung", nullable = false, length = 12)
     private String cccdNguoiDung;
     
-    @Column(name = "ma_dich_vu", nullable = false, length = 20)
-    private String maDichVu;
+    @Column(name = "ma_dich_vu", nullable = false)
+    private Integer maDichVu;
     
     @Column(name = "mo_ta_yeu_cau", columnDefinition = "TEXT")
     private String moTaYeuCau;

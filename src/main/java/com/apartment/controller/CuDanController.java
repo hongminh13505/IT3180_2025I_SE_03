@@ -3,6 +3,7 @@ package com.apartment.controller;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter; 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors; 
 
@@ -40,6 +41,11 @@ import com.apartment.service.PhanAnhService;
 import com.apartment.service.ThongBaoService;
 import com.apartment.service.YeuCauGuiXeService;
 import com.apartment.entity.YeuCauGuiXe;
+import com.apartment.service.DichVuService;
+import com.apartment.service.DangKyDichVuService;
+import com.apartment.entity.DichVu;
+import com.apartment.entity.DangKyDichVu;
+import java.math.BigDecimal;
 
 @Controller
 @RequestMapping("/cu-dan")
@@ -69,6 +75,12 @@ public class CuDanController {
 
     @Autowired
     private YeuCauGuiXeService yeuCauGuiXeService;
+    
+    @Autowired
+    private DichVuService dichVuService;
+    
+    @Autowired
+    private DangKyDichVuService dangKyDichVuService;
     
    
     private String getMaHoByCccd(String cccd) {
@@ -655,6 +667,145 @@ public class CuDanController {
             return "cu-dan/phan-anh/detail";
         } catch (Exception e) {
             return "redirect:/cu-dan/phan-anh?error=" + e.getMessage();
+        }
+    }
+    
+    @GetMapping("/dich-vu")
+    public String dichVu(@RequestParam(required = false) String search,
+                         @RequestParam(defaultValue = "0") int page,
+                         @RequestParam(defaultValue = "20") int size,
+                         Model model,
+                         Authentication authentication) {
+        try {
+            List<DichVu> allDichVu = dichVuService.findAllActive();
+            
+            if (search != null && !search.trim().isEmpty()) {
+                String searchLower = search.trim().toLowerCase();
+                allDichVu = allDichVu.stream()
+                    .filter(dv -> 
+                        (dv.getTenDichVu() != null && dv.getTenDichVu().toLowerCase().contains(searchLower)) ||
+                        (dv.getLoaiDichVu() != null && dv.getLoaiDichVu().toLowerCase().contains(searchLower))
+                    )
+                    .collect(java.util.stream.Collectors.toList());
+            }
+            
+            Pageable pageable = PageRequest.of(page, size);
+            int start = (int) pageable.getOffset();
+            int end = Math.min((start + pageable.getPageSize()), allDichVu.size());
+            List<DichVu> pageContent = start < allDichVu.size() 
+                ? allDichVu.subList(start, end) 
+                : java.util.Collections.emptyList();
+            
+            Page<DichVu> dichVuPage = new PageImpl<>(pageContent, pageable, allDichVu.size());
+            
+            model.addAttribute("dichVuList", dichVuPage.getContent());
+            model.addAttribute("dichVuPage", dichVuPage);
+            model.addAttribute("search", search);
+            model.addAttribute("currentPage", page);
+            model.addAttribute("totalPages", dichVuPage.getTotalPages());
+            model.addAttribute("totalElements", dichVuPage.getTotalElements());
+            model.addAttribute("username", authentication.getName());
+            return "cu-dan/dich-vu";
+        } catch (Exception e) {
+            model.addAttribute("error", "Có lỗi khi tải danh sách dịch vụ");
+            model.addAttribute("dichVuList", new java.util.ArrayList<>());
+            return "cu-dan/dich-vu";
+        }
+    }
+    
+    @GetMapping("/dich-vu/dang-ky/{id}")
+    public String dangKyDichVuForm(@PathVariable Integer id,
+                                  Model model,
+                                  Authentication authentication) {
+        try {
+            DichVu dichVu = dichVuService.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy dịch vụ"));
+            
+            if (!"hoat_dong".equals(dichVu.getTrangThai())) {
+                model.addAttribute("error", "Dịch vụ này hiện không hoạt động");
+                return "redirect:/cu-dan/dich-vu";
+            }
+            
+            DangKyDichVu dangKy = new DangKyDichVu();
+            dangKy.setMaDichVu(id);
+            model.addAttribute("dangKy", dangKy);
+            model.addAttribute("dichVu", dichVu);
+            model.addAttribute("username", authentication.getName());
+            return "cu-dan/dang-ky-dich-vu";
+        } catch (Exception e) {
+            model.addAttribute("error", "Có lỗi khi tải form đăng ký: " + e.getMessage());
+            return "redirect:/cu-dan/dich-vu";
+        }
+    }
+    
+    @PostMapping("/dich-vu/dang-ky")
+    public String luuDangKyDichVu(@ModelAttribute DangKyDichVu dangKy,
+                                  RedirectAttributes redirectAttributes,
+                                  Authentication authentication) {
+        try {
+            String cccd = authentication.getName();
+            dangKy.setCccdNguoiDung(cccd);
+            dangKy.setTrangThai("cho_duyet");
+            
+            // Tự động điền mô tả yêu cầu nếu trống
+            if (dangKy.getMoTaYeuCau() == null || dangKy.getMoTaYeuCau().trim().isEmpty()) {
+                dangKy.setMoTaYeuCau("1");
+            }
+            
+            // Tạo mã đăng ký tự động
+            List<DangKyDichVu> allDangKy = dangKyDichVuService.findAll();
+            int maxId = allDangKy.stream()
+                .mapToInt(dk -> dk.getMaDangKy() != null ? dk.getMaDangKy() : 0)
+                .max()
+                .orElse(0);
+            dangKy.setMaDangKy(maxId + 1);
+            
+            dangKyDichVuService.save(dangKy);
+            redirectAttributes.addFlashAttribute("success", "Đăng ký dịch vụ thành công! Đang chờ duyệt.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Có lỗi khi đăng ký dịch vụ: " + e.getMessage());
+        }
+        return "redirect:/cu-dan/dich-vu";
+    }
+    
+    @GetMapping("/dich-vu/dang-ky-cua-toi")
+    public String danhSachDangKyDichVu(@RequestParam(defaultValue = "0") int page,
+                                      @RequestParam(defaultValue = "20") int size,
+                                      Model model,
+                                      Authentication authentication) {
+        try {
+            String cccd = authentication.getName();
+            List<DangKyDichVu> allDangKy = dangKyDichVuService.findByCccdNguoiDung(cccd);
+            
+            // Load thông tin dịch vụ cho mỗi đăng ký
+            Map<Integer, DichVu> dichVuMap = new HashMap<>();
+            for (DangKyDichVu dk : allDangKy) {
+                if (dk.getMaDichVu() != null && !dichVuMap.containsKey(dk.getMaDichVu())) {
+                    dichVuService.findById(dk.getMaDichVu()).ifPresent(dv -> dichVuMap.put(dk.getMaDichVu(), dv));
+                }
+            }
+            model.addAttribute("dichVuMap", dichVuMap);
+            
+            Pageable pageable = PageRequest.of(page, size);
+            int start = (int) pageable.getOffset();
+            int end = Math.min((start + pageable.getPageSize()), allDangKy.size());
+            List<DangKyDichVu> pageContent = start < allDangKy.size() 
+                ? allDangKy.subList(start, end) 
+                : java.util.Collections.emptyList();
+            
+            Page<DangKyDichVu> dangKyPage = new PageImpl<>(pageContent, pageable, allDangKy.size());
+            
+            model.addAttribute("dangKyList", dangKyPage.getContent());
+            model.addAttribute("dangKyPage", dangKyPage);
+            model.addAttribute("currentPage", page);
+            model.addAttribute("totalPages", dangKyPage.getTotalPages());
+            model.addAttribute("totalElements", dangKyPage.getTotalElements());
+            model.addAttribute("username", authentication.getName());
+            return "cu-dan/dang-ky-dich-vu-list";
+        } catch (Exception e) {
+            model.addAttribute("error", "Có lỗi khi tải danh sách đăng ký");
+            model.addAttribute("dangKyList", new java.util.ArrayList<>());
+            return "cu-dan/dang-ky-dich-vu-list";
         }
     }
 }

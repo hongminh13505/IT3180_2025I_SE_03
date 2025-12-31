@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" 
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý dịch vụ</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+    <style>
+        .pagination-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 24px;
+            padding: 20px 24px;
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
+            flex-wrap: wrap;
+            gap: 20px;
+            border: 1px solid rgba(226, 232, 240, 0.8);
+        }
+        .pagination-info {
+            color: #475569;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .pagination-info strong {
+            color: #1e293b;
+            font-weight: 600;
+        }
+        .pagination {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .pagination-btn {
+            padding: 10px 14px;
+            text-decoration: none;
+            border-radius: 8px;
+            background: white;
+            border: 1.5px solid #e2e8f0;
+            color: #475569;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            min-width: 42px;
+            height: 42px;
+            text-align: center;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        }
+        .pagination-btn:hover:not(.disabled):not(.active) {
+            background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+            border-color: #cbd5e1;
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+            color: #1e293b;
+        }
+        .pagination-btn.active {
+            background: linear-gradient(135deg, #0ea5e9, #0284c7);
+            color: white;
+            border-color: #0284c7;
+            font-weight: 600;
+            box-shadow: 0 4px 14px rgba(14, 165, 233, 0.35), 0 2px 4px rgba(14, 165, 233, 0.2);
+            transform: translateY(-1px) scale(1.05);
+        }
+        .pagination-btn.active:hover {
+            background: linear-gradient(135deg, #0284c7, #0369a1);
+            box-shadow: 0 6px 18px rgba(14, 165, 233, 0.45), 0 3px 6px rgba(14, 165, 233, 0.25);
+            transform: translateY(-2px) scale(1.06);
+        }
+        .pagination-btn.disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            pointer-events: none;
+            background: #f8fafc;
+            border-color: #e2e8f0;
+        }
+        .pagination-ellipsis {
+            padding: 10px 6px;
+            color: #94a3b8;
+            font-size: 14px;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h3>BLUE MOON</h3>
+            </div>
+            
+            <nav class="sidebar-menu">
+                <ul>
+                    <li><a th:href="@{/admin/dashboard}"><img src="/images/img4.png" alt="Dashboard" style="width: 18px; height: 18px; margin-right: 12px;"> Dashboard</a></li>
+                    <li><a th:href="@{/admin/doi-tuong}"><img src="/images/quan-ly-cu-dan.png" alt="Quản lý cư dân" style="width: 18px; height: 18px; margin-right: 12px;"> Quản lý cư dân</a></li>
+                    <li><a th:href="@{/admin/ho-gia-dinh}"><img src="/images/ho-gia-dinh.png" alt="Hộ gia đình" style="width: 18px; height: 18px; margin-right: 12px;"> Hộ gia đình</a></li>
+                    <li><a th:href="@{/admin/tai-san}"><img src="/images/tai-san-chung-cu.png" alt="Tài sản chung cư" style="width: 18px; height: 18px; margin-right: 12px;"> Tài sản chung cư</a></li>
+                    <li><a th:href="@{/admin/dich-vu}" class="active"><img src="/images/money.png" alt="Dịch vụ" style="width: 18px; height: 18px; margin-right: 12px;"> Dịch vụ</a></li>
+                    <li><a th:href="@{/admin/hoa-don-2}"><img src="/images/hoa-don.png" alt="Hóa đơn" style="width: 18px; height: 18px; margin-right: 12px;"> Hóa đơn</a></li>
+                    <li><a th:href="@{/admin/bao-cao-su-co}"><img src="/images/bao-cao-su-co.png" alt="Báo cáo sự cố" style="width: 18px; height: 18px; margin-right: 12px;"> Báo cáo sự cố</a></li>
+                    <li><a th:href="@{/admin/thong-bao-2}"><img src="/images/thong-bao.png" alt="Thông báo" style="width: 18px; height: 18px; margin-right: 12px;"> Thông báo</a></li>
+                    <li><a th:href="@{/admin/gui-xe}"><img src="/images/tai-san-chung-cu.png" alt="Gửi xe" style="width: 18px; height: 18px; margin-right: 12px;"> Gửi xe</a></li>
+                    <li><a th:href="@{/admin/phan-anh}"><img src="/images/phan-anh.png" alt="Phản ánh" style="width: 18px; height: 18px; margin-right: 12px;"> Phản ánh</a></li>
+                    <li><a th:href="@{/admin/lich-su-chinh-sua}"><img src="/images/lichsu.png" alt="Lịch sử chỉnh sửa" style="width: 18px; height: 18px; margin-right: 12px; filter: brightness(0) invert(1);"> Lịch sử chỉnh sửa</a></li>
+                </ul>
+            </nav>
+        </aside>
+        
+        <div class="main-content">
+            <header class="header">
+                <div class="header-left">
+                    <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+                    <h2>Quản lý dịch vụ</h2>
+                </div>
+                <div class="header-right">
+                    <div class="user-info">
+                        <span>Xin chào, <strong sec:authentication="name">Admin</strong></span>
+                        <form th:action="@{/logout}" method="post" style="display: inline;">
+                            <button type="submit" class="btn btn-sm btn-danger">Đăng xuất</button>
+                        </form>
+                    </div>
+                </div>
+            </header>
+            
+            <main class="page-content">
+                <div th:if="${success}" class="alert alert-success"><span th:text="${success}"></span></div>
+                <div th:if="${error}" class="alert alert-error"><span th:text="${error}"></span></div>
+                
+                <div class="content-header">
+                    <div class="search-bar">
+                        <form th:action="@{/admin/dich-vu}" method="get">
+                            <input type="text" name="search" th:value="${search}" placeholder="Tìm kiếm dịch vụ..." class="form-control">
+                            <input type="hidden" name="page" value="0">
+                            <button type="submit" class="btn btn-primary">Tìm kiếm</button>
+                        </form>
+                    </div>
+                    <a th:href="@{/admin/dich-vu/create}" class="btn btn-success">+ Thêm mới</a>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Mã DV</th>
+                                <th>Tên dịch vụ</th>
+                                <th>Loại dịch vụ</th>
+                                <th>Giá thành</th>
+                                <th>Trạng thái</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:if="${dichVuList.isEmpty()}">
+                                <td colspan="6" style="text-align: center; color: #94a3b8; padding: 40px;">Chưa có dịch vụ nào</td>
+                            </tr>
+                            <tr th:each="dv : ${dichVuList}">
+                                <td th:text="${dv.maDichVu}"></td>
+                                <td th:text="${dv.tenDichVu}"></td>
+                                <td>
+                                    <span class="badge badge-info" th:text="${dv.loaiDichVu != null ? dv.loaiDichVu : 'Khác'}"></span>
+                                </td>
+                                <td th:text="${dv.giaThanh != null ? #numbers.formatDecimal(dv.giaThanh, 0, 'COMMA', 0, 'POINT') + ' VNĐ' : '-'}"></td>
+                                <td>
+                                    <span th:if="${dv.trangThai == 'hoat_dong'}" class="badge badge-success">Hoạt động</span>
+                                    <span th:if="${dv.trangThai != 'hoat_dong'}" class="badge badge-secondary">Ngừng hoạt động</span>
+                                </td>
+                                <td class="actions">
+                                    <a th:href="@{/admin/dich-vu/edit/{id}(id=${dv.maDichVu})}" class="btn btn-sm btn-primary">Sửa</a>
+                                    <form th:action="@{/admin/dich-vu/delete/{id}(id=${dv.maDichVu})}" method="post" style="display: inline;">
+                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Xác nhận xóa dịch vụ này?')">Xóa</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Pagination Info and Controls -->
+                <div th:if="${dichVuPage != null and dichVuPage.totalElements > 0}" class="pagination-container">
+                    <div class="pagination-info">
+                        Hiển thị <strong th:text="${(currentPage * 20) + 1}">1</strong> - 
+                        <strong th:text="${(currentPage * 20) + dichVuList.size()}">20</strong> 
+                        trong tổng số <strong th:text="${totalElements}">0</strong> dịch vụ
+                    </div>
+                    <div class="pagination" th:if="${totalPages > 1}">
+                        <a th:href="@{/admin/dich-vu(page=0, search=${search})}" 
+                           class="pagination-btn"
+                           th:classappend="${currentPage == 0} ? 'disabled' : ''"
+                           th:onclick="${currentPage == 0} ? 'return false;' : ''">
+                            « Đầu
+                        </a>
+                        <a th:href="@{/admin/dich-vu(page=${currentPage - 1}, search=${search})}" 
+                           class="pagination-btn"
+                           th:classappend="${currentPage == 0} ? 'disabled' : ''"
+                           th:onclick="${currentPage == 0} ? 'return false;' : ''">
+                            ‹
+                        </a>
+                        
+                        <!-- Page numbers -->
+                        <span th:if="${totalPages <= 10}">
+                            <a th:each="pageNum : ${#numbers.sequence(0, totalPages - 1)}"
+                               th:href="@{/admin/dich-vu(page=${pageNum}, search=${search})}" 
+                               class="pagination-btn"
+                               th:classappend="${pageNum == currentPage} ? 'active' : ''"
+                               th:text="${pageNum + 1}">1</a>
+                        </span>
+                        <span th:if="${totalPages > 10}">
+                            <!-- Show first page -->
+                            <a th:href="@{/admin/dich-vu(page=0, search=${search})}" 
+                               class="pagination-btn"
+                               th:classappend="${currentPage == 0} ? 'active' : ''">1</a>
+                            
+                            <!-- Show ellipsis if current page is far from start -->
+                            <span th:if="${currentPage > 3}">
+                                <span class="pagination-ellipsis">...</span>
+                            </span>
+                            
+                            <!-- Show pages around current page -->
+                            <span th:if="${currentPage > 2 and currentPage < totalPages - 3}">
+                                <a th:each="pageNum : ${#numbers.sequence(currentPage - 1, currentPage + 1)}"
+                                   th:href="@{/admin/dich-vu(page=${pageNum}, search=${search})}" 
+                                   class="pagination-btn"
+                                   th:classappend="${pageNum == currentPage} ? 'active' : ''"
+                                   th:text="${pageNum + 1}">5</a>
+                            </span>
+                            <span th:if="${currentPage <= 2}">
+                                <a th:each="pageNum : ${#numbers.sequence(1, 3)}"
+                                   th:href="@{/admin/dich-vu(page=${pageNum}, search=${search})}" 
+                                   class="pagination-btn"
+                                   th:classappend="${pageNum == currentPage} ? 'active' : ''"
+                                   th:text="${pageNum + 1}">2</a>
+                            </span>
+                            <span th:if="${currentPage >= totalPages - 3}">
+                                <a th:each="pageNum : ${#numbers.sequence(totalPages - 4, totalPages - 2)}"
+                                   th:href="@{/admin/dich-vu(page=${pageNum}, search=${search})}" 
+                                   class="pagination-btn"
+                                   th:classappend="${pageNum == currentPage} ? 'active' : ''"
+                                   th:text="${pageNum + 1}">10</a>
+                            </span>
+                            
+                            <!-- Show ellipsis if current page is far from end -->
+                            <span th:if="${currentPage < totalPages - 4}">
+                                <span class="pagination-ellipsis">...</span>
+                            </span>
+                            
+                            <!-- Show last page -->
+                            <a th:href="@{/admin/dich-vu(page=${totalPages - 1}, search=${search})}" 
+                               class="pagination-btn"
+                               th:classappend="${currentPage == totalPages - 1} ? 'active' : ''"
+                               th:text="${totalPages}">10</a>
+                        </span>
+                        
+                        <a th:href="@{/admin/dich-vu(page=${currentPage + 1}, search=${search})}" 
+                           class="pagination-btn"
+                           th:classappend="${currentPage >= totalPages - 1} ? 'disabled' : ''"
+                           th:onclick="${currentPage >= totalPages - 1} ? 'return false;' : ''">
+                            ›
+                        </a>
+                        <a th:href="@{/admin/dich-vu(page=${totalPages - 1}, search=${search})}" 
+                           class="pagination-btn"
+                           th:classappend="${currentPage >= totalPages - 1} ? 'disabled' : ''"
+                           th:onclick="${currentPage >= totalPages - 1} ? 'return false;' : ''">
+                            Cuối »
+                        </a>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    
+    <script th:src="@{/js/script.js}"></script>
+</body>
+</html>
+

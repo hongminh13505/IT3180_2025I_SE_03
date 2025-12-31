@@ -5,218 +5,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Phản ánh - Cư dân</title>
+    <title>Dịch vụ - Cư dân</title>
     <link rel="stylesheet" th:href="@{/css/style.css}">
     <link rel="stylesheet" th:href="@{/css/admin.css}">
-</head>
-<body>
-    <div class="wrapper">
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            <div class="sidebar-header">
-                <h3>BLUE MOON</h3>
-                <p class="role-badge">Cư dân</p>
-            </div>
-            
-            <nav class="sidebar-menu">
-                <ul>
-                    <li>
-                        <a th:href="@{/cu-dan/dashboard}">
-                            <img src="/images/ho-gia-dinh.png" alt="Dashboard" style="width: 18px; height: 18px; margin-right: 12px;"> Dashboard
-                        </a>
-                    </li>
-                    <li>
-                        <a th:href="@{/cu-dan/thong-tin-ca-nhan}">
-                            <img src="/images/quan-ly-cu-dan.png" alt="Quản lý cư dân" style="width: 18px; height: 18px; margin-right: 12px;"> Thông tin cá nhân
-                        </a>
-                    </li>
-                    <li>
-                        <a th:href="@{/cu-dan/thong-bao}">
-                            <img src="/images/thong-bao.png" alt="Thông báo" style="width: 18px; height: 18px; margin-right: 12px;"> Thông báo
-                        </a>
-                    </li>
-                    <li>
-                        <a th:href="@{/cu-dan/hoa-don}">
-                            <img src="/images/hoa-don.png" alt="Hóa đơn" style="width: 18px; height: 18px; margin-right: 12px;"> Hóa đơn
-                        </a>
-                    </li>
-                    <li>
-                        <a th:href="@{/cu-dan/dich-vu}">
-                            <img src="/images/money.png" alt="Dịch vụ" style="width: 18px; height: 18px; margin-right: 12px;"> Dịch vụ
-                        </a>
-                    </li>
-                    <li>
-                        <a th:href="@{/cu-dan/bao-cao-su-co}">
-                            <img src="/images/bao-cao-su-co.png" alt="Báo cáo sự cố" style="width: 18px; height: 18px; margin-right: 12px;"> Báo cáo sự cố
-                        </a>
-                    </li>
-                    <li>
-                        <a th:href="@{/cu-dan/phan-anh}" class="active">
-                            <img src="/images/phan-anh.png" alt="Phản ánh" style="width: 18px; height: 18px; margin-right: 12px;"> Phản ánh
-                        </a>
-                    </li>
-                    <li>
-                        <a th:href="@{/cu-dan/gui-xe}">
-                            <img src="/images/tai-san-chung-cu.png" alt="Gửi xe" style="width: 18px; height: 18px; margin-right: 12px;"> Gửi xe
-                        </a>
-                    </li>
-                </ul>
-            </nav>
-        </aside>
-        
-        <!-- Main Content -->
-        <div class="main-content">
-            <!-- Header -->
-            <header class="header">
-                <div class="header-left">
-                    <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
-                    <h2>Phản ánh</h2>
-                </div>
-                
-                <div class="header-right">
-                    <div class="user-info">
-                        <span>Xin chào, <strong th:text="${username}">Cư dân</strong></span>
-                        <form th:action="@{/logout}" method="post" style="display: inline;">
-                            <button type="submit" class="btn btn-sm btn-danger">Đăng xuất</button>
-                        </form>
-                    </div>
-                </div>
-            </header>
-            
-            <!-- Page Content -->
-            <main class="page-content">
-                <!-- Messages -->
-                <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
-                <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
-                
-                <!-- Search Bar and Actions -->
-                <div class="content-header">
-                    <div class="search-bar">
-                        <form th:action="@{/cu-dan/phan-anh}" method="get">
-                            <input type="text" name="search" th:value="${search}" placeholder="Tìm kiếm..." class="form-control">
-                            <input type="hidden" name="page" value="0">
-                            <button type="submit" class="btn btn-primary">Tìm kiếm</button>
-                        </form>
-                    </div>
-                    <div class="action-buttons">
-                        <a th:href="@{/cu-dan/phan-anh/tao-moi}" class="btn btn-success">
-                            + Tạo phản ánh mới
-                        </a>
-                    </div>
-                </div>
-                
-                <!-- Table -->
-                <div class="table-responsive">
-                    <table class="table table-compact">
-                        <thead>
-                            <tr>
-                                <th style="width: 150px; text-align: center;">LOẠI</th>
-                                <th style="width: 250px; text-align: center;">TIÊU ĐỀ</th>
-                                <th style="width: 140px; text-align: center;">NGÀY GỬI</th>
-                                <th style="width: 130px; text-align: center;">TRẠNG THÁI</th>
-                                <th style="width: 150px; text-align: center;">THAO TÁC</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr th:if="${phanAnhList.isEmpty()}">
-                                <td colspan="5" style="text-align: center; color: #94a3b8;">Không có phản ánh nào</td>
-                            </tr>
-                            <tr th:each="pa : ${phanAnhList}">
-                                <td style="text-align: center; font-size: 13px;">
-                                    <span class="badge badge-info" 
-                                          th:text="${pa.loaiPhanAnh == 'gop_y'} ? 'Góp ý' : 
-                                                    (${pa.loaiPhanAnh == 'y_kien'} ? 'Ý kiến' : 
-                                                    (${pa.loaiPhanAnh == 'khiem_nai'} ? 'Khiếu nại' : 'Khác'))">Góp ý</span>
-                                </td>
-                                <td style="font-size: 13px;" th:text="${pa.tieuDe}">Tiêu đề phản ánh</td>
-                                <td style="text-align: center; font-size: 13px;" th:text="${pa.ngayTao != null ? #temporals.format(pa.ngayTao, 'dd/MM/yyyy') : 'N/A'}">01/01/2024</td>
-                                <td style="text-align: center;">
-                                    <span class="badge" 
-                                          th:classappend="${pa.trangThai == 'da_phan_hoi'} ? 'badge-success' : 
-                                                        (${pa.trangThai == 'da_xem'} ? 'badge-warning' : 'badge-info')"
-                                          th:text="${pa.trangThai == 'da_phan_hoi'} ? 'Đã phản hồi' : 
-                                                    (${pa.trangThai == 'da_xem'} ? 'Đã xem' : 'Mới')">Mới</span>
-                                </td>
-                                <td class="actions" style="justify-content: center;">
-                                    <a th:href="@{/cu-dan/phan-anh/{id}(id=${pa.maPhanAnh})}" class="btn btn-sm btn-info">
-                                        <span th:if="${pa.trangThai == 'da_phan_hoi'}">Xem phản hồi</span>
-                                        <span th:if="${pa.trangThai != 'da_phan_hoi'}">Chi tiết</span>
-                                    </a>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                
-                <div th:if="${phanAnhPage != null and phanAnhPage.totalElements > 0}" class="pagination-container">
-                    <div class="pagination-info">
-                        Hiển thị <strong th:text="${(currentPage * 20) + 1}">1</strong> - 
-                        <strong th:text="${(currentPage * 20) + phanAnhList.size()}">20</strong> 
-                        trong tổng số <strong th:text="${totalElements}">0</strong> phản ánh
-                    </div>
-                    <div class="pagination" th:if="${totalPages > 1}">
-                        <a th:href="@{/cu-dan/phan-anh(page=0, search=${search})}" 
-                           class="pagination-btn"
-                           th:classappend="${currentPage == 0} ? 'disabled' : ''"
-                           th:onclick="${currentPage == 0} ? 'return false;' : ''">« Đầu</a>
-                        <a th:href="@{/cu-dan/phan-anh(page=${currentPage - 1}, search=${search})}" 
-                           class="pagination-btn"
-                           th:classappend="${currentPage == 0} ? 'disabled' : ''"
-                           th:onclick="${currentPage == 0} ? 'return false;' : ''">‹</a>
-                        <span th:if="${totalPages <= 10}">
-                            <a th:each="pageNum : ${#numbers.sequence(0, totalPages - 1)}"
-                               th:href="@{/cu-dan/phan-anh(page=${pageNum}, search=${search})}" 
-                               class="pagination-btn"
-                               th:classappend="${pageNum == currentPage} ? 'active' : ''"
-                               th:text="${pageNum + 1}">1</a>
-                        </span>
-                        <span th:if="${totalPages > 10}">
-                            <a th:href="@{/cu-dan/phan-anh(page=0, search=${search})}" 
-                               class="pagination-btn"
-                               th:classappend="${currentPage == 0} ? 'active' : ''">1</a>
-                            <span th:if="${currentPage > 3}"><span class="pagination-ellipsis">...</span></span>
-                            <span th:if="${currentPage > 2 and currentPage < totalPages - 3}">
-                                <a th:each="pageNum : ${#numbers.sequence(currentPage - 1, currentPage + 1)}"
-                                   th:href="@{/cu-dan/phan-anh(page=${pageNum}, search=${search})}" 
-                                   class="pagination-btn"
-                                   th:classappend="${pageNum == currentPage} ? 'active' : ''"
-                                   th:text="${pageNum + 1}">5</a>
-                            </span>
-                            <span th:if="${currentPage <= 2}">
-                                <a th:each="pageNum : ${#numbers.sequence(1, 3)}"
-                                   th:href="@{/cu-dan/phan-anh(page=${pageNum}, search=${search})}" 
-                                   class="pagination-btn"
-                                   th:classappend="${pageNum == currentPage} ? 'active' : ''"
-                                   th:text="${pageNum + 1}">2</a>
-                            </span>
-                            <span th:if="${currentPage >= totalPages - 3}">
-                                <a th:each="pageNum : ${#numbers.sequence(totalPages - 4, totalPages - 2)}"
-                                   th:href="@{/cu-dan/phan-anh(page=${pageNum}, search=${search})}" 
-                                   class="pagination-btn"
-                                   th:classappend="${pageNum == currentPage} ? 'active' : ''"
-                                   th:text="${pageNum + 1}">10</a>
-                            </span>
-                            <span th:if="${currentPage < totalPages - 4}"><span class="pagination-ellipsis">...</span></span>
-                            <a th:href="@{/cu-dan/phan-anh(page=${totalPages - 1}, search=${search})}" 
-                               class="pagination-btn"
-                               th:classappend="${currentPage == totalPages - 1} ? 'active' : ''"
-                               th:text="${totalPages}">10</a>
-                        </span>
-                        <a th:href="@{/cu-dan/phan-anh(page=${currentPage + 1}, search=${search})}" 
-                           class="pagination-btn"
-                           th:classappend="${currentPage >= totalPages - 1} ? 'disabled' : ''"
-                           th:onclick="${currentPage >= totalPages - 1} ? 'return false;' : ''">›</a>
-                        <a th:href="@{/cu-dan/phan-anh(page=${totalPages - 1}, search=${search})}" 
-                           class="pagination-btn"
-                           th:classappend="${currentPage >= totalPages - 1} ? 'disabled' : ''"
-                           th:onclick="${currentPage >= totalPages - 1} ? 'return false;' : ''">Cuối »</a>
-                    </div>
-                </div>
-            </main>
-        </div>
-    </div>
-    
-    <script th:src="@{/js/script.js}"></script>
     <style>
         .pagination-container {
             display: flex;
@@ -296,9 +87,229 @@
             color: #94a3b8;
             font-size: 14px;
             font-weight: 500;
-            user-select: none;
         }
     </style>
+</head>
+<body>
+    <div class="wrapper">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h3>BLUE MOON</h3>
+                <p class="role-badge">Cư dân</p>
+            </div>
+            
+            <nav class="sidebar-menu">
+                <ul>
+                    <li>
+                        <a th:href="@{/cu-dan/dashboard}">
+                            <img src="/images/ho-gia-dinh.png" alt="Dashboard" style="width: 18px; height: 18px; margin-right: 12px;"> Dashboard
+                        </a>
+                    </li>
+                    <li>
+                        <a th:href="@{/cu-dan/thong-tin-ca-nhan}">
+                            <img src="/images/quan-ly-cu-dan.png" alt="Quản lý cư dân" style="width: 18px; height: 18px; margin-right: 12px;"> Thông tin cá nhân
+                        </a>
+                    </li>
+                    <li>
+                        <a th:href="@{/cu-dan/thong-bao}">
+                            <img src="/images/thong-bao.png" alt="Thông báo" style="width: 18px; height: 18px; margin-right: 12px;"> Thông báo
+                        </a>
+                    </li>
+                    <li>
+                        <a th:href="@{/cu-dan/hoa-don}">
+                            <img src="/images/hoa-don.png" alt="Hóa đơn" style="width: 18px; height: 18px; margin-right: 12px;"> Hóa đơn
+                        </a>
+                    </li>
+                    <li>
+                        <a th:href="@{/cu-dan/dich-vu}" class="active">
+                            <img src="/images/money.png" alt="Dịch vụ" style="width: 18px; height: 18px; margin-right: 12px;"> Dịch vụ
+                        </a>
+                    </li>
+                    <li>
+                        <a th:href="@{/cu-dan/bao-cao-su-co}">
+                            <img src="/images/bao-cao-su-co.png" alt="Báo cáo sự cố" style="width: 18px; height: 18px; margin-right: 12px;"> Báo cáo sự cố
+                        </a>
+                    </li>
+                    <li>
+                        <a th:href="@{/cu-dan/phan-anh}">
+                            <img src="/images/phan-anh.png" alt="Phản ánh" style="width: 18px; height: 18px; margin-right: 12px;"> Phản ánh
+                        </a>
+                    </li>
+                    <li>
+                        <a th:href="@{/cu-dan/gui-xe}">
+                            <img src="/images/tai-san-chung-cu.png" alt="Gửi xe" style="width: 18px; height: 18px; margin-right: 12px;"> Gửi xe
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Header -->
+            <header class="header">
+                <div class="header-left">
+                    <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+                    <h2>Dịch vụ</h2>
+                </div>
+                
+                <div class="header-right">
+                    <div class="user-info">
+                        <span>Xin chào, <strong th:text="${username}">Cư dân</strong></span>
+                        <form th:action="@{/logout}" method="post" style="display: inline;">
+                            <button type="submit" class="btn btn-sm btn-danger">Đăng xuất</button>
+                        </form>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Page Content -->
+            <main class="page-content">
+                <!-- Messages -->
+                <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+                <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+                
+                <!-- Action Buttons -->
+                <div class="content-header" style="margin-bottom: 20px;">
+                    <div class="search-bar">
+                        <form th:action="@{/cu-dan/dich-vu}" method="get">
+                            <input type="text" name="search" th:value="${search}" placeholder="Tìm kiếm dịch vụ..." class="form-control">
+                            <input type="hidden" name="page" value="0">
+                            <button type="submit" class="btn btn-primary">Tìm kiếm</button>
+                        </form>
+                    </div>
+                    <a th:href="@{/cu-dan/dich-vu/dang-ky-cua-toi}" class="btn btn-info">Đăng ký của tôi</a>
+                </div>
+                
+                <!-- Table -->
+                <div class="table-responsive">
+                    <table class="table table-compact">
+                        <thead>
+                            <tr>
+                                <th style="width: 100px; text-align: center;">MÃ DV</th>
+                                <th style="text-align: center;">TÊN DỊCH VỤ</th>
+                                <th style="width: 150px; text-align: center;">LOẠI DỊCH VỤ</th>
+                                <th style="width: 150px; text-align: center;">GIÁ THÀNH</th>
+                                <th style="width: 150px; text-align: center;">THAO TÁC</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:if="${dichVuList.isEmpty()}">
+                                <td colspan="5" style="text-align: center; color: #94a3b8; padding: 40px;">Chưa có dịch vụ nào</td>
+                            </tr>
+                            <tr th:each="dv : ${dichVuList}">
+                                <td style="text-align: center; font-size: 13px;" th:text="${dv.maDichVu}">DV001</td>
+                                <td style="font-size: 13px;" th:text="${dv.tenDichVu}">Tên dịch vụ</td>
+                                <td style="text-align: center;">
+                                    <span class="badge badge-info" th:text="${dv.loaiDichVu != null ? dv.loaiDichVu : 'Khác'}">Khác</span>
+                                </td>
+                                <td style="text-align: center; font-size: 13px; font-weight: 600; color: #ef4444;" 
+                                    th:text="${dv.giaThanh != null ? #numbers.formatDecimal(dv.giaThanh, 0, 'COMMA', 0, 'POINT') + ' VNĐ' : '-'}">0 VNĐ</td>
+                                <td class="actions" style="justify-content: center;">
+                                    <a th:href="@{/cu-dan/dich-vu/dang-ky/{id}(id=${dv.maDichVu})}" class="btn btn-sm btn-success">
+                                        Đăng ký
+                                    </a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Pagination Info and Controls -->
+                <div th:if="${dichVuPage != null and dichVuPage.totalElements > 0}" class="pagination-container">
+                    <div class="pagination-info">
+                        Hiển thị <strong th:text="${(currentPage * 20) + 1}">1</strong> - 
+                        <strong th:text="${(currentPage * 20) + dichVuList.size()}">20</strong> 
+                        trong tổng số <strong th:text="${totalElements}">0</strong> dịch vụ
+                    </div>
+                    <div class="pagination" th:if="${totalPages > 1}">
+                        <a th:href="@{/cu-dan/dich-vu(page=0, search=${search})}" 
+                           class="pagination-btn"
+                           th:classappend="${currentPage == 0} ? 'disabled' : ''"
+                           th:onclick="${currentPage == 0} ? 'return false;' : ''">
+                            « Đầu
+                        </a>
+                        <a th:href="@{/cu-dan/dich-vu(page=${currentPage - 1}, search=${search})}" 
+                           class="pagination-btn"
+                           th:classappend="${currentPage == 0} ? 'disabled' : ''"
+                           th:onclick="${currentPage == 0} ? 'return false;' : ''">
+                            ‹
+                        </a>
+                        
+                        <!-- Page numbers -->
+                        <span th:if="${totalPages <= 10}">
+                            <a th:each="pageNum : ${#numbers.sequence(0, totalPages - 1)}"
+                               th:href="@{/cu-dan/dich-vu(page=${pageNum}, search=${search})}" 
+                               class="pagination-btn"
+                               th:classappend="${pageNum == currentPage} ? 'active' : ''"
+                               th:text="${pageNum + 1}">1</a>
+                        </span>
+                        <span th:if="${totalPages > 10}">
+                            <!-- Show first page -->
+                            <a th:href="@{/cu-dan/dich-vu(page=0, search=${search})}" 
+                               class="pagination-btn"
+                               th:classappend="${currentPage == 0} ? 'active' : ''">1</a>
+                            
+                            <!-- Show ellipsis if current page is far from start -->
+                            <span th:if="${currentPage > 3}">
+                                <span class="pagination-ellipsis">...</span>
+                            </span>
+                            
+                            <!-- Show pages around current page -->
+                            <span th:if="${currentPage > 2 and currentPage < totalPages - 3}">
+                                <a th:each="pageNum : ${#numbers.sequence(currentPage - 1, currentPage + 1)}"
+                                   th:href="@{/cu-dan/dich-vu(page=${pageNum}, search=${search})}" 
+                                   class="pagination-btn"
+                                   th:classappend="${pageNum == currentPage} ? 'active' : ''"
+                                   th:text="${pageNum + 1}">5</a>
+                            </span>
+                            <span th:if="${currentPage <= 2}">
+                                <a th:each="pageNum : ${#numbers.sequence(1, 3)}"
+                                   th:href="@{/cu-dan/dich-vu(page=${pageNum}, search=${search})}" 
+                                   class="pagination-btn"
+                                   th:classappend="${pageNum == currentPage} ? 'active' : ''"
+                                   th:text="${pageNum + 1}">2</a>
+                            </span>
+                            <span th:if="${currentPage >= totalPages - 3}">
+                                <a th:each="pageNum : ${#numbers.sequence(totalPages - 4, totalPages - 2)}"
+                                   th:href="@{/cu-dan/dich-vu(page=${pageNum}, search=${search})}" 
+                                   class="pagination-btn"
+                                   th:classappend="${pageNum == currentPage} ? 'active' : ''"
+                                   th:text="${pageNum + 1}">10</a>
+                            </span>
+                            
+                            <!-- Show ellipsis if current page is far from end -->
+                            <span th:if="${currentPage < totalPages - 4}">
+                                <span class="pagination-ellipsis">...</span>
+                            </span>
+                            
+                            <!-- Show last page -->
+                            <a th:href="@{/cu-dan/dich-vu(page=${totalPages - 1}, search=${search})}" 
+                               class="pagination-btn"
+                               th:classappend="${currentPage == totalPages - 1} ? 'active' : ''"
+                               th:text="${totalPages}">10</a>
+                        </span>
+                        
+                        <a th:href="@{/cu-dan/dich-vu(page=${currentPage + 1}, search=${search})}" 
+                           class="pagination-btn"
+                           th:classappend="${currentPage >= totalPages - 1} ? 'disabled' : ''"
+                           th:onclick="${currentPage >= totalPages - 1} ? 'return false;' : ''">
+                            ›
+                        </a>
+                        <a th:href="@{/cu-dan/dich-vu(page=${totalPages - 1}, search=${search})}" 
+                           class="pagination-btn"
+                           th:classappend="${currentPage >= totalPages - 1} ? 'disabled' : ''"
+                           th:onclick="${currentPage >= totalPages - 1} ? 'return false;' : ''">
+                            Cuối »
+                        </a>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    
+    <script th:src="@{/js/script.js}"></script>
 </body>
 </html>
 

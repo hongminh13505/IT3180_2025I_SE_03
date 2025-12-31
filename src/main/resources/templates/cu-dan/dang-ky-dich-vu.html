@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Đăng ký gửi xe - Cư dân</title>
+    <title>Đăng ký dịch vụ - Cư dân</title>
     <link rel="stylesheet" th:href="@{/css/style.css}">
     <link rel="stylesheet" th:href="@{/css/admin.css}">
 </head>
@@ -27,7 +27,7 @@
                     </li>
                     <li>
                         <a th:href="@{/cu-dan/thong-tin-ca-nhan}">
-                            <img src="/images/quan-ly-cu-dan.png" alt="Thông tin cá nhân" style="width: 18px; height: 18px; margin-right: 12px;"> Thông tin cá nhân
+                            <img src="/images/quan-ly-cu-dan.png" alt="Quản lý cư dân" style="width: 18px; height: 18px; margin-right: 12px;"> Thông tin cá nhân
                         </a>
                     </li>
                     <li>
@@ -41,7 +41,7 @@
                         </a>
                     </li>
                     <li>
-                        <a th:href="@{/cu-dan/dich-vu}">
+                        <a th:href="@{/cu-dan/dich-vu}" class="active">
                             <img src="/images/money.png" alt="Dịch vụ" style="width: 18px; height: 18px; margin-right: 12px;"> Dịch vụ
                         </a>
                     </li>
@@ -56,7 +56,7 @@
                         </a>
                     </li>
                     <li>
-                        <a th:href="@{/cu-dan/gui-xe}" class="active">
+                        <a th:href="@{/cu-dan/gui-xe}">
                             <img src="/images/tai-san-chung-cu.png" alt="Gửi xe" style="width: 18px; height: 18px; margin-right: 12px;"> Gửi xe
                         </a>
                     </li>
@@ -70,7 +70,7 @@
             <header class="header">
                 <div class="header-left">
                     <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
-                    <h2>Đăng ký gửi xe</h2>
+                    <h2>Đăng ký dịch vụ</h2>
                 </div>
                 
                 <div class="header-right">
@@ -85,36 +85,50 @@
             
             <!-- Page Content -->
             <main class="page-content">
+                <!-- Messages -->
                 <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
                 <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
                 
+                <!-- Service Info -->
+                <div class="info-banner" style="background: #e8f5e8; border: 2px solid #28a745; border-radius: 8px; padding: 20px; margin-bottom: 30px;">
+                    <h4 style="color: #28a745; margin-bottom: 10px;">THÔNG TIN DỊCH VỤ</h4>
+                    <p style="margin: 5px 0; font-size: 16px;"><strong>Mã dịch vụ:</strong> <span th:text="${dichVu.maDichVu}">DV001</span></p>
+                    <p style="margin: 5px 0; font-size: 16px;"><strong>Tên dịch vụ:</strong> <span th:text="${dichVu.tenDichVu}">Tên dịch vụ</span></p>
+                    <p style="margin: 5px 0; font-size: 16px;"><strong>Loại dịch vụ:</strong> <span th:text="${dichVu.loaiDichVu != null ? dichVu.loaiDichVu : 'Khác'}">Khác</span></p>
+                    <p style="margin: 5px 0; font-size: 16px;"><strong>Giá thành:</strong> 
+                        <span style="color: #ef4444; font-weight: 600;" th:text="${dichVu.giaThanh != null ? #numbers.formatDecimal(dichVu.giaThanh, 0, 'COMMA', 0, 'POINT') + ' VNĐ' : '-'}">0 VNĐ</span>
+                    </p>
+                    <p style="margin: 5px 0; font-size: 16px;"><strong>Đơn vị:</strong> <span th:text="${dichVu.donVi != null ? dichVu.donVi : '-'}">-</span></p>
+                </div>
+                
+                <!-- Form -->
                 <div class="form-container">
-                    <form th:action="@{/cu-dan/gui-xe/luu}" th:object="${yeuCau}" method="post">
+                    <form th:action="@{/cu-dan/dich-vu/dang-ky}" th:object="${dangKy}" method="post">
+                        <input type="hidden" th:field="*{maDichVu}">
+                        <input type="hidden" th:field="*{moTaYeuCau}" value="1">
+                        
                         <div class="form-group">
-                            <label for="bienSo">Biển số xe <span class="required">*</span></label>
-                            <input type="text" id="bienSo" th:field="*{bienSo}" class="form-control" placeholder="VD: 30A-123.45" required>
+                            <label for="ngayBatDauSuDung">Ngày bắt đầu sử dụng <span class="required">*</span></label>
+                            <input type="date" id="ngayBatDauSuDung" th:field="*{ngayBatDauSuDung}" 
+                                   class="form-control" required>
+                            <div class="form-error" th:if="${#fields.hasErrors('ngayBatDauSuDung')}" 
+                                 th:errors="*{ngayBatDauSuDung}"></div>
                         </div>
                         
                         <div class="form-group">
-                            <label for="loaiXe">Loại xe <span class="required">*</span></label>
-                            <select id="loaiXe" th:field="*{loaiXe}" class="form-control" required>
-                                <option value="">-- Chọn loại xe --</option>
-                                <option value="oto">Ô tô</option>
-                                <option value="xe_may">Xe máy</option>
-                                <option value="khac">Khác</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="moTa">Ghi chú thêm</label>
-                            <textarea id="moTa" th:field="*{moTa}" class="form-control" rows="3" placeholder="Màu xe, khu vực muốn gửi, thời gian gửi..."></textarea>
+                            <label for="ngayKetThucSuDung">Ngày kết thúc sử dụng</label>
+                            <input type="date" id="ngayKetThucSuDung" th:field="*{ngayKetThucSuDung}" 
+                                   class="form-control">
+                            <small style="color: #64748b; font-size: 13px;">Để trống nếu không xác định</small>
+                            <div class="form-error" th:if="${#fields.hasErrors('ngayKetThucSuDung')}" 
+                                 th:errors="*{ngayKetThucSuDung}"></div>
                         </div>
                         
                         <div class="form-actions">
                             <button type="submit" class="btn btn-primary">
-                                <img src="/images/save.png" alt="Gửi" style="filter: brightness(0) invert(1); width: 16px; height: 16px; margin-right: 6px;"> Gửi yêu cầu
+                                <img src="/images/money.png" alt="Đăng ký" style="filter: brightness(0) invert(1); width: 18px; height: 18px; margin-right: 8px;"> Đăng ký dịch vụ
                             </button>
-                            <a th:href="@{/cu-dan/gui-xe}" class="btn btn-secondary">
+                            <a th:href="@{/cu-dan/dich-vu}" class="btn btn-secondary">
                                 <span>↩</span> Quay lại
                             </a>
                         </div>
@@ -125,6 +139,31 @@
     </div>
     
     <script th:src="@{/js/script.js}"></script>
+    <script>
+        // Set minimum date to today
+        document.addEventListener('DOMContentLoaded', function() {
+            var today = new Date().toISOString().split('T')[0];
+            var ngayBatDau = document.getElementById('ngayBatDauSuDung');
+            var ngayKetThuc = document.getElementById('ngayKetThucSuDung');
+            
+            if (ngayBatDau) {
+                ngayBatDau.setAttribute('min', today);
+            }
+            
+            if (ngayKetThuc) {
+                ngayKetThuc.setAttribute('min', today);
+                
+                // Update min date of end date when start date changes
+                if (ngayBatDau) {
+                    ngayBatDau.addEventListener('change', function() {
+                        if (this.value) {
+                            ngayKetThuc.setAttribute('min', this.value);
+                        }
+                    });
+                }
+            }
+        });
+    </script>
 </body>
 </html>
 
