@@ -3,6 +3,8 @@ package com.apartment.service;
 import com.apartment.entity.HoGiaDinh;
 import com.apartment.repository.HoGiaDinhRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
@@ -16,6 +18,10 @@ public class HoGiaDinhService {
     
     public List<HoGiaDinh> findAll() {
         return hoGiaDinhRepository.findAll();
+    }
+    
+    public Page<HoGiaDinh> findAll(Pageable pageable) {
+        return hoGiaDinhRepository.findAll(pageable);
     }
     
     public Optional<HoGiaDinh> findByMaHo(String maHo) {
@@ -32,6 +38,13 @@ public class HoGiaDinhService {
     
     public List<HoGiaDinh> searchByName(String tenHo) {
         return hoGiaDinhRepository.findByTenHoContainingIgnoreCase(tenHo);
+    }
+    
+    public Page<HoGiaDinh> searchByName(String tenHo, Pageable pageable) {
+        if (tenHo == null || tenHo.isBlank()) {
+            return findAll(pageable);
+        }
+        return hoGiaDinhRepository.findByTenHoContainingIgnoreCase(tenHo.trim(), pageable);
     }
     
     @Transactional

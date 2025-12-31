@@ -1,6 +1,8 @@
 package com.apartment.repository;
 
 import com.apartment.entity.BaoCaoSuCo;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -12,6 +14,10 @@ public interface BaoCaoSuCoRepository extends JpaRepository<BaoCaoSuCo, Integer>
     List<BaoCaoSuCo> findByCccdNguoiBaoCao(String cccdNguoiBaoCao);
     
     List<BaoCaoSuCo> findByTrangThai(String trangThai);
+    
+    Page<BaoCaoSuCo> findByTrangThai(String trangThai, Pageable pageable);
+    
+    Page<BaoCaoSuCo> findAll(Pageable pageable);
     
     List<BaoCaoSuCo> findByMucDoUuTien(String mucDoUuTien);
     

@@ -131,7 +131,7 @@
                                             <span class="badge" th:classappend="${hd.trangThai == 'da_thanh_toan'} ? 'badge-success' : (${hd.trangThai == 'qua_han'} ? 'badge-danger' : 'badge-warning')">
                                                 <span th:switch="${hd.trangThai}">
                                                     <span th:case="'da_thanh_toan'">✓ Đã thanh toán</span>
-                                                    <span th:case="'chua_thanh_toan'">⏳ Chưa thanh toán</span>
+                                                    <span th:case="'chua_thanh_toan'">Chưa thanh toán</span>
                                                     <span th:case="'qua_han'">⚠️ Quá hạn</span>
                                                     <span th:case="*">Chưa thanh toán</span>
                                                 </span>

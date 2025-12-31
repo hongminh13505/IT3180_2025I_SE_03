@@ -6,6 +6,9 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -53,8 +56,8 @@ public class KeToanController {
         model.addAttribute("tongHoGiaDinh", hoGiaDinhService.countActiveHo());
 
         java.util.List<com.apartment.entity.HoaDon> recent = hoaDonService.findRecentInvoices();
-        if (recent.size() > 6) {
-            recent = recent.subList(0, 6);
+        if (recent.size() > 7) {
+            recent = recent.subList(0, 7);
         }
         model.addAttribute("recentInvoices", recent);
         model.addAttribute("hoaDonDaThanhToan", hoaDonService.countPaidInvoices());
@@ -104,38 +107,52 @@ public class KeToanController {
     
     @GetMapping("/quan-ly-hoa-don")
     public String quanLyHoaDon(@RequestParam(required = false) String search,
+                               @RequestParam(required = false) String loaiHoaDon,
+                               @RequestParam(required = false) String trangThai,
+                               @RequestParam(required = false) String tuNgay,
+                               @RequestParam(required = false) String denNgay,
+                               @RequestParam(defaultValue = "0") int page,
+                               @RequestParam(defaultValue = "20") int size,
                                Model model,
                                Authentication authentication) {
         try {
-            System.out.println("=== Truy cập /ke-toan/quan-ly-hoa-don ===");
+            Pageable pageable = PageRequest.of(page, size);
+            Page<HoaDon> hoaDonPage;
             
-            java.util.List<HoaDon> hoaDonList = hoaDonService.findAll();
-            boolean hasUpdates = false;
-            for (HoaDon hoaDon : hoaDonList) {
-                System.out.println("=== DEBUG: Hóa đơn " + hoaDon.getMaHoaDon() + " - loaiHoaDon: '" + hoaDon.getLoaiHoaDon() + "'");
-                if (hoaDon.getLoaiHoaDon() == null || hoaDon.getLoaiHoaDon().trim().isEmpty()) {
-                    System.out.println("=== DEBUG: Cập nhật hóa đơn " + hoaDon.getMaHoaDon() + " thành 'khac'");
-                    hoaDon.setLoaiHoaDon("khac");
-                    hoaDonService.save(hoaDon);
-                    hasUpdates = true;
+            java.time.LocalDate tuNgayDate = null;
+            java.time.LocalDate denNgayDate = null;
+            
+            try {
+                if (tuNgay != null && !tuNgay.trim().isEmpty()) {
+                    tuNgayDate = java.time.LocalDate.parse(tuNgay);
                 }
+                if (denNgay != null && !denNgay.trim().isEmpty()) {
+                    denNgayDate = java.time.LocalDate.parse(denNgay);
+                }
+            } catch (Exception e) {
             }
-            if (hasUpdates) {
-                hoaDonList = hoaDonService.findAll();
-            }
-            if (search != null && !search.trim().isEmpty()) {
-                String searchLower = search.trim().toLowerCase();
-                hoaDonList = hoaDonList.stream()
-                    .filter(hd -> 
-                        (hd.getMaHo() != null && hd.getMaHo().toLowerCase().contains(searchLower)) ||
-                        (hd.getLoaiHoaDon() != null && hd.getLoaiHoaDon().toLowerCase().contains(searchLower)) ||
-                        (hd.getMaHoaDon() != null && hd.getMaHoaDon().toString().contains(searchLower))
-                    )
-                    .collect(java.util.stream.Collectors.toList());
+
+            boolean hasSearch = search != null && !search.trim().isEmpty();
+            boolean hasFilter = (loaiHoaDon != null && !loaiHoaDon.trim().isEmpty()) ||
+                               (trangThai != null && !trangThai.trim().isEmpty()) ||
+                               tuNgayDate != null || denNgayDate != null;
+
+            if (hasSearch || hasFilter) {
+                hoaDonPage = hoaDonService.searchAndFilter(search, loaiHoaDon, trangThai, tuNgayDate, denNgayDate, pageable);
+            } else {
+                hoaDonPage = hoaDonService.findAll(pageable);
             }
             
-            model.addAttribute("hoaDonList", hoaDonList);
+            model.addAttribute("hoaDonList", hoaDonPage.getContent());
+            model.addAttribute("hoaDonPage", hoaDonPage);
             model.addAttribute("search", search);
+            model.addAttribute("loaiHoaDon", loaiHoaDon);
+            model.addAttribute("trangThai", trangThai);
+            model.addAttribute("tuNgay", tuNgay);
+            model.addAttribute("denNgay", denNgay);
+            model.addAttribute("currentPage", page);
+            model.addAttribute("totalPages", hoaDonPage.getTotalPages());
+            model.addAttribute("totalElements", hoaDonPage.getTotalElements());
             model.addAttribute("username", authentication.getName());
             
             return "ke-toan/quan-ly-hoa-don";
@@ -322,20 +339,36 @@ public class KeToanController {
      * Export danh sách hóa đơn ra file Excel
      */
     @GetMapping("/quan-ly-hoa-don/export/excel")
-    public ResponseEntity<byte[]> exportToExcel(@RequestParam(required = false) String search) {
+    public ResponseEntity<byte[]> exportToExcel(@RequestParam(required = false) String search,
+                                                @RequestParam(required = false) String loaiHoaDon,
+                                                @RequestParam(required = false) String trangThai,
+                                                @RequestParam(required = false) String tuNgay,
+                                                @RequestParam(required = false) String denNgay) {
         try {
-            java.util.List<HoaDon> hoaDonList = hoaDonService.findAll();
+            java.util.List<HoaDon> hoaDonList;
             
-            // Apply search filter if provided
-            if (search != null && !search.trim().isEmpty()) {
-                String searchLower = search.trim().toLowerCase();
-                hoaDonList = hoaDonList.stream()
-                    .filter(hd -> 
-                        (hd.getMaHo() != null && hd.getMaHo().toLowerCase().contains(searchLower)) ||
-                        (hd.getLoaiHoaDon() != null && hd.getLoaiHoaDon().toLowerCase().contains(searchLower)) ||
-                        (hd.getMaHoaDon() != null && hd.getMaHoaDon().toString().contains(searchLower))
-                    )
-                    .collect(java.util.stream.Collectors.toList());
+            java.time.LocalDate tuNgayDate = null;
+            java.time.LocalDate denNgayDate = null;
+            
+            try {
+                if (tuNgay != null && !tuNgay.trim().isEmpty()) {
+                    tuNgayDate = java.time.LocalDate.parse(tuNgay);
+                }
+                if (denNgay != null && !denNgay.trim().isEmpty()) {
+                    denNgayDate = java.time.LocalDate.parse(denNgay);
+                }
+            } catch (Exception e) {
+            }
+
+            boolean hasSearch = search != null && !search.trim().isEmpty();
+            boolean hasFilter = (loaiHoaDon != null && !loaiHoaDon.trim().isEmpty()) ||
+                               (trangThai != null && !trangThai.trim().isEmpty()) ||
+                               tuNgayDate != null || denNgayDate != null;
+
+            if (hasSearch || hasFilter) {
+                hoaDonList = hoaDonService.searchAndFilter(search, loaiHoaDon, trangThai, tuNgayDate, denNgayDate, org.springframework.data.domain.Pageable.unpaged()).getContent();
+            } else {
+                hoaDonList = hoaDonService.findAll(org.springframework.data.domain.Pageable.unpaged()).getContent();
             }
             
             byte[] excelBytes = hoaDonExportService.exportToExcel(hoaDonList);
@@ -361,20 +394,36 @@ public class KeToanController {
      * Export danh sách hóa đơn ra file PDF
      */
     @GetMapping("/quan-ly-hoa-don/export/pdf")
-    public ResponseEntity<byte[]> exportToPdf(@RequestParam(required = false) String search) {
+    public ResponseEntity<byte[]> exportToPdf(@RequestParam(required = false) String search,
+                                              @RequestParam(required = false) String loaiHoaDon,
+                                              @RequestParam(required = false) String trangThai,
+                                              @RequestParam(required = false) String tuNgay,
+                                              @RequestParam(required = false) String denNgay) {
         try {
-            java.util.List<HoaDon> hoaDonList = hoaDonService.findAll();
+            java.util.List<HoaDon> hoaDonList;
             
-            // Apply search filter if provided
-            if (search != null && !search.trim().isEmpty()) {
-                String searchLower = search.trim().toLowerCase();
-                hoaDonList = hoaDonList.stream()
-                    .filter(hd -> 
-                        (hd.getMaHo() != null && hd.getMaHo().toLowerCase().contains(searchLower)) ||
-                        (hd.getLoaiHoaDon() != null && hd.getLoaiHoaDon().toLowerCase().contains(searchLower)) ||
-                        (hd.getMaHoaDon() != null && hd.getMaHoaDon().toString().contains(searchLower))
-                    )
-                    .collect(java.util.stream.Collectors.toList());
+            java.time.LocalDate tuNgayDate = null;
+            java.time.LocalDate denNgayDate = null;
+            
+            try {
+                if (tuNgay != null && !tuNgay.trim().isEmpty()) {
+                    tuNgayDate = java.time.LocalDate.parse(tuNgay);
+                }
+                if (denNgay != null && !denNgay.trim().isEmpty()) {
+                    denNgayDate = java.time.LocalDate.parse(denNgay);
+                }
+            } catch (Exception e) {
+            }
+
+            boolean hasSearch = search != null && !search.trim().isEmpty();
+            boolean hasFilter = (loaiHoaDon != null && !loaiHoaDon.trim().isEmpty()) ||
+                               (trangThai != null && !trangThai.trim().isEmpty()) ||
+                               tuNgayDate != null || denNgayDate != null;
+
+            if (hasSearch || hasFilter) {
+                hoaDonList = hoaDonService.searchAndFilter(search, loaiHoaDon, trangThai, tuNgayDate, denNgayDate, org.springframework.data.domain.Pageable.unpaged()).getContent();
+            } else {
+                hoaDonList = hoaDonService.findAll(org.springframework.data.domain.Pageable.unpaged()).getContent();
             }
             
             byte[] pdfBytes = hoaDonExportService.exportToPdf(hoaDonList);

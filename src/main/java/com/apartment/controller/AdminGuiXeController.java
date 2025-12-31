@@ -4,6 +4,9 @@ import com.apartment.entity.YeuCauGuiXe;
 import com.apartment.service.DoiTuongService;
 import com.apartment.service.YeuCauGuiXeService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -29,29 +32,21 @@ public class AdminGuiXeController {
     @GetMapping
     public String list(@RequestParam(required = false) String search,
                        @RequestParam(required = false) String trangThai,
+                       @RequestParam(defaultValue = "0") int page,
+                       @RequestParam(defaultValue = "20") int size,
                        Model model,
                        Authentication authentication) {
         try {
-            List<YeuCauGuiXe> list;
-            if (trangThai != null && !trangThai.isEmpty()) {
-                list = yeuCauGuiXeService.findByTrangThaiWithNguoi(trangThai);
-            } else {
-                list = yeuCauGuiXeService.findAllWithNguoi();
-            }
-
-            if (search != null && !search.trim().isEmpty()) {
-                String searchLower = search.trim().toLowerCase();
-                list = list.stream()
-                        .filter(x ->
-                                (x.getBienSo() != null && x.getBienSo().toLowerCase().contains(searchLower)) ||
-                                (x.getCccdNguoiGui() != null && x.getCccdNguoiGui().toLowerCase().contains(searchLower)) ||
-                                (x.getLoaiXe() != null && x.getLoaiXe().toLowerCase().contains(searchLower)))
-                        .collect(Collectors.toList());
-            }
-
-            model.addAttribute("yeuCauList", list);
+            Pageable pageable = PageRequest.of(page, size);
+            Page<YeuCauGuiXe> yeuCauPage = yeuCauGuiXeService.searchByKeyword(search, trangThai, pageable);
+            
+            model.addAttribute("yeuCauList", yeuCauPage.getContent());
+            model.addAttribute("yeuCauPage", yeuCauPage);
             model.addAttribute("search", search);
             model.addAttribute("trangThai", trangThai);
+            model.addAttribute("currentPage", page);
+            model.addAttribute("totalPages", yeuCauPage.getTotalPages());
+            model.addAttribute("totalElements", yeuCauPage.getTotalElements());
             model.addAttribute("username", authentication.getName());
             return "admin/gui-xe/list";
         } catch (Exception e) {

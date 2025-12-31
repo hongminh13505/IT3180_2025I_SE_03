@@ -3,6 +3,9 @@ package com.apartment.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -30,29 +33,32 @@ public class LichSuChinhSuaController {
     public String list(@RequestParam(required = false) String loaiDoiTuong,
                       @RequestParam(required = false) String maDoiTuong,
                       @RequestParam(required = false) String nguon,
+                      @RequestParam(defaultValue = "0") int page,
+                      @RequestParam(defaultValue = "20") int size,
                       Model model,
                       Authentication authentication) {
-        List<LichSuChinhSua> lichSuList;
+        Pageable pageable = PageRequest.of(page, size);
+        Page<LichSuChinhSua> lichSuPage;
         
         if (maDoiTuong != null && !maDoiTuong.trim().isEmpty() && 
             loaiDoiTuong != null && !loaiDoiTuong.trim().isEmpty()) {
-            // Xem lịch sử của một đối tượng cụ thể
-            lichSuList = lichSuChinhSuaService.findByLoaiDoiTuongAndMaDoiTuong(loaiDoiTuong, maDoiTuong);
+            lichSuPage = lichSuChinhSuaService.findByLoaiDoiTuongAndMaDoiTuong(loaiDoiTuong, maDoiTuong, pageable);
         } else if (nguon != null && !nguon.trim().isEmpty()) {
-            // Lọc theo nguồn (admin hoặc người dùng)
-            lichSuList = lichSuChinhSuaService.findByNguonChinhSua(nguon);
+            lichSuPage = lichSuChinhSuaService.findByNguonChinhSua(nguon, pageable);
         } else if (loaiDoiTuong != null && !loaiDoiTuong.trim().isEmpty()) {
-            // Lọc theo loại đối tượng
-            lichSuList = lichSuChinhSuaService.findByLoaiDoiTuong(loaiDoiTuong);
+            lichSuPage = lichSuChinhSuaService.findByLoaiDoiTuong(loaiDoiTuong, pageable);
         } else {
-            // Xem tất cả
-            lichSuList = lichSuChinhSuaService.findAll();
+            lichSuPage = lichSuChinhSuaService.findAll(pageable);
         }
         
-        model.addAttribute("lichSuList", lichSuList);
+        model.addAttribute("lichSuList", lichSuPage.getContent());
+        model.addAttribute("lichSuPage", lichSuPage);
         model.addAttribute("loaiDoiTuong", loaiDoiTuong);
         model.addAttribute("maDoiTuong", maDoiTuong);
         model.addAttribute("nguon", nguon);
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", lichSuPage.getTotalPages());
+        model.addAttribute("totalElements", lichSuPage.getTotalElements());
         model.addAttribute("username", authentication.getName());
         
         return "admin/lich-su-chinh-sua/list";

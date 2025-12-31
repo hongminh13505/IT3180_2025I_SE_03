@@ -1,6 +1,8 @@
 package com.apartment.repository;
 
 import com.apartment.entity.DoiTuong;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -38,6 +40,14 @@ public interface DoiTuongRepository extends JpaRepository<DoiTuong, String> {
            "d.cccd LIKE CONCAT('%', :keyword, '%') OR " +
            "d.soDienThoai LIKE CONCAT('%', :keyword, '%'))")
     List<DoiTuong> searchAllByKeyword(String keyword);
+    
+    @Query("SELECT d FROM DoiTuong d WHERE d.trangThaiTaiKhoan = 'hoat_dong' AND " +
+           "(LOWER(d.hoVaTen) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+           "d.cccd LIKE CONCAT('%', :keyword, '%') OR " +
+           "d.soDienThoai LIKE CONCAT('%', :keyword, '%'))")
+    Page<DoiTuong> searchAllByKeyword(String keyword, Pageable pageable);
+    
+    Page<DoiTuong> findAll(Pageable pageable);
 }
 
 

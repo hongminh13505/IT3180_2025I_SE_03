@@ -179,9 +179,92 @@ public class DoiTuongExportService {
         }
     }
 
-    /**
-     * Export danh sách cư dân ra file PDF
-     */
+
+    private BaseFont loadVietnameseFont() throws DocumentException, IOException {
+        String osName = System.getProperty("os.name").toLowerCase();
+        String windowsFonts = null;
+        
+        if (osName.contains("win")) {
+            windowsFonts = System.getenv("WINDIR");
+            if (windowsFonts == null) {
+                windowsFonts = System.getenv("SystemRoot");
+            }
+        }
+        
+        String[] fontPaths;
+        if (windowsFonts != null) {
+            String fontsDir = windowsFonts + "\\Fonts\\";
+            fontPaths = new String[]{
+                fontsDir + "arial.ttf",
+                fontsDir + "arialuni.ttf",
+                fontsDir + "times.ttf",
+                fontsDir + "timesnr.ttf",
+                fontsDir + "calibri.ttf",
+                "c:/windows/fonts/arial.ttf",
+                "c:/windows/fonts/arialuni.ttf"
+            };
+        } else if (osName.contains("linux")) {
+            fontPaths = new String[]{
+                "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+                "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
+                "/usr/share/fonts/truetype/noto/NotoSans-Regular.ttf",
+                "/usr/share/fonts/TTF/DejaVuSans.ttf"
+            };
+        } else if (osName.contains("mac")) {
+            fontPaths = new String[]{
+                "/System/Library/Fonts/Helvetica.ttc",
+                "/Library/Fonts/Arial.ttf",
+                "/System/Library/Fonts/Supplemental/Arial.ttf"
+            };
+        } else {
+            fontPaths = new String[]{};
+        }
+        
+        for (String fontPath : fontPaths) {
+            try {
+                java.io.File fontFile = new java.io.File(fontPath);
+                if (fontFile.exists() && fontFile.canRead()) {
+                    BaseFont font = BaseFont.createFont(fontPath, BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
+                    if (font != null) {
+                        return font;
+                    }
+                }
+            } catch (Exception e) {
+                continue;
+            }
+        }
+        
+        try {
+            InputStream fontStream = getClass().getClassLoader().getResourceAsStream("fonts/arial.ttf");
+            if (fontStream != null) {
+                try {
+                    java.io.ByteArrayOutputStream buffer = new java.io.ByteArrayOutputStream();
+                    byte[] data = new byte[8192];
+                    int nRead;
+                    while ((nRead = fontStream.read(data, 0, data.length)) != -1) {
+                        buffer.write(data, 0, nRead);
+                    }
+                    byte[] fontBytes = buffer.toByteArray();
+                    return BaseFont.createFont("arial.ttf", BaseFont.IDENTITY_H, BaseFont.EMBEDDED, true, fontBytes, null);
+                } finally {
+                    fontStream.close();
+                }
+            }
+        } catch (Exception e) {
+        }
+        
+        try {
+            return BaseFont.createFont(BaseFont.HELVETICA, BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
+        } catch (Exception e) {
+            try {
+                return BaseFont.createFont(BaseFont.TIMES_ROMAN, BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
+            } catch (Exception e2) {
+                throw new IOException("Không thể load font hỗ trợ tiếng Việt", e2);
+            }
+        }
+    }
+
+   
     public byte[] exportToPdf(List<DoiTuong> doiTuongList) throws DocumentException, IOException {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         
@@ -189,14 +272,7 @@ public class DoiTuongExportService {
         PdfWriter.getInstance(document, outputStream);
         document.open();
 
-        // Load Vietnamese font
-        BaseFont baseFont;
-        try {
-            baseFont = BaseFont.createFont("c:/windows/fonts/arial.ttf", BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
-        } catch (Exception e) {
-            // Fallback to Helvetica if Arial not available
-            baseFont = BaseFont.createFont(BaseFont.HELVETICA, BaseFont.CP1252, BaseFont.EMBEDDED);
-        }
+        BaseFont baseFont = loadVietnameseFont();
 
         Font titleFont = new Font(baseFont, 18, Font.BOLD, Color.DARK_GRAY);
         Font headerFont = new Font(baseFont, 9, Font.BOLD, Color.WHITE);
@@ -221,7 +297,7 @@ public class DoiTuongExportService {
         float[] columnWidths = {1f, 1.5f, 1f, 0.8f, 1.2f, 1f, 1.2f, 1f, 1f, 1f};
         table.setWidths(columnWidths);
 
-        // Header cells
+     
         String[] headers = {"CCCD", "Họ và tên", "Ngày sinh", "GT", "SĐT", "Email", "Vai trò", "Cư dân", "TT TK", "TT DC"};
         for (String header : headers) {
             PdfPCell cell = new PdfPCell(new Phrase(header, headerFont));
@@ -232,7 +308,7 @@ public class DoiTuongExportService {
             table.addCell(cell);
         }
 
-        // Data cells
+    
         for (DoiTuong doiTuong : doiTuongList) {
             addTableCell(table, doiTuong.getCccd() != null ? doiTuong.getCccd() : "", dataFont);
             addTableCell(table, doiTuong.getHoVaTen() != null ? doiTuong.getHoVaTen() : "", dataFont);

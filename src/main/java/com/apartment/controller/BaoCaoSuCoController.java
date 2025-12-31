@@ -4,6 +4,9 @@ import com.apartment.entity.BaoCaoSuCo;
 import com.apartment.service.BaoCaoSuCoService;
 import com.apartment.service.DoiTuongService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -25,13 +28,25 @@ public class BaoCaoSuCoController {
     private DoiTuongService doiTuongService;
     
     @GetMapping
-    public String list(@RequestParam(required = false) String trangThai, Model model) {
+    public String list(@RequestParam(required = false) String trangThai,
+                      @RequestParam(defaultValue = "0") int page,
+                      @RequestParam(defaultValue = "20") int size,
+                      Model model) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<BaoCaoSuCo> baoCaoPage;
+        
         if (trangThai != null && !trangThai.isEmpty()) {
-            model.addAttribute("baoCaoList", baoCaoSuCoService.findByTrangThai(trangThai));
+            baoCaoPage = baoCaoSuCoService.findByTrangThai(trangThai, pageable);
         } else {
-            model.addAttribute("baoCaoList", baoCaoSuCoService.findAll());
+            baoCaoPage = baoCaoSuCoService.findAll(pageable);
         }
+        
+        model.addAttribute("baoCaoList", baoCaoPage.getContent());
+        model.addAttribute("baoCaoPage", baoCaoPage);
         model.addAttribute("trangThai", trangThai);
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", baoCaoPage.getTotalPages());
+        model.addAttribute("totalElements", baoCaoPage.getTotalElements());
         return "admin/bao-cao-su-co/list";
     }
     

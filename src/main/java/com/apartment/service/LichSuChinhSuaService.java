@@ -5,6 +5,8 @@ import com.apartment.entity.LichSuChinhSua;
 import com.apartment.repository.LichSuChinhSuaRepository;
 import com.apartment.repository.DoiTuongRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -83,11 +85,19 @@ public class LichSuChinhSuaService {
         return lichSuChinhSuaRepository.findByLoaiDoiTuongAndMaDoiTuongOrderByThoiGianDesc(loaiDoiTuong, maDoiTuong);
     }
     
+    public Page<LichSuChinhSua> findByLoaiDoiTuongAndMaDoiTuong(String loaiDoiTuong, String maDoiTuong, Pageable pageable) {
+        return lichSuChinhSuaRepository.findByLoaiDoiTuongAndMaDoiTuongOrderByThoiGianDesc(loaiDoiTuong, maDoiTuong, pageable);
+    }
+    
     /**
      * Lấy tất cả lịch sử chỉnh sửa
      */
     public List<LichSuChinhSua> findAll() {
         return lichSuChinhSuaRepository.findAllOrderByThoiGianDesc();
+    }
+    
+    public Page<LichSuChinhSua> findAll(Pageable pageable) {
+        return lichSuChinhSuaRepository.findAllOrderByThoiGianDesc(pageable);
     }
     
     /**
@@ -97,6 +107,10 @@ public class LichSuChinhSuaService {
         return lichSuChinhSuaRepository.findByCccdNguoiChinhSuaOrderByThoiGianDesc(cccd);
     }
     
+    public Page<LichSuChinhSua> findByCccdNguoiChinhSua(String cccd, Pageable pageable) {
+        return lichSuChinhSuaRepository.findByCccdNguoiChinhSuaOrderByThoiGianDesc(cccd, pageable);
+    }
+    
     /**
      * Lấy lịch sử chỉnh sửa theo nguồn (admin hoặc người dùng)
      */
@@ -104,11 +118,19 @@ public class LichSuChinhSuaService {
         return lichSuChinhSuaRepository.findByNguonChinhSuaOrderByThoiGianDesc(nguon);
     }
     
+    public Page<LichSuChinhSua> findByNguonChinhSua(String nguon, Pageable pageable) {
+        return lichSuChinhSuaRepository.findByNguonChinhSuaOrderByThoiGianDesc(nguon, pageable);
+    }
+    
     /**
      * Lấy lịch sử chỉnh sửa theo loại đối tượng
      */
     public List<LichSuChinhSua> findByLoaiDoiTuong(String loaiDoiTuong) {
         return lichSuChinhSuaRepository.findByLoaiDoiTuongOrderByThoiGianDesc(loaiDoiTuong);
+    }
+    
+    public Page<LichSuChinhSua> findByLoaiDoiTuong(String loaiDoiTuong, Pageable pageable) {
+        return lichSuChinhSuaRepository.findByLoaiDoiTuongOrderByThoiGianDesc(loaiDoiTuong, pageable);
     }
     
     /**
